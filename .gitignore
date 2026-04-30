@@ -41,3 +41,6 @@ admob-app-id.txt
 research/raw/
 research/*.csv
 research/*.xlsx
+
+# Phase 0.5 corpus-derived data (frequency analysis only, not shipped)
+research/word_pool_feasibility_data/

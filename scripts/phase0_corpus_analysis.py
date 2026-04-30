@@ -220,17 +220,22 @@ def main() -> int:
     pool_path.write_text(json.dumps(pool, indent=2, ensure_ascii=False))
     print(f"\nTiered pool ({len(pool)} words) → {pool_path}", file=sys.stderr)
 
-    # Decision gate verdict
-    common_count = sum(1 for w in pool if w["tier"] == "common")
+    # Decision gate verdict — total candidate pool size (4-year runway threshold)
+    # Counts ALL unique tokens with target akshara count, not just the
+    # common tier (which is capped at common_n=1000 by definition).
+    candidate_pool = sum(
+        1 for word in counts if akshara_count(word) == args.akshara
+    )
     print(
-        f"\n=== DECISION GATE: {args.akshara}-akshara common pool size = {common_count} ===",
+        f"\n=== DECISION GATE: {args.akshara}-akshara candidate pool size = {candidate_pool} ===",
         file=sys.stderr,
     )
-    if common_count >= 1500:
+    if candidate_pool >= 1500:
         print(
-            f"  PASS — proceed with {args.akshara}-akshara default", file=sys.stderr
+            f"  PASS — {args.akshara}-akshara has 4+ years of unique daily puzzles",
+            file=sys.stderr,
         )
-    elif common_count >= 800:
+    elif candidate_pool >= 800:
         print(
             f"  MARGINAL — consider variable {args.akshara}-{args.akshara+1} grid",
             file=sys.stderr,
@@ -240,6 +245,15 @@ def main() -> int:
             f"  FAIL — pool too thin. Re-run with --akshara {args.akshara+1} or pivot",
             file=sys.stderr,
         )
+
+    # Also report raw frequency-tier counts for transparency
+    common_count = sum(1 for w in pool if w["tier"] == "common")
+    mid_count = sum(1 for w in pool if w["tier"] == "mid")
+    chal_count = sum(1 for w in pool if w["tier"] == "challenge")
+    print(
+        f"  Frequency tiers: common={common_count}, mid={mid_count}, challenge={chal_count}",
+        file=sys.stderr,
+    )
 
     return 0
 
