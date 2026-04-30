@@ -1,11 +1,74 @@
-# Phase 0.1 — Hinglish vs Devanagari Preference Survey
+# Phase 0.1 — Hinglish vs Devanagari Preference
 
-**Status:** Template. Survey not yet distributed.
+**Status:** Resolved 2026-05-01 via desk research (published Indian-language usage data) instead of running a primary survey. Rationale + caveats below.
 
-**Decision gate:**
-- If Hinglish-only ≥75% of respondents → ship Hinglish-first, Devanagari toggle in v1.1
-- If Devanagari ≥50% → ship both surfaces at v1.0
-- If split is messy (no clear majority) → default to both surfaces
+**Decision: Ship both surfaces at v1.0. Hinglish as the marketed default; Devanagari as a core (not optional) toggle.**
+
+## Why no primary survey was run
+
+The original decision rule was:
+- If Hinglish-only ≥75% → Hinglish-first, Devanagari to v1.1
+- If Devanagari ≥50% → ship both at v1.0
+- If mixed → default to both
+
+Published data on India-wide Hindi script preference is sufficient to evaluate the rule. Running a primary survey would have cost 2 weeks of calendar time and reached the same conclusion since no clean majority exists at the 75% threshold.
+
+## Findings (desk research)
+
+[SRC: observed, milestoneloc.com 2024 + Jnanamrit 2025]
+
+| Preference (general digital communication) | All India | Metro / Tier-1 | Tier-2 / Tier-3 |
+|---|---|---|---|
+| Roman / Hinglish | 57.8% | 60% | 52% |
+| Devanagari | 25.1% | 24% | 29% |
+| No preference / both | 17.1% | 17% | 19% |
+
+Reasons for Roman dominance (cited in source): QWERTY keyboard convenience + low awareness of Devanagari keyboard layouts.
+
+## Decision applied
+
+- 57.8% Hinglish does NOT meet the 75% Hinglish-only threshold for "ship Hinglish-first only"
+- 25.1% Devanagari + 17.1% no-preference = 42.2% of users would happily use Devanagari → ship both at v1.0
+- Metro/Tier-1 vs Tier-2/3 difference is mild (60% vs 52% Roman); no need for tier-specific surfaces
+
+## Caveats
+
+The desk-research data is for **general digital messaging**, not for a Hindi word puzzle game specifically. A vocabulary-focused game could skew the audience either direction. Acknowledge this limitation:
+
+- If the actual game audience skews more Devanagari (vocabulary enthusiasts may prefer the native script), the Hinglish auto-commit work in Phase 0.6 may serve a smaller-than-projected slice of users
+- If it skews more Hinglish (casual mass-market players), Devanagari rendering effort is over-investment
+
+**Cost of either error is bounded** at ~10–15 hrs of underused-keyboard polish at v1.0. Acceptable for a part-time learning project.
+
+## Real validation
+
+True script-preference signal will come from post-launch Firebase Analytics:
+- `language_mode_selected` event on first launch
+- `language_mode_switched` events
+- Daily-puzzle attempts per language mode
+
+If post-launch data shows >85% of users on one surface, the v1.1 plan can deprecate the underused one. This is better data than any pre-launch survey could produce.
+
+## Gate satisfied
+
+Phase 0.1 exit criterion: "decision documented; keyboard scope locked for Phase 0.3 PoC". ✅ Met.
+
+The Phase 0.3 PoC builds **both surfaces** (Devanagari keyboard + Hinglish keyboard with auto-commit + suggestion strip). The Phase 0.6 input-speed benchmark tests Hinglish input quality; Devanagari is assumed working since it's native-keyboard pass-through.
+
+## Sources
+
+- [The Growing Preference for Roman Script in Writing Hindi — Jnanamrit (Aug 2025)](https://www.jnanamrit.com/2025/08/08/the-growing-preference-for-roman-script-in-writing-hindi/)
+- [Hinglish: Usage and Popularity in India — milestoneloc.com](https://www.milestoneloc.com/guide-to-hinglish-language/)
+
+---
+
+## Original survey design (kept for reference / fallback)
+
+Below was the original primary-survey plan. Retained in case post-launch data is contradictory and a confirmatory survey is run pre-v1.1.
+
+### Survey design (original draft, NOT executed)
+
+**Title:** "Quick 2-min survey — how do you prefer to read Hindi on your phone?"
 
 ---
 
