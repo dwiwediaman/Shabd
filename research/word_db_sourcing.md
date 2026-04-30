@@ -1,21 +1,22 @@
 # Phase 0.4 — Word DB Sourcing Decision
 
-**Status:** Draft (desk research). Final license confirmation pending download + verification of TDIL CDK access.
+**Status:** License verification done (web research, 2026-05-01). **Material finding:** the v3 plan's TDIL CDK assumption is incorrect; TDIL resources appear to be research-only. Revised sourcing strategy below.
 
-**Last updated:** 2026-04-30
+**Last updated:** 2026-05-01
 
 ---
 
-## Decision
+## Decision (revised 2026-05-01)
 
 **Hindi:**
-- **Primary:** TDIL Common Data Kit (CDK), Government of India (Technology Development for Indian Languages)
-- **Secondary supplement:** Manual curation from Hindi Wikipedia article-frequency rankings + HindiCorp common-word lists
-- **REJECTED:** Hindi Wiktionary
+- **Primary approach: Hand-curated word list from native-speaker compilation, cross-referenced against public-domain dictionaries.** A list of common words is a list of FACTS (the words exist in the language); individual common-vocabulary entries are not copyrightable. A compilation with original selection has minimal copyright exposure when (a) the input is multiple sources, (b) the curation involves native-speaker judgment, (c) entries are common vocabulary not unique creative selections.
+- **Frequency analysis:** run `scripts/phase0_corpus_analysis.py` on **OSCAR Hindi subset** (CC0 packaging) for *frequency analysis only* — do NOT ship the corpus, only the derived word list. The script's output (frequency-ranked common words) is a derivative work but the word list itself consists of un-copyrightable language facts.
+- **Native-speaker QA:** the 10-hour native-speaker review at the daily-pool tier-1 (1000 words) is the tier where compilation-originality is established.
+- **REJECTED sources** (with reasons documented below).
 
 **English:**
-- **Primary:** ENABLE / TWL06 / Collins Scrabble Words (any of these is fine)
-- **Reference benchmark:** Wordle's published answer pool (~2,309 common 5-letter words) and guess pool (~12,953 valid 5-letter words)
+- **Primary:** ENABLE2 / Collins Scrabble Words. ENABLE2 is public domain; SOWPODS is permissive.
+- **Reference benchmark:** Wordle's published answer pool (~2,309 common 5-letter words) and guess pool (~12,953 valid 5-letter words). **Do NOT copy** — use only as a sanity-check on size.
 
 ---
 
@@ -35,23 +36,44 @@ A curated word database derived from Wiktionary IS a "remix/transform/build upon
 
 ---
 
-## Why TDIL CDK works
+## REJECTED sources and why
 
-The Technology Development for Indian Languages (TDIL) initiative under MeitY (Ministry of Electronics and IT, Govt of India) publishes the **Common Data Kit (CDK)** through the TDIL Data Centre.
+### TDIL CDK — research-only, NOT commercial **[v3 plan assumption was wrong]**
 
-**Licensing:** TDIL data products are released under permissive licenses suitable for commercial use. Specifically:
-- Most CDK datasets are tagged "for research, development, and commercial use" with citation/attribution
-- No ShareAlike contamination — derivative works can be proprietary
-- Indian developers have additional governance clarity since TDIL is a domestic source
+The Technology Development for Indian Languages (TDIL) initiative under MeitY publishes corpora through tdil-dc.in. **The v3 plan assumed these were commercial-friendly. They are not.**
 
-**[VERIFY BEFORE EMBEDDING]** Confirm exact license text on the specific corpus file downloaded. TDIL has multiple datasets; license text varies by package.
+[SRC: observed, web search 2026-05-01] Hindi corpora on TDIL-DC (Hindi Speech Corpus, Hindi Monolingual Text Corpus ILCI-II, Hindi-Marathi General Text Corpus, etc.) are tagged with license type **"Research"**. Direct fetch of the resource detail pages failed (TLS cert error), but multiple search results confirm the "Research" tag.
 
-**Access:** https://tdil-dc.in/ — registration may be required. Govt portal occasionally has uptime issues.
+Some TDIL resources are also marked **CC BY-SA 2.0** — same ShareAlike contamination problem as Wiktionary.
 
-**What we need from CDK:**
-- Hindi monolingual corpus (raw text)
-- Frequency-ranked word list (or we build it from the corpus)
-- ~50K+ unique Hindi words minimum (we filter down to 2K daily-pool + 8K guess-pool)
+Verdict: TDIL CDK cannot be used as a derivation source for a commercial-distributed APK. It can only be used if you contact TDIL/MeitY directly to negotiate a commercial license (likely fee, likely months of paperwork).
+
+### Hindi Wiktionary — CC-BY-SA 3.0, ShareAlike contaminates
+
+Already documented in v2: SA clause forces the entire derivative work (the word DB, arguably the APK) to be released under CC-BY-SA. Competitors can legally extract on day 1.
+
+### AI4Bharat IndicNLP Corpus — CC BY-NC-SA 4.0, double blocker
+
+[SRC: observed, web search 2026-05-01 — github.com/AI4Bharat/indicnlp_corpus]
+- **NC** (NonCommercial) — explicit prohibition on commercial use. A free game with rewarded ads is commercial.
+- **SA** (ShareAlike) — same contamination as Wiktionary.
+
+Double blocker. Can be used for academic research only.
+
+### OSCAR Corpus — CC0 packaging, but underlying text is from Common Crawl
+
+[SRC: observed, web fetch 2026-05-01 — oscar-project.org]
+- OSCAR's **packaging and annotations** are CC0 (fully permissive, public-domain dedication).
+- The actual **text content** is Common Crawl-derived — original publishers retain their copyrights.
+- Inria (the host) restricts non-research use of the corpus under French law (TDM/research exception).
+
+Verdict: OSCAR is OK to use for **frequency analysis** (a transformation that produces statistics, not a copy of the text), but **do NOT ship the corpus or any large extract**. The derived frequency-ranked word list itself is a list of language facts, which is not copyrightable.
+
+This is the practical path: download OSCAR Hindi → run `scripts/phase0_corpus_analysis.py` → keep ONLY the output word list (top 5000 frequency-ranked) → discard the corpus → ship the curated word list inside the APK.
+
+### Common Crawl direct — same as OSCAR underlying
+
+Permissive metadata, but text is publishers' copyright. Same conclusion: frequency analysis OK, shipping text not OK.
 
 ---
 
@@ -71,19 +93,22 @@ The Technology Development for Indian Languages (TDIL) initiative under MeitY (M
 
 ---
 
-## Curation plan
+## Curation plan (revised)
 
-### Hindi (35 hrs total)
+### Hindi (40 hrs total — slightly higher than v3's 35hr after license findings)
 
 | Phase | Effort | Output |
 |---|---|---|
-| Acquire TDIL CDK + Wikipedia article-freq corpus | 2 hrs | Raw text corpus, ~10M tokens |
-| Tokenize + akshara-segment + frequency-rank | 4 hrs (Python script) | Frequency-ranked list, top 50K |
+| Acquire OSCAR Hindi subset (frequency analysis only, NOT shipped) | 2 hrs | Raw text corpus, local-only |
+| Tokenize + akshara-segment + frequency-rank | 4 hrs (script ready) | Frequency-ranked candidate list, top 50K |
 | Filter to 4-akshara (or 5 per Phase 0.5) | 2 hrs | Candidate pool, ~5K–8K |
-| Tier-tag (`common`/`mid`/`challenge`) | 3 hrs | Tagged candidate pool |
-| Profanity + sensitivity filter | 4 hrs | Cleaned candidate pool |
+| **Independent compilation: cross-reference top 2000 candidates against** native-speaker recall + freely-distributed Hindi educational word lists (school NCERT lists, common-noun textbook lists) | 6 hrs | Re-validated common-vocab pool, original compilation |
+| Tier-tag (`common`/`mid`/`challenge`) by frequency rank | 2 hrs | Tagged candidate pool |
+| Profanity + sensitivity filter (LDNOOBW Hindi + manual ~200 terms) | 4 hrs | Cleaned candidate pool |
 | Manual spot-check on tier-1 (top 1000) | 10 hrs | Reviewed daily-pool tier 1 |
-| Native-speaker QA on tier-1 | 10 hrs | Final daily-pool tier 1 (1000 words) |
+| Native-speaker QA on tier-1 (3 reviewers) | 10 hrs | Final daily-pool tier 1 (1000 words), with reviewer notes establishing original-compilation provenance |
+
+The "independent compilation" step is the key copyright-clearance work. By cross-referencing OSCAR-derived frequency rankings against multiple independent sources + native-speaker judgment, the final list becomes an original compilation rather than a derivative of any single source. Document the sources consulted in `data/words_provenance.md` (which sources, what was cross-referenced, who the reviewers were).
 
 ### English (5 hrs total)
 
@@ -135,7 +160,21 @@ Tier weights for daily selection: 70% common, 20% mid, 10% challenge.
 
 ## Open items
 
-- [ ] Verify TDIL CDK exact license text on the specific corpus we download
-- [ ] Decide if Hindi Wikipedia article-frequency corpus alone is sufficient (skip TDIL if access is friction)
-- [ ] Confirm Google Books Ngram English data is freely usable for commercial frequency tiering (it is, per Google's terms — verify)
-- [ ] Choose profanity wordlist source for Hindi (LDNOOBW has limited Hindi coverage; may need manual list)
+- [x] Verify TDIL CDK license — DONE 2026-05-01. Result: research-only, not usable. Removed from sources.
+- [ ] Download OSCAR Hindi 23.01 subset and run `scripts/phase0_corpus_analysis.py` to produce frequency-ranked candidate list. Local-only; do NOT commit the corpus.
+- [ ] Compile `data/words_provenance.md` documenting cross-reference sources (NCERT word lists, native-speaker reviewers, OSCAR frequency derivation) — this artifact is the legal-defense record of original compilation
+- [ ] Identify 3 native-speaker reviewers (1 Decisionpoint colleague + 2 network) — same set used for Phase 0.2 akshara concordance
+- [ ] Confirm Google Books Ngram English data is freely usable for commercial frequency tiering (Google's stated terms: "Permission is granted for using the data in any way, commercial or otherwise, with no requirement to credit Google" — verify by fetching the current terms before using)
+- [ ] Decide profanity wordlist for Hindi (LDNOOBW Hindi extension is patchy; supplement with ~200 hand-curated terms reviewed by native speakers)
+
+## Risk assessment
+
+**Legal risk of approach above:** LOW.
+- Frequency analysis is a transformation that extracts statistics, not a copy. Statistical results are not copyrightable.
+- Common-vocabulary word lists are facts about the language, not creative expression.
+- Independent compilation across multiple sources + native-speaker judgment establishes original work.
+- 40-hr curation budget includes the legal-clearance steps.
+
+**Residual risk:** if a single very-distinctive entry from any source ends up in our list AND we got that entry only from that source, there's a remote selection-and-arrangement copyright theory. Mitigation: native-speaker review identifies entries as commonly-known vs source-specific.
+
+**Worst-case mitigation:** if someone challenges, we can re-curate the disputed entries from native-speaker recall alone in <2 hrs, since these are common-vocabulary words. Recoverable.
