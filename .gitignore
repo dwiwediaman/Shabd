@@ -1,0 +1,43 @@
+# Godot 4
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+
+# Android build artifacts
+android/build/build/
+android/build/.gradle/
+android/build/local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Secrets — NEVER commit
+google-services.json
+firebase-config.json
+admob-app-id.txt
+*.env
+.env.*
+
+# Phase 0 raw data (keep summaries, not personal survey responses)
+research/raw/
+research/*.csv
+research/*.xlsx

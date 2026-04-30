@@ -1,0 +1,60 @@
+name: Firebase Test Lab Smoke
+
+on:
+  workflow_run:
+    workflows: ['Build Android AAB']
+    types: [completed]
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  smoke-test:
+    name: Test on real Android devices via Firebase Test Lab
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download AAB from Build workflow
+        uses: actions/download-artifact@v4
+        with:
+          name: shabd-aab-${{ github.event.workflow_run.head_sha || github.sha }}
+          path: build/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Run Firebase Test Lab Robo test
+        run: |
+          gcloud firebase test android run \
+            --type robo \
+            --app build/shabd.aab \
+            --device model=redfin,version=30,locale=en,orientation=portrait \
+            --device model=oriole,version=33,locale=hi,orientation=portrait \
+            --timeout 4m \
+            --use-orchestrator \
+            --no-record-video \
+            --no-performance-metrics
+        # Free Spark tier: 5 physical + 10 virtual device tests/day.
+        # `redfin` = Pixel 5, `oriole` = Pixel 6. Adjust device list as needed.
+
+      - name: Comment results on commit
+        if: failure()
+        run: |
+          echo "::warning::Firebase Test Lab smoke test failed. Check the Firebase console for details."

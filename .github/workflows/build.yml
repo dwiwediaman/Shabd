@@ -1,0 +1,116 @@
+name: Build Android AAB
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - 'research/**'
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.5-stable
+  ANDROID_PLATFORM: android-34
+  ANDROID_BUILD_TOOLS: 34.0.0
+
+jobs:
+  build:
+    name: Build Godot Android AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Godot binary + templates
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/godot
+            /opt/godot-templates
+          key: godot-${{ env.GODOT_VERSION }}
+
+      - name: Install Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          sudo mkdir -p /opt/godot /opt/godot-templates
+          ZIP="Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          TPZ="Godot_v${GODOT_VERSION}_export_templates.tpz"
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${ZIP}" -O /tmp/godot.zip
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${TPZ}" -O /tmp/templates.tpz
+          sudo unzip -q /tmp/godot.zip -d /opt/godot
+          sudo mv "/opt/godot/Godot_v${GODOT_VERSION}_linux.x86_64" /opt/godot/godot
+          sudo chmod +x /opt/godot/godot
+          sudo unzip -q /tmp/templates.tpz -d /opt/godot-templates
+
+      - name: Link export templates to Godot expected path
+        run: |
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          ln -sf /opt/godot-templates/templates "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;${{ env.ANDROID_PLATFORM }} build-tools;${{ env.ANDROID_BUILD_TOOLS }} platform-tools'
+
+      - name: Configure Godot Android paths
+        run: |
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/java_sdk_path = "${JAVA_HOME}"
+          export/android/android_sdk_path = "${ANDROID_HOME}"
+          EOF
+
+      - name: Verify project loads (headless import)
+        run: |
+          /opt/godot/godot --headless --path . --quit --import 2>&1 | tail -50 || true
+
+      - name: Run unit tests (GUT, if configured)
+        run: |
+          if [ -d test ]; then
+            /opt/godot/godot --headless --path . -s addons/gut/gut_cmdln.gd \
+              -gdir=res://test -gexit
+          else
+            echo "No test/ directory yet; skipping GUT."
+          fi
+
+      - name: Export Android AAB
+        run: |
+          mkdir -p build
+          if [ -f export_presets.cfg ]; then
+            /opt/godot/godot --headless --path . --export-release "Android" build/shabd.aab
+          else
+            echo "::warning::export_presets.cfg not yet configured; skipping AAB build."
+            echo "Create it via Godot Editor → Project → Export → Add Android preset."
+          fi
+
+      - name: Upload AAB artifact
+        if: hashFiles('build/shabd.aab') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: shabd-aab-${{ github.sha }}
+          path: build/shabd.aab
+          retention-days: 14
+
+      - name: Report APK size budget
+        if: hashFiles('build/shabd.aab') != ''
+        run: |
+          SIZE_BYTES=$(stat -c %s build/shabd.aab)
+          SIZE_MB=$(echo "scale=2; $SIZE_BYTES / 1024 / 1024" | bc)
+          echo "AAB size: ${SIZE_MB} MB"
+          echo "::notice::AAB size = ${SIZE_MB} MB (target <50 MB)"

@@ -1,0 +1,70 @@
+{
+  "name": "Shabd Godot Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "vscode",
+      "uid": "1000",
+      "gid": "1000"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+
+  "forwardPorts": [6080, 5901],
+  "portsAttributes": {
+    "6080": {
+      "label": "Godot Editor (noVNC)",
+      "onAutoForward": "openBrowserOnce"
+    },
+    "5901": {
+      "label": "VNC raw (use TigerVNC client)",
+      "onAutoForward": "silent"
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "geequlim.godot-tools",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "github.vscode-github-actions",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "godot_tools.editor_path": "/usr/local/bin/godot",
+        "godot_tools.gdscript_lsp_server_port": 6005,
+        "[gdscript]": {
+          "editor.insertSpaces": false,
+          "editor.tabSize": 4
+        },
+        "files.associations": {
+          "*.tscn": "godot-resource",
+          "*.tres": "godot-resource",
+          "*.gd": "gdscript"
+        }
+      }
+    }
+  },
+
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "DISPLAY": ":1",
+    "GODOT_EXPORT_TEMPLATES": "/home/vscode/.local/share/godot/export_templates"
+  },
+  "mounts": [
+    "source=shabd-godot-cache,target=/home/vscode/.cache/godot,type=volume",
+    "source=shabd-android-sdk,target=/opt/android-sdk,type=volume"
+  ]
+}
