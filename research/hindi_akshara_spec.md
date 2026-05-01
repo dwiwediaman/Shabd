@@ -137,13 +137,29 @@ Output of this segmentation must match the segmentation done at runtime by Godot
 
 ---
 
-## Output (to fill in after native-speaker review)
+## Output — surrogate review by Gemini, 2026-05-01
 
-**Reviewers (3 total, native Hindi speakers):**
-- Reviewer 1 (Decisionpoint colleague): TBD
-- Reviewer 2 (network): TBD
-- Reviewer 3 (network): TBD
+Phase 0.2 was resolved using Gemini Flash as a Hindi-linguistic surrogate reviewer (per user delegation: "ask gemini as owner agent"). A confirmatory native-speaker pass should still happen before launch but is not blocking.
 
-**Concordance result:** TBD/30 unanimous, TBD/30 majority, TBD/30 disputed
-**Disputed words + resolution:** TBD
-**Final akshara-segmentation rules:** see TL;DR above; revise after review if needed
+**Concordance result: 30/30 akshara counts match the Unicode `\X` algorithm.** No disputed segmentations. The algorithm is canonical.
+
+**Content filter signal — 3/30 flagged for curation removal:**
+
+| Word | Akshara count (algo & Gemini) | Filter reason |
+|---|---|---|
+| परमेश्वर | 5 | religious (Hindu deity reference) |
+| राजनीति | 4 | political |
+| गणतंत्र | 4 | formal/civic — borderline; OK to keep as challenge-tier |
+
+Implication: ~10% of raw frequency-ranked candidates need removal in curation. This is in line with the 35–40 hr curation budget in Phase 0.4 which already accounts for profanity + sensitivity filtering. No surprise.
+
+**Final akshara-segmentation rules:** as documented in TL;DR above. Algorithm = Unicode TR29 extended grapheme cluster boundaries via `regex.findall(r'\X', word)`. No revision needed.
+
+**Final spec:** `data/akshara_segmenter` will be a thin GDScript wrapper around either Godot's `String.length()` after grapheme normalization OR a server-side Python pre-segmentation pipeline that ships pre-segmented words in `words.sqlite`. Implementation choice deferred to Phase 0.3 PoC (depends on Godot 4.5 grapheme support).
+
+**Confirmatory native-speaker review (recommended before launch):**
+- Recruit 1–2 native Hindi speakers to spot-check the final daily-pool tier-1 (1000 words) before v1.0 ships
+- Specifically check: regional vocabulary preferences (e.g., कविता vs poem usage), profanity coverage (LDNOOBW Hindi is sparse), religious/political sensitivity edge cases
+- This is part of Phase 0.4's 10-hr native-speaker QA pass, not Phase 0.2
+
+**Phase 0.2 gate satisfied:** algorithm validated, segmentation rules locked, content-filter signal captured.

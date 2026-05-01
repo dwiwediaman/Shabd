@@ -44,3 +44,11 @@ research/*.xlsx
 
 # Phase 0.5 corpus-derived data (frequency analysis only, not shipped)
 research/word_pool_feasibility_data/
+
+# User's local progress-tracking file
+status
+
+# Intermediate curation outputs (only words.sqlite is shipped)
+data/words_hi.json
+data/words_en.json
+data/words_hi_excluded.json
