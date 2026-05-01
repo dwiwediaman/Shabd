@@ -1,0 +1,82 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/practice_puzzle.gd" id="1_prac"]
+[ext_resource type="Script" path="res://scripts/components/tile_grid.gd" id="2_grid"]
+[ext_resource type="Script" path="res://scripts/components/keyboard_hinglish.gd" id="3_kbd"]
+
+[node name="PracticePuzzle" type="Control"]
+layout_mode = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_prac")
+
+[node name="HeaderRow" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 80.0
+
+[node name="BackButton" type="Button" parent="HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(64, 64)
+text = "←"
+
+[node name="StatusLabel" type="Label" parent="HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Practice"
+theme_override_font_sizes/font_size = 24
+
+[node name="NewGameButton" type="Button" parent="HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 64)
+text = "New Game"
+visible = false
+
+[node name="TileGrid" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -250.0
+offset_top = 100.0
+offset_right = 250.0
+offset_bottom = 700.0
+alignment = 1
+script = ExtResource("2_grid")
+
+[node name="Keyboard" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -440.0
+script = ExtResource("3_kbd")
+
+[node name="KeyRows" type="VBoxContainer" parent="Keyboard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 60.0
+alignment = 1
+
+[node name="SuggestionStrip" type="HBoxContainer" parent="Keyboard"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 56.0
+alignment = 1

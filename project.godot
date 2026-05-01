@@ -1,0 +1,61 @@
+; Engine configuration file for Shabd — daily Hindi/English word puzzle.
+;
+; To change settings, prefer the in-editor "Project Settings" dialog.
+; Hand-edits to this file are tracked in git and reviewed before merge.
+
+config_version=5
+
+[application]
+
+config/name="Shabd"
+config/description="Daily Hindi & English word puzzle. Naya shabd, har din."
+run/main_scene="res://scenes/main_menu.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+config/icon="res://assets/icons/icon.png"
+config/version="1.0.0"
+
+[autoload]
+
+GameState="*res://scripts/autoload/game_state.gd"
+WordDB="*res://scripts/autoload/word_db.gd"
+SeedEngine="*res://scripts/autoload/seed_engine.gd"
+Analytics="*res://scripts/autoload/analytics.gd"
+CloudSave="*res://scripts/autoload/cloud_save.gd"
+AdsManager="*res://scripts/autoload/ads_manager.gd"
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep_height"
+
+[gui]
+
+; Custom font is set in code or per-control after first Godot Editor open.
+; Noto Sans Devanagari should be added at res://assets/fonts/NotoSansDevanagari-Regular.ttf
+; (download from Google Fonts: https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari)
+; System fallback handles Devanagari rendering on Android even without a bundled font.
+
+[input]
+
+ui_accept={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194309,"physical_keycode":0,"key_label":0,"unicode":0,"echo":false,"script":null)
+]
+}
+
+[internationalization]
+
+locale/fallback="en"
+; Translations are auto-imported from data/strings/strings.csv when the
+; Godot editor first opens this project. The generated .translation files
+; are gitignored as build artifacts.
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.97, 0.96, 0.94, 1)

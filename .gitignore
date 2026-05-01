@@ -2,8 +2,8 @@
 .godot/
 .import/
 export.cfg
-export_presets.cfg
-*.translation
+# export_presets.cfg IS committed (template; secrets filled by CI env vars)
+# *.translation IS committed (compiled from data/strings/strings.csv)
 
 # Android build artifacts
 android/build/build/
@@ -48,7 +48,6 @@ research/word_pool_feasibility_data/
 # User's local progress-tracking file
 status
 
-# Intermediate curation outputs (only words.sqlite is shipped)
-data/words_hi.json
-data/words_en.json
+# Intermediate curation outputs: keep words_hi.json + words_en.json (shipped),
+# but the excluded log is local-only (transparency record, not for production)
 data/words_hi_excluded.json

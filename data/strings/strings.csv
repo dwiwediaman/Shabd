@@ -1,0 +1,36 @@
+keys,en,hi
+TITLE,Shabd,शब्द
+SUBTITLE_DAILY,Daily puzzle,रोज़ का पहेली
+PLAY_DAILY,Play Today's Puzzle,आज का पहेली खेलें
+PLAY_PRACTICE,Practice,अभ्यास
+STATS,Stats,आँकड़े
+SETTINGS,Settings,सेटिंग्स
+BACK,Back,वापस
+LANGUAGE_HINDI,हिंदी,हिंदी
+LANGUAGE_ENGLISH,English,English
+KEYBOARD_DEVANAGARI,Devanagari,देवनागरी
+KEYBOARD_HINGLISH,Hinglish (Roman),हिंग्लिश (रोमन)
+SOUND_FX,Sound effects,ध्वनि प्रभाव
+HAPTICS,Haptic feedback,कंपन
+SIGN_IN_GOOGLE,Sign in with Google,Google से साइन इन करें
+SIGN_IN_PROMPT,Save your streak across devices?,अपनी स्ट्रीक डिवाइस के बीच सेव करें?
+SHARE,Share,शेयर
+HINT,Hint,संकेत
+NEW_GAME,New Game,नया खेल
+STREAK_FORMAT,Streak: %d • Best: %d,स्ट्रीक: %d • सर्वोच्च: %d
+SOLVED_IN,Solved in %d/%d!,%d/%d में हल किया!
+ANSWER_WAS,The word was: %s,शब्द था: %s
+NOT_IN_DICTIONARY,Not in word list,शब्द सूची में नहीं
+WORD_TOO_SHORT,Word too short,शब्द बहुत छोटा
+PUZZLE_NUMBER,Shabd %s #%d,शब्द %s #%d
+NEXT_PUZZLE_IN,Next puzzle in %s,अगला पहेली %s में
+WIN_RATE_FORMAT,Played %d • Won %.1f%%,खेले %d • जीते %.1f%%
+RESTORE_PROMPT,Found your saved streak. Restore?,सेव की हुई स्ट्रीक मिली। पुनः लोड करें?
+RESTORE,Restore,पुनः लोड करें
+START_FRESH,Start fresh,नए सिरे से शुरू करें
+TUTORIAL_FIRST_KEY,Type a Hindi word,हिंदी शब्द टाइप करें
+TUTORIAL_FIRST_KEY_EN,Type a 5-letter English word,5 अक्षरों का अंग्रेज़ी शब्द टाइप करें
+TUTORIAL_GREEN_TILE,Green = right letter,हरा = सही अक्षर
+TUTORIAL_YELLOW_TILE,Yellow = right letter wrong place,पीला = सही अक्षर ग़लत जगह
+WIN_SHARE_PROMPT,Share your streak with friends?,दोस्तों के साथ अपनी स्ट्रीक शेयर करें?
+ERROR_LOAD_PUZZLE,Unable to load today's puzzle. Try restarting.,आज का पहेली लोड नहीं हो सका। फिर से शुरू करें।
