@@ -168,4 +168,4 @@ See plan file for full reasoning behind each decision.
 
 - **Repo:** https://github.com/dwiwediaman/Shabd
 - **Plan file (private):** `~/.claude/plans/lets-run-a-planning-zippy-feigenbaum.md`
-- **Owner:** Rahul Dwiwedi (rahul.dwiwedi@decisionpoint.in)
+- **Owner:** Rahul Dwiwedi (dwiwediaman@gmail.com)

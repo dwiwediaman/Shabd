@@ -3,7 +3,7 @@
 **Effective date:** 2026-05-01
 **App:** Shabd (in.shabd.game) — Daily Hindi & English Word Puzzle
 **Developer:** Rahul Dwiwedi
-**Contact:** rahul.dwiwedi@decisionpoint.in
+**Contact:** dwiwediaman@gmail.com
 
 This privacy policy explains what data Shabd collects, how it's used, and your rights.
 
@@ -69,5 +69,5 @@ If we change this policy, the effective date above will update and we'll show an
 ## Contact
 
 For privacy questions or data deletion requests:
-- Email: rahul.dwiwedi@decisionpoint.in
+- Email: dwiwediaman@gmail.com
 - GitHub: https://github.com/dwiwediaman/Shabd/issues

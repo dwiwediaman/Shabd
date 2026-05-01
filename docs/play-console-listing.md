@@ -33,7 +33,7 @@ Built with love by a solo developer in India. No tracking, no spam, no surprises
 
 PROBLEMS OR FEEDBACK?
 - GitHub: github.com/dwiwediaman/Shabd
-- Email: rahul.dwiwedi@decisionpoint.in
+- Email: dwiwediaman@gmail.com
 
 PRIVACY POLICY
 https://dwiwediaman.github.io/Shabd/privacy.html
@@ -56,7 +56,7 @@ https://dwiwediaman.github.io/Shabd/privacy.html
 
 प्रॉब्लम या सुझाव?
 - GitHub: github.com/dwiwediaman/Shabd
-- Email: rahul.dwiwedi@decisionpoint.in
+- Email: dwiwediaman@gmail.com
 ```
 
 ## Category
