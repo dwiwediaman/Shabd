@@ -42,7 +42,7 @@ This project is configured for **fully cloud-based development**. You don't need
 Create an **empty private repo** on github.com (e.g. `rahul-d-dp/shabd`). Do not initialize with README — we already have one.
 
 ```bash
-cd /Users/rahul.d.dp/Desktop/Projects/Personal/shabd
+cd shabd/
 git remote add origin git@github.com:<your-username>/shabd.git
 git branch -M main
 git commit -m "Phase 0 setup: dev container, CI, artifact templates"

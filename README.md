@@ -4,8 +4,6 @@ Daily word puzzle for Android Play Store. Hindi (Devanagari + Hinglish) + Englis
 
 **Status:** v1.0 MVP committed. Ready for first Codespace launch + CI build verification.
 
-**Plan:** see `~/.claude/plans/lets-run-a-planning-zippy-feigenbaum.md` for the locked v3 plan that produced this codebase.
-
 ---
 
 ## What's done (autonomous, pre-Codespace)
@@ -167,5 +165,4 @@ See plan file for full reasoning behind each decision.
 ## Contact
 
 - **Repo:** https://github.com/dwiwediaman/Shabd
-- **Plan file (private):** `~/.claude/plans/lets-run-a-planning-zippy-feigenbaum.md`
 - **Owner:** Rahul Dwiwedi (dwiwediaman@gmail.com)

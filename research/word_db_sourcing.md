@@ -163,7 +163,7 @@ Tier weights for daily selection: 70% common, 20% mid, 10% challenge.
 - [x] Verify TDIL CDK license — DONE 2026-05-01. Result: research-only, not usable. Removed from sources.
 - [ ] Download OSCAR Hindi 23.01 subset and run `scripts/phase0_corpus_analysis.py` to produce frequency-ranked candidate list. Local-only; do NOT commit the corpus.
 - [ ] Compile `data/words_provenance.md` documenting cross-reference sources (NCERT word lists, native-speaker reviewers, OSCAR frequency derivation) — this artifact is the legal-defense record of original compilation
-- [ ] Identify 3 native-speaker reviewers (1 Decisionpoint colleague + 2 network) — same set used for Phase 0.2 akshara concordance
+- [ ] Identify 3 native-speaker reviewers from personal network — same set used for Phase 0.2 akshara concordance
 - [ ] Confirm Google Books Ngram English data is freely usable for commercial frequency tiering (Google's stated terms: "Permission is granted for using the data in any way, commercial or otherwise, with no requirement to credit Google" — verify by fetching the current terms before using)
 - [ ] Decide profanity wordlist for Hindi (LDNOOBW Hindi extension is patchy; supplement with ~200 hand-curated terms reviewed by native speakers)
 

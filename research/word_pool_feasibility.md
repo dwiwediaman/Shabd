@@ -126,7 +126,7 @@ Daily-pool runway = 5000 unique words / 365 days = 13.7 years. Comfortable margi
 To regenerate the analysis (e.g., with a larger sample or after corpus changes):
 
 ```bash
-cd /Users/rahul.d.dp/Desktop/Projects/Personal/shabd
+cd shabd/
 .venv/bin/python3 scripts/phase0_stream_corpus.py --max-tokens 5000000   # ~5x sample
 .venv/bin/python3 scripts/phase0_corpus_analysis.py \
     --corpus research/word_pool_feasibility_data/raw_frequencies.csv \

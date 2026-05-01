@@ -136,7 +136,7 @@ Expected rating: **Everyone / PEGI 3 / IARC General Audiences**.
 
 ## Internal Testing track configuration
 
-- **Tester emails:** add yourself + 12 closed-test recruits (Decisionpoint colleagues + family + testerscommunity.com Hindi cohort)
+- **Tester emails:** add yourself + 12 closed-test recruits (professional network + family + testerscommunity.com Hindi cohort)
 - **Closed test duration:** 14 continuous days (Play Console requirement before production access)
 - **Initial countries:** India only
 

@@ -77,7 +77,7 @@ Below was the original primary-survey plan. Retained in case post-launch data is
 **Title:** "Quick 2-min survey — how do you prefer to read Hindi on your phone?"
 
 **Distribution channels:**
-- Personal WhatsApp groups (family, friends, colleagues at Decisionpoint)
+- Personal WhatsApp groups (family, friends, professional network)
 - Hindi-speaking subreddits (r/india, r/IndianGaming) — read rules first
 - testerscommunity.com Hindi cohort
 - LinkedIn post (limited to India-based connections)

@@ -26,4 +26,4 @@ Phase 0 closes when all six artifacts are written and decision-gates pass.
 
 ## Templates
 
-Each artifact starts from a template — see the Phase 0 spec in the main plan file (`~/.claude/plans/lets-run-a-planning-zippy-feigenbaum.md`) for what each must contain.
+Each artifact starts from a template — see the Phase 0 spec in the project's internal planning notes for what each must contain.

@@ -77,7 +77,7 @@ base64 -i shabd-upload.keystore | pbcopy
 Push or trigger the workflow:
 
 ```bash
-cd /Users/rahul.d.dp/Desktop/Projects/Personal/shabd
+cd shabd/
 git push  # if you have local changes
 # OR trigger manually:
 gh workflow run "Build Android AAB"
@@ -176,5 +176,5 @@ For v1.0.x patches:
 3. Push → AAB rebuilds → upload to same internal track → 14 days for first time only; subsequent updates can promote in <24 hr
 
 For v1.1+ (e.g., adding IAP, Diwali theme):
-- See `~/.claude/plans/lets-run-a-planning-zippy-feigenbaum.md` Appendix B for deferred features
+- See internal planning notes (Appendix B) for the deferred-features list
 - IAP requires LLP/OPC entity registration — see `feedback_india_solo_dev_compliance.md` (cross-cutting memory)
