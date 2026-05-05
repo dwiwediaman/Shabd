@@ -57,8 +57,13 @@ jobs:
 
       - name: Link export templates to Godot expected path
         run: |
+          # Godot's release tag uses '-stable' but the templates directory
+          # name uses '.stable'. Convert: 4.5-stable -> 4.5.stable.
+          TEMPLATES_DIR_NAME="${GODOT_VERSION//-/.}"
           mkdir -p "$HOME/.local/share/godot/export_templates"
-          ln -sf /opt/godot-templates/templates "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
+          ln -sf /opt/godot-templates/templates "$HOME/.local/share/godot/export_templates/${TEMPLATES_DIR_NAME}"
+          echo "Templates linked at: $HOME/.local/share/godot/export_templates/${TEMPLATES_DIR_NAME}"
+          ls -la "$HOME/.local/share/godot/export_templates/${TEMPLATES_DIR_NAME}/" | head -10
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
