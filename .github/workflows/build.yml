@@ -111,31 +111,46 @@ jobs:
           echo "Android build template installed:"
           ls android/build/ | head -10
 
-      - name: Decode and inject upload keystore
+      - name: Decode keystore and verify
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
-          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: |
           if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::warning::ANDROID_UPLOAD_KEYSTORE_BASE64 not set — building UNSIGNED AAB (not uploadable to Play Console)"
+            echo "::warning::ANDROID_UPLOAD_KEYSTORE_BASE64 not set — UNSIGNED AAB (not uploadable to Play Console)"
             exit 0
           fi
           echo "$KEYSTORE_BASE64" | base64 -d > "$HOME/upload.keystore"
-          # Inject keystore path + credentials into export_presets.cfg.
-          # Using | as sed delimiter so file paths with / don't need escaping.
-          # NOTE: passwords with literal | will break this — keep keystore passwords
-          # alphanumeric + safe symbols.
-          sed -i "s|keystore/release=\"\"|keystore/release=\"$HOME/upload.keystore\"|" export_presets.cfg
-          sed -i "s|keystore/release_user=\"\"|keystore/release_user=\"$KEY_ALIAS\"|" export_presets.cfg
-          sed -i "s|keystore/release_password=\"\"|keystore/release_password=\"$KEY_PASSWORD\"|" export_presets.cfg
-          sed -i "s|package/signed=false|package/signed=true|" export_presets.cfg
-          echo "Keystore wired for release signing."
+          if [ ! -s "$HOME/upload.keystore" ]; then
+            echo "::error::Keystore file empty after base64 decode"
+            exit 1
+          fi
+          echo "Keystore decoded — size: $(stat -c %s "$HOME/upload.keystore") bytes"
+          # Verify keystore is readable with the supplied password
+          keytool -list -keystore "$HOME/upload.keystore" -storepass "$KEY_PASSWORD" 2>&1 | head -5
+          # Expose path to subsequent steps via $GITHUB_ENV (canonical pattern).
+          # Godot 4.4+ reads GODOT_ANDROID_KEYSTORE_RELEASE_PATH at export time and
+          # auto-enables release signing — no sed-injection of export_presets.cfg needed.
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$HOME/upload.keystore" >> "$GITHUB_ENV"
+          echo "Keystore verified — Godot env vars set for export step."
 
       - name: Export Android AAB
+        env:
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: |
           mkdir -p build
-          /opt/godot/godot --headless --path . --export-release "Android" build/shabd.aab
+          # Echo (sanitized) state so failures have diagnostic context.
+          echo "=== Pre-export state ==="
+          echo "Keystore env path: ${GODOT_ANDROID_KEYSTORE_RELEASE_PATH:-<unset>}"
+          echo "Keystore alias: ${GODOT_ANDROID_KEYSTORE_RELEASE_USER:-<unset>}"
+          echo "Keystore password: $([ -n "$GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD" ] && echo '<set>' || echo '<unset>')"
+          echo "android/build/ contents:"
+          ls android/build/ 2>&1 | head -10
+          echo "Export preset (keystore + signing fields):"
+          grep -E '^(keystore|package/signed|launcher_icons|version|package/(unique|name))' export_presets.cfg
+          echo "=== Running export ==="
+          /opt/godot/godot --headless --verbose --path . --export-release "Android" build/shabd.aab 2>&1 | tail -100
 
       - name: Upload AAB artifact
         if: hashFiles('build/shabd.aab') != ''
