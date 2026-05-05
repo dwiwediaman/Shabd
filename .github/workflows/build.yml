@@ -78,26 +78,59 @@ jobs:
 
       - name: Verify project loads (headless import)
         run: |
-          /opt/godot/godot --headless --path . --quit --import 2>&1 | tail -50 || true
+          /opt/godot/godot --headless --path . --import 2>&1 | tail -50 || true
+          # Second pass — Godot's import system can defer work to a second run.
+          /opt/godot/godot --headless --path . --import 2>&1 | tail -20 || true
 
-      - name: Run unit tests (GUT, if configured)
+      - name: Run unit tests
         run: |
-          if [ -d test ]; then
-            /opt/godot/godot --headless --path . -s addons/gut/gut_cmdln.gd \
-              -gdir=res://test -gexit
+          if [ -f test/test_runner.gd ]; then
+            /opt/godot/godot --headless --path . --script res://test/test_runner.gd
           else
-            echo "No test/ directory yet; skipping GUT."
+            echo "No test runner; skipping."
           fi
+
+      - name: Install Android build template
+        run: |
+          # Godot's gradle-build mode requires the template extracted into android/build/.
+          # Normally done via Editor → Project → Install Android Build Template; in CI
+          # we extract android_source.zip from the templates package directly.
+          mkdir -p android/build
+          TEMPLATE_ZIP="/opt/godot-templates/templates/android_source.zip"
+          if [ ! -f "$TEMPLATE_ZIP" ]; then
+            echo "::error::android_source.zip not found at $TEMPLATE_ZIP"
+            ls -la /opt/godot-templates/templates/ | head -20
+            exit 1
+          fi
+          unzip -oq "$TEMPLATE_ZIP" -d android/build/
+          echo "Android build template installed:"
+          ls android/build/ | head -10
+
+      - name: Decode and inject upload keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::ANDROID_UPLOAD_KEYSTORE_BASE64 not set — building UNSIGNED AAB (not uploadable to Play Console)"
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$HOME/upload.keystore"
+          # Inject keystore path + credentials into export_presets.cfg.
+          # Using | as sed delimiter so file paths with / don't need escaping.
+          # NOTE: passwords with literal | will break this — keep keystore passwords
+          # alphanumeric + safe symbols.
+          sed -i "s|keystore/release=\"\"|keystore/release=\"$HOME/upload.keystore\"|" export_presets.cfg
+          sed -i "s|keystore/release_user=\"\"|keystore/release_user=\"$KEY_ALIAS\"|" export_presets.cfg
+          sed -i "s|keystore/release_password=\"\"|keystore/release_password=\"$KEY_PASSWORD\"|" export_presets.cfg
+          sed -i "s|package/signed=false|package/signed=true|" export_presets.cfg
+          echo "Keystore wired for release signing."
 
       - name: Export Android AAB
         run: |
           mkdir -p build
-          if [ -f export_presets.cfg ]; then
-            /opt/godot/godot --headless --path . --export-release "Android" build/shabd.aab
-          else
-            echo "::warning::export_presets.cfg not yet configured; skipping AAB build."
-            echo "Create it via Godot Editor → Project → Export → Add Android preset."
-          fi
+          /opt/godot/godot --headless --path . --export-release "Android" build/shabd.aab
 
       - name: Upload AAB artifact
         if: hashFiles('build/shabd.aab') != ''
