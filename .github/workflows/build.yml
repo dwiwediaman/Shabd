@@ -122,9 +122,15 @@ jobs:
           # Content is GODOT_VERSION_FULL_CONFIG, identical to `godot --version`
           # output. .tpz includes NEITHER file — we recreate both here.
           touch android/build/.gdignore
+          # GODOT_VERSION_FULL_CONFIG = NUMBER.STATUS[MODULE_CONFIG], NOT the
+          # full --version output (which adds .official.<hash> as BUILD.HASH).
+          # Strip from ".official" onward to get the canonical config string
+          # (e.g. "4.5.stable.official.876b29033" → "4.5.stable").
           GODOT_VERSION_STR=$(/opt/godot/godot --version | head -1 | tr -d '\n\r')
-          printf '%s\n' "$GODOT_VERSION_STR" > android/.build_version
+          GODOT_VERSION_CONFIG=$(printf '%s' "$GODOT_VERSION_STR" | sed -E 's/\.official.*$//')
+          printf '%s\n' "$GODOT_VERSION_CONFIG" > android/.build_version
           echo "android/.build_version content: $(cat android/.build_version)"
+          echo "  (raw godot --version: $GODOT_VERSION_STR)"
           echo "Android build template installed:"
           ls -la android/build/ | head -15
           ls -la android/.build_version
