@@ -25,7 +25,7 @@ Already partially done. Verify the following secrets exist at https://github.com
 
 ### 1.2 Privacy policy hosting
 
-The privacy policy at `docs/privacy-policy.md` needs to live at a public URL. We use GitHub Pages:
+The privacy policy at `docs/privacy.md` needs to live at a public URL. We use GitHub Pages:
 
 ```bash
 # In the Shabd repo settings → Pages:
@@ -34,7 +34,7 @@ The privacy policy at `docs/privacy-policy.md` needs to live at a public URL. We
 # - Click Save
 
 # Then access at:
-#   https://dwiwediaman.github.io/Shabd/privacy-policy.html
+#   https://dwiwediaman.github.io/Shabd/privacy.html
 # (GitHub Pages renders MD as HTML automatically)
 ```
 

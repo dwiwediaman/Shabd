@@ -14,7 +14,7 @@ Daily word puzzle for Android Play Store. Hindi (Devanagari + Hinglish) + Englis
 | Word DB curation | 16,000 entries. Hindi 4-akshara (Wikipedia-sourced, filtered). English 5-letter (ENABLE2). |
 | Localization | Bilingual strings.csv (en + hi), 30+ keys |
 | Game logic | All autoloads, mechanics, components, scenes written. Compiles via standard Godot 4.5 GDScript syntax. |
-| Privacy policy | Ready at `docs/privacy-policy.md`; needs GitHub Pages enable + Play Console URL update |
+| Privacy policy | Ready at `docs/privacy.md`; needs GitHub Pages enable + Play Console URL update |
 | Play Console copy | Ready at `docs/play-console-listing.md`. Title, descriptions (en + hi), Data Safety form answers, content rating answers |
 | Release runbook | Ready at `docs/release-runbook.md`. 5-step user-must-do list. |
 | CI pipeline | `.github/workflows/build.yml` (Godot AAB) + `test.yml` (Firebase Test Lab Robo) |
@@ -111,7 +111,7 @@ shabd/
 │   └── test_seed_engine.gd        5 invariants for the daily-seed engine
 ├── docs/
 │   ├── cloud-dev-setup.md         Codespaces walkthrough
-│   ├── privacy-policy.md          For GitHub Pages + Play Console URL
+│   ├── privacy.md                 For GitHub Pages + Play Console URL (served at /privacy.html)
 │   ├── play-console-listing.md    Title, descriptions, Data Safety, ratings
 │   └── release-runbook.md         5-step user-must-do list
 ├── research/                      Phase 0 artifacts (closed sub-phases)
