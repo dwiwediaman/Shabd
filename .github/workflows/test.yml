@@ -42,13 +42,14 @@ jobs:
 
       - name: Run Firebase Test Lab Robo test
         run: |
+          # --use-orchestrator is incompatible with --type robo (it's only for
+          # instrumentation tests). Robo doesn't need orchestrator anyway.
           gcloud firebase test android run \
             --type robo \
             --app build/shabd.aab \
             --device model=redfin,version=30,locale=en,orientation=portrait \
             --device model=oriole,version=33,locale=hi,orientation=portrait \
             --timeout 4m \
-            --use-orchestrator \
             --no-record-video \
             --no-performance-metrics
         # Free Spark tier: 5 physical + 10 virtual device tests/day.
