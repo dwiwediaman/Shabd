@@ -59,3 +59,9 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/canvas_textures/default_texture_filter=0
 environment/defaults/default_clear_color=Color(0.97, 0.96, 0.94, 1)
+; Required for Android exports from a desktop CI runner: without this,
+; ResourceImporterTextureSettings::should_import_etc2_astc() returns false
+; (host preferred format is S3TC_BPTC, not ETC2_ASTC), which makes
+; has_valid_project_configuration() set valid=false WITHOUT pushing any
+; error string — the silent-validation-failure symptom in editor_node.cpp:1259.
+textures/vram_compression/import_etc2_astc=true
