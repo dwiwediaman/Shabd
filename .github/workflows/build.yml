@@ -176,12 +176,20 @@ jobs:
         env:
           GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
           GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          # Per Godot 4.5 source (export_plugin.cpp:2861), --export-debug ALWAYS
+          # runs the debug-keystore check and fails silently if no debug keystore
+          # is configured. We don't ship a separate debug keystore — reuse the
+          # release upload keystore so the bisect probe can actually run.
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /home/runner/upload.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: |
           set -o pipefail
           mkdir -p build
-          # Debug export skips keystore validation. If this passes but release
-          # below fails, the bug is in signing config. If this also fails,
-          # the bug is in template/manifest/project validation (see DIAG above).
+          # Debug export skips RELEASE keystore validation but still requires
+          # a debug keystore (env vars above). If this passes but release
+          # below fails, the bug is in release-keystore config. If this also
+          # fails, the bug is in template/manifest/project validation.
           /opt/godot/godot --headless --verbose --path . \
             --export-debug "Android" build/shabd-debug.apk 2>&1 \
             | tee /tmp/godot-debug-export.log | tail -100 || true

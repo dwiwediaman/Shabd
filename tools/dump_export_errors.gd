@@ -122,6 +122,18 @@ func _check_icons() -> void:
 func _check_environment() -> void:
 	print("DIAG_ENV: JAVA_HOME=", OS.get_environment("JAVA_HOME"))
 	print("DIAG_ENV: ANDROID_HOME=", OS.get_environment("ANDROID_HOME"))
-	print("DIAG_ENV: KEYSTORE_PATH=", OS.get_environment("GODOT_ANDROID_KEYSTORE_RELEASE_PATH"))
+	var ks_path: String = OS.get_environment("GODOT_ANDROID_KEYSTORE_RELEASE_PATH")
+	print("DIAG_ENV: KEYSTORE_PATH=", ks_path)
 	print("DIAG_ENV: KEYSTORE_USER_set=", OS.has_environment("GODOT_ANDROID_KEYSTORE_RELEASE_USER"))
 	print("DIAG_ENV: KEYSTORE_PASSWORD_set=", OS.has_environment("GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD"))
+	# Critical: Godot's validator calls FileAccess::exists on the absolute
+	# keystore path. If FileAccess can't see /home/runner/* (sandboxing,
+	# permissions, weird path resolution), validation silently fails.
+	if ks_path != "":
+		print("DIAG_KS: FileAccess.file_exists(", ks_path, ")=", FileAccess.file_exists(ks_path))
+	# Also test apksigner reachability (validator checks this too).
+	var apksigner: String = OS.get_environment("ANDROID_HOME") + "/build-tools/34.0.0/apksigner"
+	print("DIAG_KS: apksigner_path=", apksigner, " exists=", FileAccess.file_exists(apksigner))
+	# Java bin/java
+	var java_bin: String = OS.get_environment("JAVA_HOME") + "/bin/java"
+	print("DIAG_KS: java_path=", java_bin, " exists=", FileAccess.file_exists(java_bin))
