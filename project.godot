@@ -16,6 +16,7 @@ config/version="1.0.0"
 
 [autoload]
 
+DesignTokens="*res://scripts/design_tokens.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 WordDB="*res://scripts/autoload/word_db.gd"
 SeedEngine="*res://scripts/autoload/seed_engine.gd"
@@ -29,14 +30,15 @@ window/size/viewport_width=1080
 window/size/viewport_height=1920
 window/handheld/orientation=1
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep_height"
+window/stretch/aspect="keep_width"
 
 [gui]
 
-; Custom font is set in code or per-control after first Godot Editor open.
-; Noto Sans Devanagari should be added at res://assets/fonts/NotoSansDevanagari-Regular.ttf
-; (download from Google Fonts: https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari)
-; System fallback handles Devanagari rendering on Android even without a bundled font.
+theme/custom="res://assets/themes/theme.tres"
+
+; Bundled fonts: Inter (Latin) + NotoSansDevanagari (Hindi) live at
+; res://assets/fonts/. Default font is Inter via theme.tres.
+; Devanagari labels use Label_DEVA / Tile_Deva / KeyboardKeyDeva variations.
 
 [input]
 
@@ -57,7 +59,7 @@ locale/fallback="en"
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/canvas_textures/default_texture_filter=0
+textures/canvas_textures/default_texture_filter=1
 environment/defaults/default_clear_color=Color(0.97, 0.96, 0.94, 1)
 ; Required for Android exports from a desktop CI runner: without this,
 ; ResourceImporterTextureSettings::should_import_etc2_astc() returns false

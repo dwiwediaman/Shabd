@@ -44,31 +44,37 @@ func _build_keys() -> void:
 	for child in key_rows.get_children():
 		child.queue_free()
 
+	key_rows.add_theme_constant_override("separation", DesignTokens.KEY_GAP_V)
 	for letters in [ROW_1, ROW_2, ROW_3, ROW_4]:
 		var row: HBoxContainer = HBoxContainer.new()
 		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", DesignTokens.KEY_GAP_H)
 		key_rows.add_child(row)
 		for letter in letters:
 			var btn: Button = Button.new()
 			btn.text = letter
-			btn.custom_minimum_size = Vector2(56, 64)
+			btn.theme_type_variation = &"KeyboardKeyDeva"
+			btn.custom_minimum_size = Vector2(DesignTokens.KEY_W, DesignTokens.KEY_H)
 			btn.pressed.connect(func(): key_pressed.emit(letter))
 			row.add_child(btn)
 
 	# Control row
 	var controls: HBoxContainer = HBoxContainer.new()
 	controls.alignment = BoxContainer.ALIGNMENT_CENTER
+	controls.add_theme_constant_override("separation", DesignTokens.KEY_GAP_H)
 	key_rows.add_child(controls)
 
 	var bs: Button = Button.new()
 	bs.text = "⌫"
-	bs.custom_minimum_size = Vector2(96, 64)
+	bs.theme_type_variation = &"KeyboardKey"
+	bs.custom_minimum_size = Vector2(DesignTokens.KEY_W_BACKSPACE, DesignTokens.KEY_H)
 	bs.pressed.connect(func(): backspace_pressed.emit())
 	controls.add_child(bs)
 
 	var enter: Button = Button.new()
 	enter.text = "ENTER"
-	enter.custom_minimum_size = Vector2(120, 64)
+	enter.theme_type_variation = &"KeyboardEnter"
+	enter.custom_minimum_size = Vector2(DesignTokens.KEY_W_ENTER, DesignTokens.KEY_H)
 	enter.pressed.connect(func(): submit_pressed.emit())
 	controls.add_child(enter)
 

@@ -18,15 +18,16 @@ offset_top = 80.0
 offset_right = -40.0
 offset_bottom = -80.0
 alignment = 1
+theme_override_constants/separation = 24
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 text = "Stats"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 48
+theme_type_variation = &"Label_H1"
 
 [node name="Spacer1" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
 [node name="StreakLabelHi" type="Label" parent="VBoxContainer"]
@@ -34,17 +35,17 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Hindi  •  Current 0  •  Best 0"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 22
+theme_type_variation = &"Label_Body"
 
 [node name="WinRateLabelHi" type="Label" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Played 0  •  Won 0%"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 18
+theme_type_variation = &"Label_Caption"
 
 [node name="Spacer2" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
 [node name="StreakLabelEn" type="Label" parent="VBoxContainer"]
@@ -52,21 +53,22 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "English  •  Current 0  •  Best 0"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 22
+theme_type_variation = &"Label_Body"
 
 [node name="WinRateLabelEn" type="Label" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Played 0  •  Won 0%"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 18
+theme_type_variation = &"Label_Caption"
 
 [node name="Spacer3" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(560, 80)
 layout_mode = 2
+size_flags_horizontal = 4
 text = "Back"

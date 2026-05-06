@@ -1,0 +1,311 @@
+[gd_resource type="Theme" load_steps=22 format=3]
+
+[ext_resource type="FontFile" uid="uid://btheme1" path="res://assets/fonts/Inter-Variable.ttf" id="1_inter"]
+[ext_resource type="FontFile" uid="uid://btheme2" path="res://assets/fonts/NotoSansDevanagari-Variable.ttf" id="2_noto_deva"]
+
+; ── Button styles ─────────────────────────────────────────────────────────
+
+[sub_resource type="StyleBoxFlat" id="ButtonPrimary_normal"]
+bg_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ButtonPrimary_pressed"]
+bg_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ButtonPrimary_disabled"]
+bg_color = Color(0.831, 0.831, 0.831, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ButtonPrimary_focus"]
+bg_color = Color(0.102, 0.102, 0.102, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.290, 0.545, 0.278, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+
+[sub_resource type="StyleBoxFlat" id="Button_normal"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="Button_pressed"]
+bg_color = Color(0.929, 0.922, 0.902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="Button_disabled"]
+bg_color = Color(0.929, 0.922, 0.902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="Button_focus"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.290, 0.545, 0.278, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+; ── ButtonTertiary (icon-only header) ──
+
+[sub_resource type="StyleBoxFlat" id="ButtonTertiary_normal"]
+bg_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="ButtonTertiary_pressed"]
+bg_color = Color(0.929, 0.922, 0.902, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+; ── Keyboard key styles ──
+
+[sub_resource type="StyleBoxFlat" id="KeyboardKey_normal"]
+bg_color = Color(0.831, 0.831, 0.831, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="KeyboardKey_pressed"]
+bg_color = Color(0.627, 0.627, 0.627, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="KeyboardEnter_normal"]
+bg_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="KeyboardEnter_pressed"]
+bg_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+; ── Settings section panel (subtle separator block) ──
+
+[sub_resource type="StyleBoxFlat" id="SectionPanel_normal"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="LanguageButton_normal"]
+bg_color = Color(0.929, 0.922, 0.902, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_size = 8
+shadow_offset = Vector2(0, 2)
+shadow_color = Color(0, 0, 0, 0.125)
+
+[sub_resource type="StyleBoxFlat" id="LanguageButton_pressed"]
+bg_color = Color(0.831, 0.831, 0.831, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_size = 4
+shadow_offset = Vector2(0, 1)
+shadow_color = Color(0, 0, 0, 0.125)
+
+[sub_resource type="StyleBoxFlat" id="Separator_h"]
+bg_color = Color(0.929, 0.922, 0.902, 1)
+content_margin_top = 0
+content_margin_bottom = 0
+
+[resource]
+default_font = ExtResource("1_inter")
+default_font_size = 22
+default_base_scale = 1.0
+
+; ── Tile palette (read by tile_grid.gd via theme.get_color(name, "Tile")) ──
+Tile/colors/tile_empty = Color(1, 1, 1, 1)
+Tile/colors/tile_active = Color(1, 1, 1, 1)
+Tile/colors/tile_correct = Color(0.290, 0.545, 0.278, 1)
+Tile/colors/tile_present = Color(0.769, 0.659, 0.247, 1)
+Tile/colors/tile_absent = Color(0.471, 0.486, 0.494, 1)
+Tile/colors/tile_border_empty = Color(0.831, 0.831, 0.831, 1)
+Tile/colors/tile_border_active = Color(0.102, 0.102, 0.102, 1)
+Tile/colors/text_on_tile = Color(0.102, 0.102, 0.102, 1)
+Tile/colors/text_on_filled_tile = Color(1, 1, 1, 1)
+
+; ── Default Label color ──
+Label/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+
+; ── Label type variations ──
+Label_Display/base_type = &"Label"
+Label_Display/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+Label_Display/font_sizes/font_size = 96
+
+Label_H1/base_type = &"Label"
+Label_H1/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+Label_H1/font_sizes/font_size = 48
+
+Label_H2/base_type = &"Label"
+Label_H2/colors/font_color = Color(0.290, 0.290, 0.290, 1)
+Label_H2/font_sizes/font_size = 28
+
+Label_Body/base_type = &"Label"
+Label_Body/colors/font_color = Color(0.290, 0.290, 0.290, 1)
+Label_Body/font_sizes/font_size = 22
+
+Label_Caption/base_type = &"Label"
+Label_Caption/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+Label_Caption/font_sizes/font_size = 18
+
+Label_BigStat/base_type = &"Label"
+Label_BigStat/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+Label_BigStat/font_sizes/font_size = 32
+
+Label_DEVA/base_type = &"Label"
+Label_DEVA/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+Label_DEVA/font_sizes/font_size = 24
+Label_DEVA/fonts/font = ExtResource("2_noto_deva")
+
+; ── Default Button — secondary visual style ──
+Button/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+Button/colors/font_pressed_color = Color(0.102, 0.102, 0.102, 1)
+Button/colors/font_focus_color = Color(0.102, 0.102, 0.102, 1)
+Button/colors/font_disabled_color = Color(0.541, 0.541, 0.541, 1)
+Button/font_sizes/font_size = 24
+Button/styles/normal = SubResource("Button_normal")
+Button/styles/pressed = SubResource("Button_pressed")
+Button/styles/hover = SubResource("Button_normal")
+Button/styles/disabled = SubResource("Button_disabled")
+Button/styles/focus = SubResource("Button_focus")
+
+; ── ButtonPrimary variation — primary CTA ──
+ButtonPrimary/base_type = &"Button"
+ButtonPrimary/colors/font_color = Color(1, 1, 1, 1)
+ButtonPrimary/colors/font_pressed_color = Color(1, 1, 1, 1)
+ButtonPrimary/colors/font_focus_color = Color(1, 1, 1, 1)
+ButtonPrimary/colors/font_disabled_color = Color(0.541, 0.541, 0.541, 1)
+ButtonPrimary/font_sizes/font_size = 28
+ButtonPrimary/styles/normal = SubResource("ButtonPrimary_normal")
+ButtonPrimary/styles/pressed = SubResource("ButtonPrimary_pressed")
+ButtonPrimary/styles/hover = SubResource("ButtonPrimary_normal")
+ButtonPrimary/styles/disabled = SubResource("ButtonPrimary_disabled")
+ButtonPrimary/styles/focus = SubResource("ButtonPrimary_focus")
+
+; ── ButtonTertiary variation — icon-only header ──
+ButtonTertiary/base_type = &"Button"
+ButtonTertiary/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+ButtonTertiary/colors/font_pressed_color = Color(0.102, 0.102, 0.102, 1)
+ButtonTertiary/font_sizes/font_size = 28
+ButtonTertiary/styles/normal = SubResource("ButtonTertiary_normal")
+ButtonTertiary/styles/pressed = SubResource("ButtonTertiary_pressed")
+ButtonTertiary/styles/hover = SubResource("ButtonTertiary_normal")
+ButtonTertiary/styles/focus = SubResource("ButtonTertiary_normal")
+
+; ── LanguageButton variation — floating top-right pill ──
+LanguageButton/base_type = &"Button"
+LanguageButton/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+LanguageButton/font_sizes/font_size = 22
+LanguageButton/styles/normal = SubResource("LanguageButton_normal")
+LanguageButton/styles/pressed = SubResource("LanguageButton_pressed")
+LanguageButton/styles/hover = SubResource("LanguageButton_normal")
+LanguageButton/styles/focus = SubResource("LanguageButton_normal")
+
+; ── KeyboardKey variation — letter keys ──
+KeyboardKey/base_type = &"Button"
+KeyboardKey/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+KeyboardKey/colors/font_pressed_color = Color(0.102, 0.102, 0.102, 1)
+KeyboardKey/font_sizes/font_size = 20
+KeyboardKey/styles/normal = SubResource("KeyboardKey_normal")
+KeyboardKey/styles/pressed = SubResource("KeyboardKey_pressed")
+KeyboardKey/styles/hover = SubResource("KeyboardKey_normal")
+KeyboardKey/styles/focus = SubResource("KeyboardKey_normal")
+
+; ── KeyboardEnter variation — Enter key (dark fill) ──
+KeyboardEnter/base_type = &"Button"
+KeyboardEnter/colors/font_color = Color(1, 1, 1, 1)
+KeyboardEnter/colors/font_pressed_color = Color(1, 1, 1, 1)
+KeyboardEnter/font_sizes/font_size = 20
+KeyboardEnter/styles/normal = SubResource("KeyboardEnter_normal")
+KeyboardEnter/styles/pressed = SubResource("KeyboardEnter_pressed")
+KeyboardEnter/styles/hover = SubResource("KeyboardEnter_normal")
+KeyboardEnter/styles/focus = SubResource("KeyboardEnter_normal")
+
+; ── KeyboardKeyDeva — Devanagari letter key (uses Noto font) ──
+KeyboardKeyDeva/base_type = &"Button"
+KeyboardKeyDeva/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+KeyboardKeyDeva/colors/font_pressed_color = Color(0.102, 0.102, 0.102, 1)
+KeyboardKeyDeva/font_sizes/font_size = 22
+KeyboardKeyDeva/fonts/font = ExtResource("2_noto_deva")
+KeyboardKeyDeva/styles/normal = SubResource("KeyboardKey_normal")
+KeyboardKeyDeva/styles/pressed = SubResource("KeyboardKey_pressed")
+KeyboardKeyDeva/styles/hover = SubResource("KeyboardKey_normal")
+KeyboardKeyDeva/styles/focus = SubResource("KeyboardKey_normal")
+
+; ── Tile_Latin / Tile_Deva — for the actual tile letter Label ──
+Tile_Latin/base_type = &"Label"
+Tile_Latin/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+Tile_Latin/font_sizes/font_size = 36
+
+Tile_Deva/base_type = &"Label"
+Tile_Deva/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+Tile_Deva/font_sizes/font_size = 40
+Tile_Deva/fonts/font = ExtResource("2_noto_deva")
+
+; ── HSeparator subtle ──
+HSeparator/styles/separator = SubResource("Separator_h")
+
+; ── PanelContainer (used for section grouping in Settings) ──
+PanelContainer/styles/panel = SubResource("SectionPanel_normal")
