@@ -14,10 +14,13 @@ func _run() -> void:
 	if not Engine.has_singleton("EditorExport"):
 		push_error("EditorExport singleton missing - script must run with --editor flag.")
 		return
-	var ee := Engine.get_singleton("EditorExport")
+	# Engine.get_singleton() returns Object — methods on it are untyped, so
+	# we cannot use `:=` inference on subsequent calls. Use plain `var` /
+	# explicit type annotations.
+	var ee: Object = Engine.get_singleton("EditorExport")
 	var preset: EditorExportPreset = null
 	for i in ee.get_export_preset_count():
-		var p := ee.get_export_preset(i)
+		var p = ee.get_export_preset(i)
 		if p.get_name() == preset_name:
 			preset = p
 			break
@@ -25,13 +28,13 @@ func _run() -> void:
 		push_error("DIAG: preset not found: " + preset_name)
 		return
 
-	var platform := preset.get_platform()
+	var platform: EditorExportPlatform = preset.get_platform()
 	print("DIAG: preset=", preset_name, " platform=", platform.get_class())
 
 	var cfg_errors: Array[String] = []
 	var proj_errors: Array[String] = []
-	var ok_cfg := platform.has_valid_export_configuration(preset, cfg_errors)
-	var ok_proj := platform.has_valid_project_configuration(preset, proj_errors)
+	var ok_cfg: bool = platform.has_valid_export_configuration(preset, cfg_errors)
+	var ok_proj: bool = platform.has_valid_project_configuration(preset, proj_errors)
 
 	print("DIAG: has_valid_export_configuration=", ok_cfg, " errors=", cfg_errors.size())
 	for e in cfg_errors:
