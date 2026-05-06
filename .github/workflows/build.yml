@@ -113,8 +113,13 @@ jobs:
             exit 1
           fi
           unzip -oq "$TEMPLATE_ZIP" -d android/build/
+          # Critical: Godot's "Install Android Build Template" command in the
+          # editor does NOT just unzip — it also creates an empty .gdignore
+          # marker file. Without it, has_valid_export_configuration() returns
+          # false silently (no specific error message pushed to error array).
+          touch android/build/.gdignore
           echo "Android build template installed:"
-          ls android/build/ | head -10
+          ls -la android/build/ | head -15
 
       - name: Decode keystore and verify
         env:
