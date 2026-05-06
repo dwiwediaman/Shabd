@@ -113,23 +113,21 @@ jobs:
             exit 1
           fi
           unzip -oq "$TEMPLATE_ZIP" -d android/build/
-          # Godot's "Install Android Build Template" editor command does
-          # MORE than unzip — it also writes:
-          #   - .gdignore (empty marker)
-          #   - version.txt (the engine version string, used by the
-          #     validator's stale-template check)
-          # The .tpz package does NOT include either, so we have to write
-          # them ourselves to match the editor's behavior.
+          # Godot's "Install Android Build Template" editor command writes
+          # TWO marker files alongside the unzip:
+          #   - res://android/build/.gdignore (empty marker)
+          #   - res://android/.build_version  (PARENT dir, not build dir)
+          # The second file is the template identifier that the export step
+          # checks (export_plugin.cpp:3585 — "no version info" silent error).
+          # Content is GODOT_VERSION_FULL_CONFIG, identical to `godot --version`
+          # output. .tpz includes NEITHER file — we recreate both here.
           touch android/build/.gdignore
-          /opt/godot/godot --version > android/build/.godot_version_raw
-          # godot --version prints the full version line e.g.
-          # "4.5.stable.official.876b29033" — that's exactly what version.txt
-          # must contain (per editor/export/editor_export_platform.cpp).
-          tr -d '\n' < android/build/.godot_version_raw > android/build/version.txt
-          rm android/build/.godot_version_raw
-          echo "version.txt content: $(cat android/build/version.txt)"
+          GODOT_VERSION_STR=$(/opt/godot/godot --version | head -1 | tr -d '\n\r')
+          printf '%s\n' "$GODOT_VERSION_STR" > android/.build_version
+          echo "android/.build_version content: $(cat android/.build_version)"
           echo "Android build template installed:"
           ls -la android/build/ | head -15
+          ls -la android/.build_version
 
       - name: Decode keystore and verify
         env:
