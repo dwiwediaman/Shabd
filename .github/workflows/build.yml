@@ -150,10 +150,11 @@ jobs:
           GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: |
           set -o pipefail
-          # --editor (not just --headless) is mandatory: EditorExport singleton
-          # is only registered when EditorNode boots. --quit-after bounds startup.
-          /opt/godot/godot --headless --editor --quit-after 2 \
-            --path . --script res://tools/dump_export_errors.gd 2>&1 \
+          # The diag script extends SceneTree (not EditorScript) so `--script`
+          # auto-runs its _init(). No --editor / --quit-after needed; the
+          # script self-quits via quit().
+          /opt/godot/godot --headless --path . \
+            --script res://tools/dump_export_errors.gd 2>&1 \
             | tee /tmp/godot-diag.log || true
           echo "----- DIAG SUMMARY -----"
           grep -E '^DIAG' /tmp/godot-diag.log || echo "(no DIAG lines — script did not run)"
