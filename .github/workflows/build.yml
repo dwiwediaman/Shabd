@@ -144,6 +144,42 @@ jobs:
           echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$HOME/upload.keystore" >> "$GITHUB_ENV"
           echo "Keystore verified — Godot env vars set for export step."
 
+      - name: Diagnose export configuration (dump validation errors)
+        env:
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          set -o pipefail
+          # --editor (not just --headless) is mandatory: EditorExport singleton
+          # is only registered when EditorNode boots. --quit-after bounds startup.
+          /opt/godot/godot --headless --editor --quit-after 2 \
+            --path . --script res://tools/dump_export_errors.gd 2>&1 \
+            | tee /tmp/godot-diag.log || true
+          echo "----- DIAG SUMMARY -----"
+          grep -E '^DIAG' /tmp/godot-diag.log || echo "(no DIAG lines — script did not run)"
+          echo "------------------------"
+          # Non-fatal: we want the diag output even if validation fails;
+          # the actual export step below still gates the job.
+
+      - name: Probe with --export-debug (signing-free bisect)
+        env:
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          set -o pipefail
+          mkdir -p build
+          # Debug export skips keystore validation. If this passes but release
+          # below fails, the bug is in signing config. If this also fails,
+          # the bug is in template/manifest/project validation (see DIAG above).
+          /opt/godot/godot --headless --verbose --path . \
+            --export-debug "Android" build/shabd-debug.apk 2>&1 \
+            | tee /tmp/godot-debug-export.log | tail -100 || true
+          if [ -f build/shabd-debug.apk ]; then
+            echo "::notice::Debug APK built — signing/keystore is the cause if release fails"
+          else
+            echo "::notice::Debug APK ALSO failed — bug is in template/manifest/project, see DIAG output"
+          fi
+
       - name: Export Android AAB
         env:
           GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
