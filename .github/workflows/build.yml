@@ -139,6 +139,7 @@ jobs:
           GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
           GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: |
+          set -o pipefail
           mkdir -p build
           # Echo (sanitized) state so failures have diagnostic context.
           echo "=== Pre-export state ==="
@@ -150,7 +151,23 @@ jobs:
           echo "Export preset (keystore + signing fields):"
           grep -E '^(keystore|package/signed|launcher_icons|version|package/(unique|name))' export_presets.cfg
           echo "=== Running export ==="
-          /opt/godot/godot --headless --verbose --path . --export-release "Android" build/shabd.aab 2>&1 | tail -100
+          # Save full log to file; tail to GHA console for readability.
+          # set -o pipefail ensures Godot's exit code propagates through the pipe.
+          /opt/godot/godot --headless --verbose --path . --export-release "Android" build/shabd.aab 2>&1 \
+            | tee /tmp/godot-export.log | tail -200
+          GODOT_EXIT=${PIPESTATUS[0]}
+          echo "=== Export complete: godot exit=$GODOT_EXIT ==="
+          if [ ! -f build/shabd.aab ]; then
+            echo "::error::AAB was not produced at build/shabd.aab — export silently failed"
+            echo "=== Full Godot log ==="
+            cat /tmp/godot-export.log
+            exit 1
+          fi
+          AAB_SIZE=$(stat -c %s build/shabd.aab)
+          echo "AAB built successfully: $AAB_SIZE bytes"
+          if [ "$GODOT_EXIT" -ne 0 ]; then
+            echo "::warning::Godot exited with $GODOT_EXIT but AAB was created"
+          fi
 
       - name: Upload AAB artifact
         if: hashFiles('build/shabd.aab') != ''
