@@ -28,8 +28,8 @@ const TILE_GAP: int = 8
 # matching native iOS/Android keyboards. Don't shrink without re-checking row fit.
 const KEY_W: int = 92
 const KEY_H: int = 88
-const KEY_W_BACKSPACE: int = 120
-const KEY_W_ENTER: int = 156
+const KEY_W_BACKSPACE: int = 138
+const KEY_W_ENTER: int = 138
 const KEY_GAP_H: int = 6
 const KEY_GAP_V: int = 10
 

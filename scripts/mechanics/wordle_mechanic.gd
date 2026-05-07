@@ -132,25 +132,19 @@ func _split_into_tiles(word: String, lang: String) -> Array[String]:
 
 
 func _split_aksharas(word: String) -> Array[String]:
-	# Godot 4.5: String.graphemes() returns extended grapheme clusters.
-	# This matches Unicode TR29 \X (verified in Phase 0.2).
-	# If on older Godot, fall back to a manual segmenter.
+	# Godot 4.5 Strings have no graphemes() / has_method (Object-only). Build
+	# clusters manually by attaching combining marks to the preceding base.
 	var out: Array[String] = []
-	if word.has_method("graphemes"):
-		# Defensive: dynamic dispatch in case Godot exposes graphemes()
-		out.assign(word.graphemes())
-	else:
-		# Fallback: build clusters by attaching combining marks to base
-		var current: String = ""
-		for codepoint in word:
-			if _is_combining_mark(codepoint):
-				current += codepoint
-			else:
-				if not current.is_empty():
-					out.append(current)
-				current = codepoint
-		if not current.is_empty():
-			out.append(current)
+	var current: String = ""
+	for codepoint in word:
+		if _is_combining_mark(codepoint):
+			current += codepoint
+		else:
+			if not current.is_empty():
+				out.append(current)
+			current = codepoint
+	if not current.is_empty():
+		out.append(current)
 	return out
 
 

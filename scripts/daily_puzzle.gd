@@ -44,6 +44,10 @@ func _ready() -> void:
 	if status_label:
 		status_label.text = "Shabd %s #%d" % [lang.to_upper(), _puzzle.puzzle_index]
 
+	# Build the empty tile grid for this puzzle's dimensions.
+	if tile_grid and tile_grid.has_method("configure"):
+		tile_grid.configure(_puzzle.tile_count, _puzzle.max_guesses)
+
 	# Wire UI
 	if back_button:
 		back_button.pressed.connect(_on_back)
@@ -186,12 +190,9 @@ func _split_tiles(word: String) -> Array[String]:
 		for ch in word:
 			out.append(ch.to_lower())
 		return out
-	# Hindi: extended grapheme clusters
-	if word.has_method("graphemes"):
-		var out: Array[String] = []
-		out.assign(word.graphemes())
-		return out
-	# Fallback: codepoint-by-codepoint with combining-mark attachment
+	# Hindi: codepoint-by-codepoint with combining-mark attachment.
+	# (Earlier code probed for a runtime String.graphemes() — that path was
+	# unreachable in Godot 4.5 and tripped a parse error in non-export tools.)
 	var out_fb: Array[String] = []
 	var current: String = ""
 	for codepoint in word:

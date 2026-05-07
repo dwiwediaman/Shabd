@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/settings.gd" id="1_settings"]
+[ext_resource type="ButtonGroup" path="res://scenes/settings_lang_group.tres" id="2_lang_group"]
+[ext_resource type="ButtonGroup" path="res://scenes/settings_kbd_group.tres" id="3_kbd_group"]
 
 [node name="Settings" type="Control"]
 layout_mode = 3
@@ -17,7 +19,7 @@ offset_left = 40.0
 offset_top = 80.0
 offset_right = -40.0
 offset_bottom = -80.0
-theme_override_constants/separation = 24
+theme_override_constants/separation = 16
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
@@ -25,52 +27,86 @@ text = "Settings"
 horizontal_alignment = 1
 theme_type_variation = &"Label_H1"
 
+[node name="Spacer1" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
 [node name="LangSection" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 text = "Language"
 theme_type_variation = &"Label_H2"
 
-[node name="LangHiButton" type="CheckBox" parent="VBoxContainer"]
+[node name="LangHiButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("2_lang_group")
 text = "हिंदी"
+theme_type_variation = &"ToggleButtonDeva"
 
-[node name="LangEnButton" type="CheckBox" parent="VBoxContainer"]
+[node name="LangEnButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("2_lang_group")
 text = "English"
+theme_type_variation = &"ToggleButton"
+
+[node name="Spacer2" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
 
 [node name="KbdSection" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 text = "Hindi keyboard"
 theme_type_variation = &"Label_H2"
 
-[node name="KeyboardDevanagariButton" type="CheckBox" parent="VBoxContainer"]
+[node name="KeyboardDevanagariButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("3_kbd_group")
 text = "Devanagari (देवनागरी)"
+theme_type_variation = &"ToggleButtonDeva"
 
-[node name="KeyboardHinglishButton" type="CheckBox" parent="VBoxContainer"]
+[node name="KeyboardHinglishButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("3_kbd_group")
 text = "Hinglish (Roman)"
+theme_type_variation = &"ToggleButton"
+
+[node name="Spacer3" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
 
 [node name="OtherSection" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 text = "Other"
 theme_type_variation = &"Label_H2"
 
-[node name="SoundToggle" type="CheckBox" parent="VBoxContainer"]
+[node name="SoundToggle" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+toggle_mode = true
 text = "Sound effects"
+theme_type_variation = &"ToggleButton"
 
-[node name="HapticsToggle" type="CheckBox" parent="VBoxContainer"]
+[node name="HapticsToggle" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+toggle_mode = true
 text = "Haptic feedback"
+theme_type_variation = &"ToggleButton"
 
-[node name="Spacer" type="Control" parent="VBoxContainer"]
+[node name="Spacer4" type="Control" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 

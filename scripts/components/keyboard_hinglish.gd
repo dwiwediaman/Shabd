@@ -37,7 +37,8 @@ func _build_keys() -> void:
 		child.queue_free()
 
 	key_rows.add_theme_constant_override("separation", DesignTokens.KEY_GAP_V)
-	for letters in [ROW_1, ROW_2, ROW_3]:
+	# Row 1 + Row 2 are letters only.
+	for letters in [ROW_1, ROW_2]:
 		var row: HBoxContainer = HBoxContainer.new()
 		row.alignment = BoxContainer.ALIGNMENT_CENTER
 		row.add_theme_constant_override("separation", DesignTokens.KEY_GAP_H)
@@ -50,25 +51,33 @@ func _build_keys() -> void:
 			btn.pressed.connect(func(): _on_roman_key(ch))
 			row.add_child(btn)
 
-	# Control row (backspace + enter)
-	var controls: HBoxContainer = HBoxContainer.new()
-	controls.alignment = BoxContainer.ALIGNMENT_CENTER
-	controls.add_theme_constant_override("separation", DesignTokens.KEY_GAP_H)
-	key_rows.add_child(controls)
-
-	var bs: Button = Button.new()
-	bs.text = "⌫"
-	bs.theme_type_variation = &"KeyboardKey"
-	bs.custom_minimum_size = Vector2(DesignTokens.KEY_W_BACKSPACE, DesignTokens.KEY_H)
-	bs.pressed.connect(func(): _on_backspace())
-	controls.add_child(bs)
+	# Row 3: ENTER + z..m + BACKSPACE (Wordle layout).
+	var row3: HBoxContainer = HBoxContainer.new()
+	row3.alignment = BoxContainer.ALIGNMENT_CENTER
+	row3.add_theme_constant_override("separation", DesignTokens.KEY_GAP_H)
+	key_rows.add_child(row3)
 
 	var enter: Button = Button.new()
 	enter.text = "ENTER"
 	enter.theme_type_variation = &"KeyboardEnter"
 	enter.custom_minimum_size = Vector2(DesignTokens.KEY_W_ENTER, DesignTokens.KEY_H)
 	enter.pressed.connect(func(): _on_submit())
-	controls.add_child(enter)
+	row3.add_child(enter)
+
+	for ch in ROW_3:
+		var btn: Button = Button.new()
+		btn.text = ch
+		btn.theme_type_variation = &"KeyboardKey"
+		btn.custom_minimum_size = Vector2(DesignTokens.KEY_W, DesignTokens.KEY_H)
+		btn.pressed.connect(func(): _on_roman_key(ch))
+		row3.add_child(btn)
+
+	var bs: Button = Button.new()
+	bs.text = "⌫"
+	bs.theme_type_variation = &"KeyboardKey"
+	bs.custom_minimum_size = Vector2(DesignTokens.KEY_W_BACKSPACE, DesignTokens.KEY_H)
+	bs.pressed.connect(func(): _on_backspace())
+	row3.add_child(bs)
 
 
 func _on_roman_key(ch: String) -> void:

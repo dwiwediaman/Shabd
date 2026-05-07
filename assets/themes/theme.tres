@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=22 format=3]
+[gd_resource type="Theme" load_steps=24 format=3]
 
 [ext_resource type="FontFile" uid="uid://btheme1" path="res://assets/fonts/Inter-Variable.ttf" id="1_inter"]
 [ext_resource type="FontFile" uid="uid://btheme2" path="res://assets/fonts/NotoSansDevanagari-Variable.ttf" id="2_noto_deva"]
@@ -165,6 +165,31 @@ shadow_size = 4
 shadow_offset = Vector2(0, 1)
 shadow_color = Color(0, 0, 0, 0.125)
 
+; ── ToggleButton (settings rows) ──
+
+[sub_resource type="StyleBoxFlat" id="ToggleButton_normal"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.831, 0.831, 0.831, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 24
+content_margin_right = 24
+
+[sub_resource type="StyleBoxFlat" id="ToggleButton_pressed"]
+bg_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 24
+content_margin_right = 24
+
 [sub_resource type="StyleBoxFlat" id="Separator_h"]
 bg_color = Color(0.929, 0.922, 0.902, 1)
 content_margin_top = 0
@@ -303,6 +328,34 @@ Tile_Deva/base_type = &"Label"
 Tile_Deva/colors/font_color = Color(0.102, 0.102, 0.102, 1)
 Tile_Deva/font_sizes/font_size = 40
 Tile_Deva/fonts/font = ExtResource("2_noto_deva")
+
+; ── ToggleButton variation — settings row toggles + radio groups ──
+; Use Button (not CheckBox) with toggle_mode = true. Pressed state = "on".
+ToggleButton/base_type = &"Button"
+ToggleButton/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+ToggleButton/colors/font_pressed_color = Color(1, 1, 1, 1)
+ToggleButton/colors/font_focus_color = Color(0.102, 0.102, 0.102, 1)
+ToggleButton/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+ToggleButton/font_sizes/font_size = 24
+ToggleButton/styles/normal = SubResource("ToggleButton_normal")
+ToggleButton/styles/pressed = SubResource("ToggleButton_pressed")
+ToggleButton/styles/hover = SubResource("ToggleButton_normal")
+ToggleButton/styles/hover_pressed = SubResource("ToggleButton_pressed")
+ToggleButton/styles/focus = SubResource("ToggleButton_normal")
+
+; ── ToggleButtonDeva variation — uses Noto for Devanagari labels ──
+ToggleButtonDeva/base_type = &"Button"
+ToggleButtonDeva/colors/font_color = Color(0.102, 0.102, 0.102, 1)
+ToggleButtonDeva/colors/font_pressed_color = Color(1, 1, 1, 1)
+ToggleButtonDeva/colors/font_focus_color = Color(0.102, 0.102, 0.102, 1)
+ToggleButtonDeva/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+ToggleButtonDeva/font_sizes/font_size = 26
+ToggleButtonDeva/fonts/font = ExtResource("2_noto_deva")
+ToggleButtonDeva/styles/normal = SubResource("ToggleButton_normal")
+ToggleButtonDeva/styles/pressed = SubResource("ToggleButton_pressed")
+ToggleButtonDeva/styles/hover = SubResource("ToggleButton_normal")
+ToggleButtonDeva/styles/hover_pressed = SubResource("ToggleButton_pressed")
+ToggleButtonDeva/styles/focus = SubResource("ToggleButton_normal")
 
 ; ── HSeparator subtle ──
 HSeparator/styles/separator = SubResource("Separator_h")

@@ -40,6 +40,14 @@ func _start_new_game() -> void:
 
 	if status_label:
 		status_label.text = "Practice  •  %s" % lang.to_upper()
+
+	# Build the empty tile grid for this puzzle's dimensions.
+	if tile_grid and tile_grid.has_method("configure"):
+		tile_grid.configure(_puzzle.tile_count, _puzzle.max_guesses)
+	# Reset tile colors from any prior practice round.
+	if tile_grid and tile_grid.has_method("reset"):
+		tile_grid.reset()
+
 	if new_game_button:
 		new_game_button.visible = false
 

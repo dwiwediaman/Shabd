@@ -2,13 +2,12 @@ extends Control
 ## Settings — language toggle, keyboard mode (Devanagari vs Hinglish),
 ## sound, haptics, sign-in (manual trigger).
 
-@onready var lang_button_group: ButtonGroup = preload("res://scenes/settings_button_group.tres") if FileAccess.file_exists("res://scenes/settings_button_group.tres") else null
-@onready var lang_hi_button: CheckBox = %LangHiButton
-@onready var lang_en_button: CheckBox = %LangEnButton
-@onready var keyboard_devanagari_button: CheckBox = %KeyboardDevanagariButton
-@onready var keyboard_hinglish_button: CheckBox = %KeyboardHinglishButton
-@onready var sound_toggle: CheckBox = %SoundToggle
-@onready var haptics_toggle: CheckBox = %HapticsToggle
+@onready var lang_hi_button: Button = %LangHiButton
+@onready var lang_en_button: Button = %LangEnButton
+@onready var keyboard_devanagari_button: Button = %KeyboardDevanagariButton
+@onready var keyboard_hinglish_button: Button = %KeyboardHinglishButton
+@onready var sound_toggle: Button = %SoundToggle
+@onready var haptics_toggle: Button = %HapticsToggle
 @onready var signin_button: Button = %SigninButton
 @onready var back_button: Button = %BackButton
 
