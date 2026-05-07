@@ -62,6 +62,170 @@ text = "Played 0  •  Won 0%"
 horizontal_alignment = 1
 theme_type_variation = &"Label_Caption"
 
+[node name="DistSpacer" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="DistTitle" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Guess distribution"
+horizontal_alignment = 1
+theme_type_variation = &"Label_H2"
+
+[node name="DistSpacer2" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="DistRow1" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Number" type="Label" parent="VBoxContainer/DistRow1"]
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "1"
+theme_type_variation = &"Label_Body"
+
+[node name="Bar" type="ColorRect" parent="VBoxContainer/DistRow1"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+color = Color(0.290196, 0.545098, 0.278431, 1)
+
+[node name="Count" type="Label" parent="VBoxContainer/DistRow1"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "0"
+theme_type_variation = &"Label_Body"
+
+[node name="DistRow2" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Number" type="Label" parent="VBoxContainer/DistRow2"]
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "2"
+theme_type_variation = &"Label_Body"
+
+[node name="Bar" type="ColorRect" parent="VBoxContainer/DistRow2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+color = Color(0.290196, 0.545098, 0.278431, 1)
+
+[node name="Count" type="Label" parent="VBoxContainer/DistRow2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "0"
+theme_type_variation = &"Label_Body"
+
+[node name="DistRow3" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Number" type="Label" parent="VBoxContainer/DistRow3"]
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "3"
+theme_type_variation = &"Label_Body"
+
+[node name="Bar" type="ColorRect" parent="VBoxContainer/DistRow3"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+color = Color(0.290196, 0.545098, 0.278431, 1)
+
+[node name="Count" type="Label" parent="VBoxContainer/DistRow3"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "0"
+theme_type_variation = &"Label_Body"
+
+[node name="DistRow4" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Number" type="Label" parent="VBoxContainer/DistRow4"]
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "4"
+theme_type_variation = &"Label_Body"
+
+[node name="Bar" type="ColorRect" parent="VBoxContainer/DistRow4"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+color = Color(0.290196, 0.545098, 0.278431, 1)
+
+[node name="Count" type="Label" parent="VBoxContainer/DistRow4"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "0"
+theme_type_variation = &"Label_Body"
+
+[node name="DistRow5" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Number" type="Label" parent="VBoxContainer/DistRow5"]
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "5"
+theme_type_variation = &"Label_Body"
+
+[node name="Bar" type="ColorRect" parent="VBoxContainer/DistRow5"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+color = Color(0.290196, 0.545098, 0.278431, 1)
+
+[node name="Count" type="Label" parent="VBoxContainer/DistRow5"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "0"
+theme_type_variation = &"Label_Body"
+
+[node name="DistRow6" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Number" type="Label" parent="VBoxContainer/DistRow6"]
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "6"
+theme_type_variation = &"Label_Body"
+
+[node name="Bar" type="ColorRect" parent="VBoxContainer/DistRow6"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+color = Color(0.290196, 0.545098, 0.278431, 1)
+
+[node name="Count" type="Label" parent="VBoxContainer/DistRow6"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 32)
+layout_mode = 2
+text = "0"
+theme_type_variation = &"Label_Body"
+
 [node name="Spacer3" type="Control" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3

@@ -17,16 +17,21 @@ const XL: int = 40
 const XXL: int = 64
 
 # Tile grid sizing (consumed by scripts/components/tile_grid.gd).
-const TILE_SIZE: int = 64
+# 1080-wide viewport: 5 tiles × 96 + 4 × 8 = 512 (47% width util — feels right
+# next to a 974px keyboard). Bigger than Wordle web's ratio because mobile
+# wants more letter weight per tile.
+const TILE_SIZE: int = 96
 const TILE_GAP: int = 8
 
 # Keyboard key sizing (consumed by keyboard_hinglish.gd / keyboard_devanagari.gd).
-const KEY_W: int = 56
-const KEY_H: int = 80
-const KEY_W_BACKSPACE: int = 72
-const KEY_W_ENTER: int = 96
-const KEY_GAP_H: int = 4
-const KEY_GAP_V: int = 8
+# 1080-wide viewport: row 1 has 10 keys → 10×92 + 9×6 = 974 (90% width util),
+# matching native iOS/Android keyboards. Don't shrink without re-checking row fit.
+const KEY_W: int = 92
+const KEY_H: int = 88
+const KEY_W_BACKSPACE: int = 120
+const KEY_W_ENTER: int = 156
+const KEY_GAP_H: int = 6
+const KEY_GAP_V: int = 10
 
 # Touch targets — minimum hit area (per WCAG / Android material guidelines).
 const TOUCH_MIN: int = 44

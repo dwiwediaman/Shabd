@@ -14,16 +14,16 @@ script = ExtResource("1_daily")
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 16.0
-offset_top = 16.0
-offset_right = -16.0
-offset_bottom = 96.0
-theme_override_constants/separation = 8
+offset_left = 32.0
+offset_top = 32.0
+offset_right = -32.0
+offset_bottom = 144.0
+theme_override_constants/separation = 16
 
 [node name="BackButton" type="Button" parent="HeaderRow"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(80, 80)
+custom_minimum_size = Vector2(112, 112)
 text = "←"
 theme_type_variation = &"ButtonTertiary"
 
@@ -34,19 +34,19 @@ size_flags_horizontal = 3
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "Shabd"
-theme_type_variation = &"Label_H2"
+theme_type_variation = &"Label_H1"
 
 [node name="HintButton" type="Button" parent="HeaderRow"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(80, 80)
+custom_minimum_size = Vector2(112, 112)
 text = "?"
 theme_type_variation = &"ButtonTertiary"
 
 [node name="ShareButton" type="Button" parent="HeaderRow"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(80, 80)
+custom_minimum_size = Vector2(112, 112)
 text = "↗"
 theme_type_variation = &"ButtonTertiary"
 visible = false
@@ -59,11 +59,12 @@ anchor_left = 0.5
 anchor_top = 0.0
 anchor_right = 0.5
 anchor_bottom = 0.0
-offset_left = -250.0
-offset_top = 100.0
-offset_right = 250.0
-offset_bottom = 700.0
+offset_left = -300.0
+offset_top = 200.0
+offset_right = 300.0
+offset_bottom = 900.0
 alignment = 1
+theme_override_constants/separation = 8
 script = ExtResource("2_grid")
 
 [node name="Keyboard" type="Control" parent="."]
@@ -73,7 +74,8 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -440.0
+offset_top = -520.0
+offset_bottom = -32.0
 script = ExtResource("3_kbd")
 
 [node name="KeyRows" type="VBoxContainer" parent="Keyboard"]
@@ -81,7 +83,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 60.0
+offset_top = 80.0
 alignment = 1
 
 [node name="SuggestionStrip" type="HBoxContainer" parent="Keyboard"]
