@@ -5,4 +5,4 @@ extends Node
 ## Keep BUILD_CODE in sync with `version/code` in export_presets.cfg.
 ## Bumped each release; never re-uses a value (Play Console rule).
 
-const BUILD_CODE: int = 6
+const BUILD_CODE: int = 7
