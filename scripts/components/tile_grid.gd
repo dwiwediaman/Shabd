@@ -75,6 +75,8 @@ func _make_tile() -> Control:
 	var tile := Control.new()
 	tile.custom_minimum_size = Vector2(DesignTokens.TILE_SIZE, DesignTokens.TILE_SIZE)
 	tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Flip pivots from the centre of the tile.
+	tile.pivot_offset = Vector2(DesignTokens.TILE_SIZE / 2.0, DesignTokens.TILE_SIZE / 2.0)
 
 	# Background fill — drawn first.
 	var bg := ColorRect.new()
@@ -126,7 +128,19 @@ func commit_row(row_index: int, per_tile_states: Array[int], tile_strings: Array
 		var letter: Label = tile.get_node("Letter")
 		letter.text = tile_strings[c] if c < tile_strings.size() else ""
 		var state: int = per_tile_states[c] if c < per_tile_states.size() else 0
-		_apply_tile_color(tile, state)
+		_flip_tile(tile, state, c * 0.10)
+
+
+func _flip_tile(tile: Control, state: int, delay_s: float) -> void:
+	# Wordle-style reveal: scale Y to 0 → swap colour → scale back to 1.
+	# Stagger by tile index so the row reveals left-to-right.
+	tile.pivot_offset = tile.size / 2.0
+	var t := tile.create_tween()
+	if delay_s > 0.0:
+		t.tween_interval(delay_s)
+	t.tween_property(tile, "scale:y", 0.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	t.tween_callback(_apply_tile_color.bind(tile, state))
+	t.tween_property(tile, "scale:y", 1.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 
 func _apply_tile_color(tile: Control, state: int) -> void:

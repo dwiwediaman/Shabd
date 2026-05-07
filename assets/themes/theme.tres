@@ -6,18 +6,24 @@
 ; ── Button styles ─────────────────────────────────────────────────────────
 
 [sub_resource type="StyleBoxFlat" id="ButtonPrimary_normal"]
-bg_color = Color(0.102, 0.102, 0.102, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+bg_color = Color(0.388, 0.400, 0.945, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_size = 12
+shadow_offset = Vector2(0, 4)
+shadow_color = Color(0.388, 0.400, 0.945, 0.282)
 
 [sub_resource type="StyleBoxFlat" id="ButtonPrimary_pressed"]
-bg_color = Color(0.227, 0.227, 0.227, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+bg_color = Color(0.310, 0.275, 0.898, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_size = 6
+shadow_offset = Vector2(0, 2)
+shadow_color = Color(0.388, 0.400, 0.945, 0.196)
 
 [sub_resource type="StyleBoxFlat" id="ButtonPrimary_disabled"]
 bg_color = Color(0.831, 0.831, 0.831, 1)
@@ -27,12 +33,12 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="ButtonPrimary_focus"]
-bg_color = Color(0.102, 0.102, 0.102, 1)
+bg_color = Color(0.388, 0.400, 0.945, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.290, 0.545, 0.278, 1)
+border_color = Color(0.310, 0.275, 0.898, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -84,7 +90,7 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.290, 0.545, 0.278, 1)
+border_color = Color(0.388, 0.400, 0.945, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -123,18 +129,21 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="KeyboardEnter_normal"]
-bg_color = Color(0.102, 0.102, 0.102, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+bg_color = Color(0.388, 0.400, 0.945, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_size = 6
+shadow_offset = Vector2(0, 2)
+shadow_color = Color(0.388, 0.400, 0.945, 0.220)
 
 [sub_resource type="StyleBoxFlat" id="KeyboardEnter_pressed"]
-bg_color = Color(0.227, 0.227, 0.227, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+bg_color = Color(0.310, 0.275, 0.898, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 ; ── Settings section panel (subtle separator block) ──
 
@@ -182,13 +191,16 @@ content_margin_left = 24
 content_margin_right = 24
 
 [sub_resource type="StyleBoxFlat" id="ToggleButton_pressed"]
-bg_color = Color(0.102, 0.102, 0.102, 1)
+bg_color = Color(0.388, 0.400, 0.945, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 content_margin_left = 24
 content_margin_right = 24
+shadow_size = 8
+shadow_offset = Vector2(0, 3)
+shadow_color = Color(0.388, 0.400, 0.945, 0.220)
 
 [sub_resource type="StyleBoxFlat" id="Separator_h"]
 bg_color = Color(0.929, 0.922, 0.902, 1)
@@ -207,7 +219,7 @@ Tile/colors/tile_correct = Color(0.290, 0.545, 0.278, 1)
 Tile/colors/tile_present = Color(0.769, 0.659, 0.247, 1)
 Tile/colors/tile_absent = Color(0.471, 0.486, 0.494, 1)
 Tile/colors/tile_border_empty = Color(0.831, 0.831, 0.831, 1)
-Tile/colors/tile_border_active = Color(0.102, 0.102, 0.102, 1)
+Tile/colors/tile_border_active = Color(0.388, 0.400, 0.945, 1)
 Tile/colors/text_on_tile = Color(0.102, 0.102, 0.102, 1)
 Tile/colors/text_on_filled_tile = Color(1, 1, 1, 1)
 
