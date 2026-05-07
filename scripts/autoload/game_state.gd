@@ -40,6 +40,9 @@ var theme: String = "default"
 # Unlocks
 var theme_unlocks: Array[String] = ["default"]
 
+# First-run flags
+var has_seen_tutorial: bool = false
+
 
 func _ready() -> void:
 	load_state()
@@ -82,6 +85,8 @@ func load_state() -> void:
 	if unlocks is Array:
 		theme_unlocks.assign(unlocks)
 
+	has_seen_tutorial = cfg.get_value("flags", "has_seen_tutorial", false)
+
 
 func save_state() -> void:
 	var cfg: ConfigFile = ConfigFile.new()
@@ -102,6 +107,7 @@ func save_state() -> void:
 	cfg.set_value("settings", "haptics_enabled", haptics_enabled)
 	cfg.set_value("settings", "theme", theme)
 	cfg.set_value("unlocks", "themes", theme_unlocks)
+	cfg.set_value("flags", "has_seen_tutorial", has_seen_tutorial)
 
 	var err: Error = cfg.save(SAVE_PATH)
 	if err != OK:

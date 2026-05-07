@@ -73,6 +73,29 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Settings"
 
+[node name="HowToPlayButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "How to play"
+
+[node name="VersionLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -56.0
+offset_right = 200.0
+offset_bottom = -24.0
+text = "v1.0.0"
+horizontal_alignment = 1
+theme_type_variation = &"Label_Caption"
+
 [node name="LanguageButton" type="Button" parent="."]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(80, 60)

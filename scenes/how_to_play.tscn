@@ -1,0 +1,161 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/how_to_play.gd" id="1_howto"]
+
+[node name="HowToPlay" type="Control"]
+layout_mode = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_howto")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 80.0
+offset_right = -40.0
+offset_bottom = -80.0
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "How to play"
+horizontal_alignment = 1
+theme_type_variation = &"Label_H1"
+
+[node name="Spacer1" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="IntroLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Guess the word in 6 tries."
+horizontal_alignment = 1
+theme_type_variation = &"Label_Body"
+
+[node name="IntroLabel2" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Each guess must be a valid word.
+Tile colours show how close you are."
+horizontal_alignment = 1
+theme_type_variation = &"Label_Caption"
+
+[node name="Spacer2" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="GreenRow" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Tile" type="Control" parent="VBoxContainer/GreenRow"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+
+[node name="Bg" type="ColorRect" parent="VBoxContainer/GreenRow/Tile"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.290196, 0.545098, 0.278431, 1)
+
+[node name="Letter" type="Label" parent="VBoxContainer/GreenRow/Tile"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "S"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 36
+
+[node name="Description" type="Label" parent="VBoxContainer/GreenRow"]
+custom_minimum_size = Vector2(440, 80)
+layout_mode = 2
+text = "Right letter, right place"
+vertical_alignment = 1
+theme_type_variation = &"Label_Body"
+
+[node name="AmberRow" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Tile" type="Control" parent="VBoxContainer/AmberRow"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+
+[node name="Bg" type="ColorRect" parent="VBoxContainer/AmberRow/Tile"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.768627, 0.658824, 0.247059, 1)
+
+[node name="Letter" type="Label" parent="VBoxContainer/AmberRow/Tile"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "L"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 36
+
+[node name="Description" type="Label" parent="VBoxContainer/AmberRow"]
+custom_minimum_size = Vector2(440, 80)
+layout_mode = 2
+text = "Right letter, wrong place"
+vertical_alignment = 1
+theme_type_variation = &"Label_Body"
+
+[node name="GreyRow" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Tile" type="Control" parent="VBoxContainer/GreyRow"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+
+[node name="Bg" type="ColorRect" parent="VBoxContainer/GreyRow/Tile"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.470588, 0.486275, 0.494118, 1)
+
+[node name="Letter" type="Label" parent="VBoxContainer/GreyRow/Tile"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "T"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 36
+
+[node name="Description" type="Label" parent="VBoxContainer/GreyRow"]
+custom_minimum_size = Vector2(440, 80)
+layout_mode = 2
+text = "Not in the word"
+vertical_alignment = 1
+theme_type_variation = &"Label_Body"
+
+[node name="Spacer4" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GotItButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 88)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Got it"
+theme_type_variation = &"ButtonPrimary"

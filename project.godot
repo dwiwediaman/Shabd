@@ -16,6 +16,7 @@ config/version="1.0.0"
 
 [autoload]
 
+AppMeta="*res://scripts/autoload/app_meta.gd"
 DesignTokens="*res://scripts/design_tokens.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 WordDB="*res://scripts/autoload/word_db.gd"
