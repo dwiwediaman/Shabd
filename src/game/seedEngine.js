@@ -38,3 +38,12 @@ export async function today(lang) {
     lang,
   };
 }
+
+export async function forDate(date, lang) {
+  return {
+    date,
+    index: getPuzzleIndex(date),
+    seed: await getDailySeed(date, lang),
+    lang,
+  };
+}

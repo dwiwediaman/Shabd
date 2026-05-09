@@ -7,6 +7,7 @@ import { dailyPuzzleScreen } from './screens/dailyPuzzle.js';
 import { statsScreen }       from './screens/stats.js';
 import { settingsScreen }    from './screens/settings.js';
 import { howToPlayScreen }   from './screens/howToPlay.js';
+import { archiveScreen }     from './screens/archive.js';
 import { setupNotifications, scheduleDailyReminder } from './notifications.js';
 
 // Register all screens
@@ -15,6 +16,7 @@ register('puzzle',   dailyPuzzleScreen);
 register('stats',    statsScreen);
 register('settings', settingsScreen);
 register('howToPlay', howToPlayScreen);
+register('archive',   archiveScreen);
 
 async function boot() {
   loadState();

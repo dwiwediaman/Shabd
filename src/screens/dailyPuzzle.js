@@ -2,21 +2,25 @@ import { navigate } from '../components/router.js';
 import { createTileGrid } from '../components/tileGrid.js';
 import { createKeyboard, DEVANAGARI_MODIFIERS } from '../components/keyboard.js';
 import { get, recordCompletion, saveSession, getSession, refreshFreezes } from '../game/gameState.js';
-import { today } from '../game/seedEngine.js';
+import { today, forDate } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
 import { shareImage } from '../game/shareImage.js';
 import { t } from '../i18n.js';
 import { feedbackKeyPress, feedbackBackspace, feedbackInvalid, feedbackTileReveal, feedbackWin, feedbackLoss, feedbackHint } from '../feedback.js';
 
-export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
+export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDate } = {}) {
   const state = get();
   const lang  = state.settings.lang;
   const tx    = t(lang);
 
   // Generate puzzle
-  const todayInfo = await today(lang);
-  const puzzle = generate(todayInfo.seed, lang, todayInfo.date);
-  const sessionKey = mode === 'daily' ? `${todayInfo.date}|${lang}` : `practice|${Date.now()}`;
+  const puzzleInfo = mode === 'archive'
+    ? await forDate(archiveDate, lang)
+    : await today(lang);
+  const puzzle = generate(puzzleInfo.seed, lang, puzzleInfo.date);
+  const sessionKey = mode === 'practice'
+    ? `practice|${Date.now()}`
+    : `${puzzleInfo.date}|${lang}`;
 
   // State
   let history = (mode === 'daily' ? getSession(sessionKey) : null) ?? [];
@@ -39,7 +43,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     <div class="puzzle-screen">
       <div class="puzzle-header">
         <button class="hdr-btn" id="backBtn">←</button>
-        <div class="hdr-title">${mode === 'daily' ? tx.dayLabel(puzzle.puzzleIndex) : tx.practice}${state.settings.hardMode ? ' <span class="hard-badge">HARD</span>' : ''}</div>
+        <div class="hdr-title">${mode === 'daily' ? tx.dayLabel(puzzle.puzzleIndex) : mode === 'archive' ? tx.archiveDay(puzzle.puzzleIndex) : tx.practice}${state.settings.hardMode ? ' <span class="hard-badge">HARD</span>' : ''}</div>
         <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint">
           💡<span class="hint-count" id="hintCount">${MAX_HINTS}</span>
         </button>
@@ -213,7 +217,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     keyboard.updateKeys(result.perTileState, tiles);
 
     history.push(result);
-    if (mode === 'daily') saveSession(sessionKey, history);
+    if (mode === 'daily' || mode === 'archive') saveSession(sessionKey, history);
 
     currentRow++;
     currentInput = [];
@@ -225,7 +229,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
       setTimeout(feedbackWin, tiles.length * 120 + 100);
       showToast(tx.brilliant, 2000);
       if (mode === 'daily') {
-        const { freezeUsed } = recordCompletion(lang, true, history.length, todayInfo.date);
+        const { freezeUsed } = recordCompletion(lang, true, history.length, puzzleInfo.date);
         if (freezeUsed) setTimeout(() => showToast(tx.freezeUsed, 3000), 2100);
       }
       setTimeout(showShareBtn, 1600);
@@ -234,7 +238,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
       gameOver = true;
       setTimeout(feedbackLoss, tiles.length * 120 + 100);
       showToast(tx.answer(puzzle.target), 2500);
-      if (mode === 'daily') recordCompletion(lang, false, history.length, todayInfo.date);
+      if (mode === 'daily') recordCompletion(lang, false, history.length, puzzleInfo.date);
       setTimeout(showShareBtn, 2000);
       setTimeout(() => showResultSheet(false), 3000);
     }
@@ -272,6 +276,25 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     const result = await shareImage(puzzle, history, text);
     if (result === 'downloaded') showToast(tx.imageSaved);
     else if (result === 'text')  showToast(tx.copied);
+  }
+
+  async function fetchDefinition(word, language) {
+    try {
+      const apiLang = language === 'hi' ? 'hi' : 'en';
+      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/${apiLang}/${encodeURIComponent(word)}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const entry = data?.[0];
+      const meanings = entry?.meanings?.[0];
+      const def = meanings?.definitions?.[0];
+      if (!def?.definition) return null;
+      return {
+        meaning: def.definition,
+        example: def.example ?? null,
+      };
+    } catch {
+      return null;
+    }
   }
 
   function showResultSheet(won) {
@@ -327,6 +350,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
         <div class="countdown-label">${tx.nextWord}</div>
         <div class="countdown-time" id="sheetCountdown">${getCountdown()}</div>
       </div>
+      <div class="result-definition" id="wordDefinition">
+        <div class="def-loading">${tx.loadingDef}</div>
+      </div>
       <button class="share-btn" id="sheetShareBtn">${tx.shareResult}</button>
       <button class="sheet-menu-btn" id="sheetMenuBtn">${tx.backToMenu}</button>
     `;
@@ -337,6 +363,21 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     requestAnimationFrame(() => {
       sheet.classList.add('result-sheet-open');
       backdrop.classList.add('result-backdrop-open');
+    });
+
+    // Fetch word definition async
+    fetchDefinition(puzzle.target, lang).then(def => {
+      const el = document.getElementById('wordDefinition');
+      if (!el) return;
+      if (def) {
+        el.innerHTML = `
+          <div class="def-word">${puzzle.target}</div>
+          <div class="def-meaning">${def.meaning}</div>
+          ${def.example ? `<div class="def-example">"${def.example}"</div>` : ''}
+        `;
+      } else {
+        el.remove();
+      }
     });
 
     const countdownTimer = setInterval(() => {

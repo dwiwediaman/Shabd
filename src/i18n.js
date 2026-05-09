@@ -82,6 +82,12 @@ const translations = {
     nextWord:        'Next Word In',
     backToMenu:      'Back to Menu',
     lossTitle:       (w) => `The word was ${w}`,
+    loadingDef:      'Looking up definition…',
+
+    // Archive
+    archive:         'Archive',
+    archiveSubtitle: 'Play the last 30 days of Shabd',
+    archiveDay:      (n) => `Shabd #${n}`,
   },
 
   hi: {
@@ -167,6 +173,12 @@ const translations = {
     nextWord:        'अगला शब्द',
     backToMenu:      'मेनू पर जाएं',
     lossTitle:       (w) => `उत्तर था: ${w}`,
+    loadingDef:      'शब्द का अर्थ ढूंढ रहे हैं…',
+
+    // Archive
+    archive:         'पुरालेख',
+    archiveSubtitle: 'पिछले 30 दिनों के शब्द खेलें',
+    archiveDay:      (n) => `शब्द #${n}`,
   },
 };
 
