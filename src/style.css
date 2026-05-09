@@ -100,7 +100,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* ── Main Menu ─────────────────────────────────────────────────────── */
-.menu-screen { padding: env(safe-area-inset-top, 48px) 24px env(safe-area-inset-bottom, 32px); }
+.menu-screen { padding: max(env(safe-area-inset-top, 0px), 48px) 24px max(env(safe-area-inset-bottom, 0px), 32px); }
 
 .menu-topbar { display: flex; justify-content: flex-end; margin-bottom: 0; }
 
@@ -207,7 +207,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ── Puzzle Screen ─────────────────────────────────────────────────── */
 .puzzle-header {
   display: flex; align-items: center;
-  padding: env(safe-area-inset-top, 48px) 16px 12px;
+  padding: max(env(safe-area-inset-top, 0px), 52px) 16px 12px;
   gap: 8px;
 }
 .hdr-btn {
@@ -266,7 +266,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .shake { animation: shake .35s ease; }
 
 /* Keyboard */
-.keyboard { padding: 4px 8px env(safe-area-inset-bottom, 24px); display: flex; flex-direction: column; gap: 5px; }
+.keyboard { padding: 4px 8px max(env(safe-area-inset-bottom, 0px), 24px); display: flex; flex-direction: column; gap: 5px; }
 .key-row   { display: flex; justify-content: center; gap: 4px; }
 
 .key {
@@ -304,7 +304,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .toast.show { opacity: 1; }
 
 /* ── Stats Screen ──────────────────────────────────────────────────── */
-.stats-screen  { padding: env(safe-area-inset-top, 48px) 24px env(safe-area-inset-bottom, 32px); gap: 0; overflow-y: auto; }
+.stats-screen  { padding: max(env(safe-area-inset-top, 0px), 48px) 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
 .stats-header  { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
 .stats-title   { font-size: 22px; font-weight: 700; }
 .stats-back    { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,.04); font-size: 16px; display: flex; align-items: center; justify-content: center; }
@@ -344,7 +344,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* ── Settings Screen ───────────────────────────────────────────────── */
-.settings-screen { padding: env(safe-area-inset-top, 48px) 24px env(safe-area-inset-bottom, 32px); gap: 0; overflow-y: auto; }
+.settings-screen { padding: max(env(safe-area-inset-top, 0px), 48px) 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
 
 .setting-group { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
 .setting-label { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
