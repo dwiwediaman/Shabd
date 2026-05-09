@@ -20,8 +20,20 @@ register('archive',   archiveScreen);
 
 async function boot() {
   loadState();
-  await Promise.all([loadWordDB(), loadTransliterator()]);
-  document.getElementById('loader').style.display = 'none';
+  await Promise.all([
+    loadWordDB(),
+    loadTransliterator(),
+    new Promise(r => setTimeout(r, 1500)), // minimum splash time
+  ]);
+
+  const loader = document.getElementById('loader');
+  loader.classList.add('hiding');
+  await new Promise(r => setTimeout(r, 400)); // wait for fade-out
+  loader.style.display = 'none';
+
+  const app = document.getElementById('app');
+  app.classList.add('visible');
+
   const flags = get().flags;
   if (!flags.seenTutorial) {
     navigate('howToPlay', { firstTime: true });
