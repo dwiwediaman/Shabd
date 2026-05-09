@@ -1,6 +1,6 @@
 import { navigate } from '../components/router.js';
 import { createTileGrid } from '../components/tileGrid.js';
-import { createKeyboard } from '../components/keyboard.js';
+import { createKeyboard, DEVANAGARI_MODIFIERS } from '../components/keyboard.js';
 import { get, recordCompletion, saveSession, getSession, refreshFreezes } from '../game/gameState.js';
 import { today } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
@@ -131,14 +131,32 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     if (key === '⌫') {
       if (currentInput.length > 0) {
         feedbackBackspace();
-        currentInput.pop();
-        grid.setLetter(currentRow, currentInput.length, '');
+        const last = currentInput[currentInput.length - 1];
+        const chars = [...last]; // Unicode-safe split
+        if (chars.length > 1) {
+          // Strip last char from the current akshara (remove matra/modifier)
+          currentInput[currentInput.length - 1] = chars.slice(0, -1).join('');
+          grid.setLetter(currentRow, currentInput.length - 1, currentInput[currentInput.length - 1]);
+        } else {
+          currentInput.pop();
+          grid.setLetter(currentRow, currentInput.length, '');
+        }
       }
       return;
     }
 
     if (key === 'ENTER') {
       submitGuess();
+      return;
+    }
+
+    // Devanagari modifier (matra, halant, nukta, etc.) — attaches to last akshara
+    if (lang === 'hi' && DEVANAGARI_MODIFIERS.has(key)) {
+      if (currentInput.length > 0) {
+        feedbackKeyPress();
+        currentInput[currentInput.length - 1] += key;
+        grid.setLetter(currentRow, currentInput.length - 1, currentInput[currentInput.length - 1]);
+      }
       return;
     }
 
