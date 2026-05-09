@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Shabd</string>
+    <string name="title_activity_main">Shabd</string>
+    <string name="package_name">in.shabd.app</string>
+    <string name="custom_url_scheme">in.shabd.app</string>
+</resources>

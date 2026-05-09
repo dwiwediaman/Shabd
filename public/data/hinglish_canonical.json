@@ -1,0 +1,127 @@
+{
+  "_meta": {
+    "schema_version": 1,
+    "purpose": "Hinglish (Roman) -> Devanagari canonical disambiguation map. Used by hinglish_transliterator.gd. Auto-commit-on-next-base-consonant uses canonical entry as default; suggestion strip surfaces top-3 candidates only when user backspaces or the canonical is wrong.",
+    "format": "Each entry: roman_input -> { canonical: 'देवनागरी', candidates: ['alt1', 'alt2', ...], notes: '...' }",
+    "review_status": "DRAFT — needs native-speaker review before shipping",
+    "reviewers_required": 1
+  },
+
+  "ka":   { "canonical": "क",   "candidates": ["क", "का"], "notes": "ambiguous: bare consonant vs ka+aa" },
+  "kaa":  { "canonical": "का",  "candidates": ["का"] },
+  "ki":   { "canonical": "कि",  "candidates": ["कि", "की"] },
+  "kee":  { "canonical": "की",  "candidates": ["की"] },
+  "ku":   { "canonical": "कु",  "candidates": ["कु", "कू"] },
+  "koo":  { "canonical": "कू",  "candidates": ["कू"] },
+  "ke":   { "canonical": "के",  "candidates": ["के", "कै"] },
+  "kai":  { "canonical": "कै",  "candidates": ["कै"] },
+  "ko":   { "canonical": "को",  "candidates": ["को", "कौ"] },
+  "kau":  { "canonical": "कौ",  "candidates": ["कौ"] },
+
+  "kh":   { "canonical": "ख",   "candidates": ["ख"] },
+  "kha":  { "canonical": "ख",   "candidates": ["ख", "खा"] },
+  "khaa": { "canonical": "खा",  "candidates": ["खा"] },
+
+  "ga":   { "canonical": "ग",   "candidates": ["ग", "गा"] },
+  "gaa":  { "canonical": "गा",  "candidates": ["गा"] },
+  "gh":   { "canonical": "घ",   "candidates": ["घ"] },
+  "gha":  { "canonical": "घ",   "candidates": ["घ", "घा"] },
+
+  "ch":   { "canonical": "च",   "candidates": ["च"] },
+  "cha":  { "canonical": "च",   "candidates": ["च", "चा"] },
+  "chh":  { "canonical": "छ",   "candidates": ["छ"] },
+  "chha": { "canonical": "छ",   "candidates": ["छ", "छा"] },
+
+  "ja":   { "canonical": "ज",   "candidates": ["ज", "जा"] },
+  "jaa":  { "canonical": "जा",  "candidates": ["जा"] },
+  "jh":   { "canonical": "झ",   "candidates": ["झ"] },
+  "jha":  { "canonical": "झ",   "candidates": ["झ", "झा"] },
+  "za":   { "canonical": "ज़",  "candidates": ["ज़", "ज़ा"], "notes": "z = ja+nukta" },
+
+  "ta":   { "canonical": "त",   "candidates": ["त", "ता", "ट"] },
+  "Ta":   { "canonical": "ट",   "candidates": ["ट", "टा"], "notes": "capital T = retroflex" },
+  "th":   { "canonical": "थ",   "candidates": ["थ", "ठ"] },
+  "tha":  { "canonical": "था",  "candidates": ["था", "ठा"] },
+  "Tha":  { "canonical": "ठ",   "candidates": ["ठ"] },
+
+  "da":   { "canonical": "द",   "candidates": ["द", "दा", "ड"] },
+  "Da":   { "canonical": "ड",   "candidates": ["ड", "डा"] },
+  "dh":   { "canonical": "ध",   "candidates": ["ध", "ढ"] },
+  "dha":  { "canonical": "धा",  "candidates": ["धा", "ढा"] },
+
+  "na":   { "canonical": "न",   "candidates": ["न", "ना", "ण"] },
+  "naa":  { "canonical": "ना",  "candidates": ["ना"] },
+
+  "pa":   { "canonical": "प",   "candidates": ["प", "पा"] },
+  "paa":  { "canonical": "पा",  "candidates": ["पा"] },
+  "ph":   { "canonical": "फ",   "candidates": ["फ"] },
+  "fa":   { "canonical": "फ़",  "candidates": ["फ़", "फ"], "notes": "f = pha+nukta in modern usage" },
+
+  "ba":   { "canonical": "ब",   "candidates": ["ब", "बा"] },
+  "baa":  { "canonical": "बा",  "candidates": ["बा"] },
+  "bh":   { "canonical": "भ",   "candidates": ["भ"] },
+  "bha":  { "canonical": "भ",   "candidates": ["भ", "भा"] },
+
+  "ma":   { "canonical": "म",   "candidates": ["म", "मा"] },
+  "maa":  { "canonical": "मा",  "candidates": ["मा"] },
+
+  "ya":   { "canonical": "य",   "candidates": ["य", "या"] },
+  "yaa":  { "canonical": "या",  "candidates": ["या"] },
+
+  "ra":   { "canonical": "र",   "candidates": ["र", "रा"] },
+  "raa":  { "canonical": "रा",  "candidates": ["रा"] },
+
+  "la":   { "canonical": "ल",   "candidates": ["ल", "ला"] },
+  "laa":  { "canonical": "ला",  "candidates": ["ला"] },
+
+  "va":   { "canonical": "व",   "candidates": ["व", "वा"] },
+  "wa":   { "canonical": "व",   "candidates": ["व", "वा"], "notes": "w and v are interchangeable in Hinglish" },
+  "vaa":  { "canonical": "वा",  "candidates": ["वा"] },
+
+  "sa":   { "canonical": "स",   "candidates": ["स", "सा", "श", "ष"] },
+  "saa":  { "canonical": "सा",  "candidates": ["सा"] },
+  "sha":  { "canonical": "श",   "candidates": ["श", "शा", "ष"] },
+  "shaa": { "canonical": "शा",  "candidates": ["शा"] },
+  "Sha":  { "canonical": "ष",   "candidates": ["ष"], "notes": "retroflex sha (rare)" },
+
+  "ha":   { "canonical": "ह",   "candidates": ["ह", "हा"] },
+  "haa":  { "canonical": "हा",  "candidates": ["हा"] },
+
+  "a":    { "canonical": "अ",   "candidates": ["अ", "आ"] },
+  "aa":   { "canonical": "आ",   "candidates": ["आ"] },
+  "i":    { "canonical": "इ",   "candidates": ["इ", "ई"] },
+  "ee":   { "canonical": "ई",   "candidates": ["ई"] },
+  "u":    { "canonical": "उ",   "candidates": ["उ", "ऊ"] },
+  "oo":   { "canonical": "ऊ",   "candidates": ["ऊ"] },
+  "e":    { "canonical": "ए",   "candidates": ["ए", "ऐ"] },
+  "ai":   { "canonical": "ऐ",   "candidates": ["ऐ"] },
+  "o":    { "canonical": "ओ",   "candidates": ["ओ", "औ"] },
+  "au":   { "canonical": "औ",   "candidates": ["औ"] },
+
+  "an":   { "canonical": "अं",  "candidates": ["अं", "ान"], "notes": "anusvara"  },
+  "aN":   { "canonical": "अं",  "candidates": ["अं"] },
+  "aH":   { "canonical": "अः",  "candidates": ["अः"], "notes": "visarga (rare)" },
+
+  "main": { "canonical": "मैं", "candidates": ["मैं", "मेन", "मैन"], "notes": "very common ambiguity: 'I' vs 'main/pipe' vs 'maan'" },
+  "tha":  { "canonical": "था",  "candidates": ["था", "ठा", "थ"], "notes": "common: was vs proper-noun starts" },
+  "kya":  { "canonical": "क्या", "candidates": ["क्या", "कया"] },
+  "hai":  { "canonical": "है",  "candidates": ["है", "हैं"] },
+  "hain": { "canonical": "हैं", "candidates": ["हैं"] },
+  "ho":   { "canonical": "हो",  "candidates": ["हो"] },
+  "hum":  { "canonical": "हम",  "candidates": ["हम"] },
+  "tum":  { "canonical": "तुम", "candidates": ["तुम"] },
+  "aap":  { "canonical": "आप",  "candidates": ["आप"] },
+  "yeh":  { "canonical": "यह",  "candidates": ["यह", "ये"] },
+  "vo":   { "canonical": "वो",  "candidates": ["वो", "व"] },
+  "kuch": { "canonical": "कुछ", "candidates": ["कुछ"] },
+  "sab":  { "canonical": "सब",  "candidates": ["सब"] },
+  "abhi": { "canonical": "अभी", "candidates": ["अभी"] },
+  "phir": { "canonical": "फिर", "candidates": ["फिर"] },
+  "agar": { "canonical": "अगर", "candidates": ["अगर"] },
+  "lekin":{ "canonical": "लेकिन","candidates":["लेकिन"] },
+  "kaam": { "canonical": "काम", "candidates": ["काम"] },
+  "ghar": { "canonical": "घर",  "candidates": ["घर"] },
+  "paani":{ "canonical": "पानी","candidates": ["पानी"] },
+  "khana":{ "canonical": "खाना","candidates": ["खाना"] },
+  "naam": { "canonical": "नाम", "candidates": ["नाम"] }
+}

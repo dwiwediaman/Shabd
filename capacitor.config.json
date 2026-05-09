@@ -1,0 +1,13 @@
+{
+  "appId": "in.shabd.app",
+  "appName": "Shabd",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
