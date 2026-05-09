@@ -20,7 +20,12 @@ async function boot() {
   loadState();
   await Promise.all([loadWordDB(), loadTransliterator()]);
   document.getElementById('loader').style.display = 'none';
-  navigate('menu');
+  const flags = get().flags;
+  if (!flags.seenTutorial) {
+    navigate('howToPlay', { firstTime: true });
+  } else {
+    navigate('menu');
+  }
 
   // Re-schedule daily reminder on each launch (keeps it alive)
   const s = get().settings;

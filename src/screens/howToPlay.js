@@ -1,8 +1,9 @@
 import { navigate } from '../components/router.js';
-import { get } from '../game/gameState.js';
+import { get, setFlag } from '../game/gameState.js';
 import { t } from '../i18n.js';
 
-export function howToPlayScreen(root) {
+export function howToPlayScreen(root, params = {}) {
+  const { firstTime = false } = params;
   const lang = get().settings.lang;
   const tx = t(lang);
 
@@ -11,9 +12,14 @@ export function howToPlayScreen(root) {
     <div class="orb orb-1"></div>
     <div class="settings-screen">
       <div class="stats-header">
-        <button class="stats-back" id="backBtn">←</button>
+        ${firstTime
+          ? `<div style="width:36px"></div>`
+          : `<button class="stats-back" id="backBtn">←</button>`}
         <div class="stats-title">${tx.howToPlayTitle}</div>
+        ${firstTime ? `<div style="width:36px"></div>` : ''}
       </div>
+
+      ${firstTime ? `<div class="onboarding-badge">👋 Welcome to Shabd!</div>` : ''}
 
       <p class="rule-text">${tx.howToPlayIntro}</p>
       <ul class="rule-list">
@@ -66,8 +72,19 @@ export function howToPlayScreen(root) {
   `;
 
   spawnStars('htpStars');
-  document.getElementById('backBtn').addEventListener('click', () => navigate('menu'));
-  document.getElementById('playBtn').addEventListener('click', () => navigate('puzzle', { mode: 'daily' }));
+
+  if (!firstTime) {
+    document.getElementById('backBtn').addEventListener('click', () => navigate('menu'));
+  }
+
+  document.getElementById('playBtn').addEventListener('click', () => {
+    if (firstTime) {
+      setFlag('seenTutorial', true);
+      navigate('menu');
+    } else {
+      navigate('puzzle', { mode: 'daily' });
+    }
+  });
 
   function spawnStars(id) {
     const el = document.getElementById(id);
@@ -76,7 +93,7 @@ export function howToPlayScreen(root) {
       const s = document.createElement('div');
       s.className = 'star';
       const sz = Math.random() * 2 + 0.5;
-      s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
+      s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*60}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
       el.appendChild(s);
     }
   }

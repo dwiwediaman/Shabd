@@ -1,7 +1,7 @@
 import { navigate } from '../components/router.js';
 import { createTileGrid } from '../components/tileGrid.js';
 import { createKeyboard } from '../components/keyboard.js';
-import { get, recordCompletion, saveSession, getSession } from '../game/gameState.js';
+import { get, recordCompletion, saveSession, getSession, refreshFreezes } from '../game/gameState.js';
 import { today } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
 import { shareImage } from '../game/shareImage.js';
@@ -38,7 +38,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     <div class="puzzle-screen">
       <div class="puzzle-header">
         <button class="hdr-btn" id="backBtn">←</button>
-        <div class="hdr-title">${mode === 'daily' ? tx.dayLabel(puzzle.puzzleIndex) : tx.practice}</div>
+        <div class="hdr-title">${mode === 'daily' ? tx.dayLabel(puzzle.puzzleIndex) : tx.practice}${state.settings.hardMode ? ' <span class="hard-badge">HARD</span>' : ''}</div>
         <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint">
           💡<span class="hint-count" id="hintCount">${MAX_HINTS}</span>
         </button>
@@ -149,6 +149,24 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     }
   }
 
+  function checkHardMode(word) {
+    const tiles = splitTiles(word, lang);
+    for (const guess of history) {
+      const gTiles = splitTiles(guess.input, lang);
+      for (let i = 0; i < guess.perTileState.length; i++) {
+        if (guess.perTileState[i] === 'correct' && tiles[i] !== gTiles[i]) {
+          return tx.hardModeCorrect(i + 1, gTiles[i]);
+        }
+      }
+      for (let i = 0; i < guess.perTileState.length; i++) {
+        if (guess.perTileState[i] === 'present' && !tiles.includes(gTiles[i])) {
+          return tx.hardModePresent(gTiles[i]);
+        }
+      }
+    }
+    return null;
+  }
+
   function submitGuess() {
     const word = currentInput.join('');
     const result = validateGuess(word, puzzle);
@@ -158,6 +176,16 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
       grid.shakeRow(currentRow);
       showToast(result.rejectionReason === 'wrong_length' ? tx.notEnoughLetters : tx.notInWordList);
       return;
+    }
+
+    if (get().settings.hardMode && history.length > 0) {
+      const hardErr = checkHardMode(word);
+      if (hardErr) {
+        feedbackInvalid();
+        grid.shakeRow(currentRow);
+        showToast(hardErr);
+        return;
+      }
     }
 
     const tiles = splitTiles(word, lang);
@@ -177,13 +205,17 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
       gameOver = true;
       setTimeout(feedbackWin, tiles.length * 120 + 100);
       showToast(tx.brilliant, 2500);
-      if (mode === 'daily') recordCompletion(lang, true, history.length, todayInfo.date);
+      if (mode === 'daily') {
+        const { freezeUsed } = recordCompletion(lang, true, history.length, todayInfo.date);
+        if (freezeUsed) setTimeout(() => showToast(tx.freezeUsed, 3000), 2600);
+      }
       setTimeout(showShareBtn, 1600);
     } else if (currentRow >= puzzle.maxGuesses) {
       gameOver = true;
       setTimeout(feedbackLoss, tiles.length * 120 + 100);
       showToast(tx.answer(puzzle.target), 3000);
       if (mode === 'daily') recordCompletion(lang, false, history.length, todayInfo.date);
+      // (losses never use freeze — freeze only protects missed days)
       setTimeout(showShareBtn, 2000);
     }
   }

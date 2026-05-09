@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Shabd Asset Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@700&family=Space+Grotesk:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
+  canvas { display: block; margin: 16px 0; border: 1px solid #333; }
+  button { padding: 10px 20px; margin: 4px; background: #7C3AED; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+</style>
+</head>
+<body>
+<h2>Shabd Asset Generator</h2>
+<div id="status">Loading fonts...</div>
+<div id="canvases"></div>
+
+<script>
+document.fonts.ready.then(() => {
+  document.getElementById('status').textContent = 'Fonts loaded. Generating...';
+
+  // ── Helper ─────────────────────────────────────────────────────
+  function makeGrad(ctx, w, h) {
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#7C3AED');
+    g.addColorStop(1, '#F5A623');
+    return g;
+  }
+
+  function addDownload(canvas, filename) {
+    const btn = document.createElement('button');
+    btn.textContent = '⬇ Download ' + filename;
+    btn.onclick = () => {
+      const a = document.createElement('a');
+      a.download = filename;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    };
+    document.getElementById('canvases').appendChild(btn);
+  }
+
+  function addLabel(text) {
+    const p = document.createElement('p');
+    p.style.color = '#aaa';
+    p.style.marginTop = '24px';
+    p.textContent = text;
+    document.getElementById('canvases').appendChild(p);
+  }
+
+  // ── 1. App Icon 512×512 ────────────────────────────────────────
+  addLabel('App Icon (512×512)');
+  const ic = document.createElement('canvas');
+  ic.width = ic.height = 512;
+  const ictx = ic.getContext('2d');
+
+  // Background gradient
+  ictx.fillStyle = makeGrad(ictx, 512, 512);
+  ictx.fillRect(0, 0, 512, 512);
+
+  // Inner glow
+  const iglow = ictx.createRadialGradient(180, 160, 20, 256, 256, 300);
+  iglow.addColorStop(0, 'rgba(255,255,255,0.18)');
+  iglow.addColorStop(1, 'rgba(0,0,0,0)');
+  ictx.fillStyle = iglow;
+  ictx.fillRect(0, 0, 512, 512);
+
+  // Text shadow
+  ictx.shadowColor = 'rgba(30,10,80,0.7)';
+  ictx.shadowBlur = 48;
+  ictx.shadowOffsetY = 10;
+
+  // Glyph
+  ictx.fillStyle = '#FFFFFF';
+  ictx.font = 'bold 300px "Noto Sans Devanagari"';
+  ictx.textAlign = 'center';
+  ictx.textBaseline = 'middle';
+  ictx.fillText('श', 256, 278);
+
+  document.getElementById('canvases').appendChild(ic);
+  addDownload(ic, 'shabd-icon-512.png');
+
+  // ── 2. Feature Graphic 1024×500 ───────────────────────────────
+  addLabel('Feature Graphic (1024×500)');
+  const fg = document.createElement('canvas');
+  fg.width = 1024; fg.height = 500;
+  const fctx = fg.getContext('2d');
+
+  // BG gradient
+  fctx.fillStyle = makeGrad(fctx, 1024, 500);
+  fctx.fillRect(0, 0, 1024, 500);
+
+  // Subtle dark overlay at bottom
+  const overlay = fctx.createLinearGradient(0, 200, 0, 500);
+  overlay.addColorStop(0, 'rgba(0,0,0,0)');
+  overlay.addColorStop(1, 'rgba(0,0,0,0.25)');
+  fctx.fillStyle = overlay;
+  fctx.fillRect(0, 0, 1024, 500);
+
+  // Stars
+  for (let i = 0; i < 60; i++) {
+    const x = Math.random() * 1024;
+    const y = Math.random() * 500;
+    const r = Math.random() * 1.8 + 0.3;
+    fctx.beginPath();
+    fctx.arc(x, y, r, 0, Math.PI * 2);
+    fctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.4 + 0.1})`;
+    fctx.fill();
+  }
+
+  // Orb glow top-left
+  const orb = fctx.createRadialGradient(100, 100, 10, 100, 100, 250);
+  orb.addColorStop(0, 'rgba(255,255,255,0.12)');
+  orb.addColorStop(1, 'rgba(0,0,0,0)');
+  fctx.fillStyle = orb;
+  fctx.fillRect(0, 0, 1024, 500);
+
+  // Left: Icon box
+  const boxX = 80, boxY = 140, boxS = 200, boxR = 44;
+  fctx.save();
+  fctx.beginPath();
+  fctx.moveTo(boxX + boxR, boxY);
+  fctx.lineTo(boxX + boxS - boxR, boxY);
+  fctx.quadraticCurveTo(boxX + boxS, boxY, boxX + boxS, boxY + boxR);
+  fctx.lineTo(boxX + boxS, boxY + boxS - boxR);
+  fctx.quadraticCurveTo(boxX + boxS, boxY + boxS, boxX + boxS - boxR, boxY + boxS);
+  fctx.lineTo(boxX + boxR, boxY + boxS);
+  fctx.quadraticCurveTo(boxX, boxY + boxS, boxX, boxY + boxS - boxR);
+  fctx.lineTo(boxX, boxY + boxR);
+  fctx.quadraticCurveTo(boxX, boxY, boxX + boxR, boxY);
+  fctx.closePath();
+  const boxGrad = fctx.createLinearGradient(boxX, boxY, boxX + boxS, boxY + boxS);
+  boxGrad.addColorStop(0, 'rgba(255,255,255,0.25)');
+  boxGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
+  fctx.fillStyle = boxGrad;
+  fctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  fctx.lineWidth = 2;
+  fctx.fill();
+  fctx.stroke();
+  fctx.restore();
+
+  // Glyph inside box
+  fctx.shadowColor = 'rgba(30,10,80,0.6)';
+  fctx.shadowBlur = 30;
+  fctx.fillStyle = '#FFFFFF';
+  fctx.font = 'bold 120px "Noto Sans Devanagari"';
+  fctx.textAlign = 'center';
+  fctx.textBaseline = 'middle';
+  fctx.fillText('श', boxX + boxS / 2, boxY + boxS / 2 + 6);
+  fctx.shadowBlur = 0;
+
+  // Right: Title
+  fctx.textAlign = 'left';
+  fctx.shadowColor = 'rgba(0,0,0,0.4)';
+  fctx.shadowBlur = 20;
+  fctx.fillStyle = '#FFFFFF';
+  fctx.font = 'bold 96px "Space Grotesk", sans-serif';
+  fctx.textBaseline = 'alphabetic';
+  fctx.fillText('Shabd', 340, 300);
+
+  // Tagline
+  fctx.shadowBlur = 0;
+  fctx.fillStyle = '#E9D5FF';
+  fctx.font = '500 32px "Space Grotesk", sans-serif';
+  fctx.fillText('Daily Word  ·  रोज़ पहेली', 342, 348);
+
+  // Bottom badge
+  fctx.fillStyle = 'rgba(255,255,255,0.12)';
+  fctx.beginPath();
+  fctx.roundRect(340, 370, 260, 44, 22);
+  fctx.fill();
+  fctx.fillStyle = 'rgba(255,255,255,0.8)';
+  fctx.font = '600 18px "Space Grotesk", sans-serif';
+  fctx.textBaseline = 'middle';
+  fctx.fillText('🇮🇳  Made in India', 356, 392);
+
+  document.getElementById('canvases').appendChild(fg);
+  addDownload(fg, 'shabd-feature-graphic.png');
+
+  document.getElementById('status').textContent = '✅ Assets ready — click buttons to download';
+});
+</script>
+</body>
+</html>

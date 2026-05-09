@@ -401,3 +401,29 @@ input:checked + .slider::before { transform: translateX(20px); }
 .rule-tile-row { display: flex; gap: 6px; }
 .rule-tile-row .tile { width: 44px; height: 44px; font-size: 18px; border-radius: 8px; }
 .rule-footer { font-size: 13px; color: var(--muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px; }
+
+/* ── Freeze indicator ────────────────────────────────────────────────── */
+.freeze-indicator {
+  font-size: 12px; color: #93C5FD; text-align: center;
+  margin-top: 8px; letter-spacing: 0.3px;
+}
+
+/* ── Hard mode badge ─────────────────────────────────────────────────── */
+.hard-badge {
+  display: inline-block; font-size: 9px; font-weight: 800;
+  background: linear-gradient(135deg, #DC2626, #B91C1C);
+  color: #fff; padding: 2px 6px; border-radius: 4px;
+  vertical-align: middle; margin-left: 6px; letter-spacing: 0.5px;
+}
+
+/* ── Onboarding welcome badge ────────────────────────────────────────── */
+.onboarding-badge {
+  text-align: center; font-size: 15px; font-weight: 700;
+  color: var(--text); background: rgba(124,58,237,0.15);
+  border: 1px solid rgba(124,58,237,0.3); border-radius: 12px;
+  padding: 12px; margin-bottom: 16px;
+}
+
+/* ── Settings link row ───────────────────────────────────────────────── */
+.setting-link { color: var(--text); }
+.setting-link .setting-label, .setting-link .setting-sub { margin-bottom: 0; }

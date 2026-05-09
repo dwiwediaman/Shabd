@@ -63,6 +63,20 @@ const translations = {
     notifSub:        'Get notified when today\'s puzzle is ready',
     notifTime:       'Reminder Time',
     imageSaved:      'Image saved!',
+
+    // Hard mode
+    hardMode:        'Hard Mode',
+    hardModeSub:     'Revealed hints must be used in next guesses',
+    hardModeCorrect: (pos, letter) => `Position ${pos} must be ${letter.toUpperCase()}`,
+    hardModePresent: (letter) => `Must include ${letter.toUpperCase()}`,
+
+    // Streak freeze
+    streakFreezeAvail: '❄️ 1 freeze available this week',
+    freezeUsed:        '❄️ Streak saved by freeze!',
+
+    // Feedback
+    feedbackTitle:   'Rate & Feedback',
+    feedbackSub:     'Enjoying Shabd? Leave a review',
   },
 
   hi: {
@@ -129,6 +143,20 @@ const translations = {
     notifSub:        'आज की पहेली तैयार होने पर सूचना पाएं',
     notifTime:       'अनुस्मारक समय',
     imageSaved:      'चित्र सेव हुआ!',
+
+    // Hard mode
+    hardMode:        'कठिन मोड',
+    hardModeSub:     'मिले संकेतों का उपयोग अगले अनुमान में करें',
+    hardModeCorrect: (pos, letter) => `स्थान ${pos} पर ${letter} होना चाहिए`,
+    hardModePresent: (letter) => `${letter} शामिल होना चाहिए`,
+
+    // Streak freeze
+    streakFreezeAvail: '❄️ इस सप्ताह 1 फ्रीज़ उपलब्ध',
+    freezeUsed:        '❄️ फ्रीज़ से स्ट्रीक बची!',
+
+    // Feedback
+    feedbackTitle:   'रेटिंग और प्रतिक्रिया',
+    feedbackSub:     'Shabd पसंद है? समीक्षा दें',
   },
 };
 

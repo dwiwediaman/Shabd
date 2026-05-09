@@ -1,5 +1,5 @@
 import { navigate } from '../components/router.js';
-import { get } from '../game/gameState.js';
+import { get, refreshFreezes } from '../game/gameState.js';
 import { t } from '../i18n.js';
 
 export function mainMenuScreen(root) {
@@ -9,6 +9,10 @@ export function mainMenuScreen(root) {
   const streak = state.streak[lang];
   const stats  = state.stats[lang];
   const winPct = stats.played ? Math.round((stats.won / stats.played) * 100) : 0;
+
+  const todayIST = new Date(Date.now() + 19800000).toISOString().slice(0, 10);
+  refreshFreezes(lang, todayIST);
+  const freeze = get().freezes[lang];
 
   root.innerHTML = `
     <div class="stars" id="menuStars"></div>
@@ -41,6 +45,7 @@ export function mainMenuScreen(root) {
             <div class="streak-lbl">${tx.winRate}</div>
           </div>
         </div>
+        ${freeze.count > 0 ? `<div class="freeze-indicator">${tx.streakFreezeAvail}</div>` : ''}
       </div>
 
       <div class="menu-actions">

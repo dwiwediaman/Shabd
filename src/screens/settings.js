@@ -68,6 +68,19 @@ export function settingsScreen(root) {
       <div class="setting-group">
         <div class="setting-row">
           <div>
+            <div class="setting-label">${tx.hardMode}</div>
+            <div class="setting-sub">${tx.hardModeSub}</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="hardModeToggle" ${s.hardMode ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-row">
+          <div>
             <div class="setting-label">${tx.notifications}</div>
             <div class="setting-sub">${tx.notifSub}</div>
           </div>
@@ -82,6 +95,16 @@ export function settingsScreen(root) {
             ${hourOptions}
           </select>
         </div>
+      </div>
+
+      <div class="setting-group">
+        <button class="setting-row setting-link" id="feedbackBtn" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;padding:0;">
+          <div>
+            <div class="setting-label">${tx.feedbackTitle}</div>
+            <div class="setting-sub">${tx.feedbackSub}</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
     </div>
   `;
@@ -106,6 +129,11 @@ export function settingsScreen(root) {
 
   document.getElementById('soundToggle').addEventListener('change', e => setSetting('sound', e.target.checked));
   document.getElementById('hapticToggle').addEventListener('change', e => setSetting('haptics', e.target.checked));
+  document.getElementById('hardModeToggle').addEventListener('change', e => setSetting('hardMode', e.target.checked));
+  document.getElementById('feedbackBtn').addEventListener('click', () => {
+    const url = 'https://play.google.com/store/apps/details?id=in.shabd.game';
+    window.open(url, '_system');
+  });
 
   document.getElementById('notifToggle').addEventListener('change', async e => {
     const enabled = e.target.checked;
