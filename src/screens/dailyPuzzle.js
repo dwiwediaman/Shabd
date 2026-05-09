@@ -5,6 +5,7 @@ import { get, recordCompletion, saveSession, getSession } from '../game/gameStat
 import { today } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
 import { t } from '../i18n.js';
+import { feedbackKeyPress, feedbackBackspace, feedbackInvalid, feedbackTileReveal, feedbackWin, feedbackLoss, feedbackHint } from '../feedback.js';
 
 export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
   const state = get();
@@ -111,6 +112,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
       if (btn) btn.style.opacity = '0.35';
     }
 
+    feedbackHint();
     showToast(tx.hintRevealed(pos + 1));
   });
 
@@ -127,6 +129,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
 
     if (key === '⌫') {
       if (currentInput.length > 0) {
+        feedbackBackspace();
         currentInput.pop();
         grid.setLetter(currentRow, currentInput.length, '');
       }
@@ -139,6 +142,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     }
 
     if (currentInput.length < puzzle.tileCount) {
+      feedbackKeyPress();
       currentInput.push(lang === 'en' ? key.toUpperCase() : key);
       grid.setLetter(currentRow, currentInput.length - 1, currentInput[currentInput.length - 1]);
     }
@@ -149,12 +153,14 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     const result = validateGuess(word, puzzle);
 
     if (!result.isValid) {
+      feedbackInvalid();
       grid.shakeRow(currentRow);
       showToast(result.rejectionReason === 'wrong_length' ? tx.notEnoughLetters : tx.notInWordList);
       return;
     }
 
     const tiles = splitTiles(word, lang);
+    tiles.forEach((_, i) => feedbackTileReveal(i));
     grid.revealRow(currentRow, result.perTileState, tiles);
     keyboard.updateKeys(result.perTileState, tiles);
 
@@ -168,11 +174,13 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
 
     if (result.isCorrect) {
       gameOver = true;
+      setTimeout(feedbackWin, tiles.length * 120 + 100);
       showToast(tx.brilliant, 2500);
       if (mode === 'daily') recordCompletion(lang, true, history.length, todayInfo.date);
       setTimeout(showShareBtn, 1600);
     } else if (currentRow >= puzzle.maxGuesses) {
       gameOver = true;
+      setTimeout(feedbackLoss, tiles.length * 120 + 100);
       showToast(tx.answer(puzzle.target), 3000);
       if (mode === 'daily') recordCompletion(lang, false, history.length, todayInfo.date);
       setTimeout(showShareBtn, 2000);
