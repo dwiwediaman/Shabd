@@ -77,6 +77,11 @@ const translations = {
     // Feedback
     feedbackTitle:   'Rate & Feedback',
     feedbackSub:     'Enjoying Shabd? Leave a review',
+
+    // Result sheet
+    nextWord:        'Next Word In',
+    backToMenu:      'Back to Menu',
+    lossTitle:       (w) => `The word was ${w}`,
   },
 
   hi: {
@@ -157,6 +162,11 @@ const translations = {
     // Feedback
     feedbackTitle:   'रेटिंग और प्रतिक्रिया',
     feedbackSub:     'Shabd पसंद है? समीक्षा दें',
+
+    // Result sheet
+    nextWord:        'अगला शब्द',
+    backToMenu:      'मेनू पर जाएं',
+    lossTitle:       (w) => `उत्तर था: ${w}`,
   },
 };
 

@@ -22,6 +22,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
   let history = (mode === 'daily' ? getSession(sessionKey) : null) ?? [];
   let currentRow = history.length;
   let currentInput = [];
+  let _dismissSheet = null;
   let gameOver = history.length > 0 && (
     history[history.length - 1]?.isCorrect ||
     history.length >= puzzle.maxGuesses
@@ -222,19 +223,20 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     if (result.isCorrect) {
       gameOver = true;
       setTimeout(feedbackWin, tiles.length * 120 + 100);
-      showToast(tx.brilliant, 2500);
+      showToast(tx.brilliant, 2000);
       if (mode === 'daily') {
         const { freezeUsed } = recordCompletion(lang, true, history.length, todayInfo.date);
-        if (freezeUsed) setTimeout(() => showToast(tx.freezeUsed, 3000), 2600);
+        if (freezeUsed) setTimeout(() => showToast(tx.freezeUsed, 3000), 2100);
       }
       setTimeout(showShareBtn, 1600);
+      setTimeout(() => showResultSheet(true), 2400);
     } else if (currentRow >= puzzle.maxGuesses) {
       gameOver = true;
       setTimeout(feedbackLoss, tiles.length * 120 + 100);
-      showToast(tx.answer(puzzle.target), 3000);
+      showToast(tx.answer(puzzle.target), 2500);
       if (mode === 'daily') recordCompletion(lang, false, history.length, todayInfo.date);
-      // (losses never use freeze — freeze only protects missed days)
       setTimeout(showShareBtn, 2000);
+      setTimeout(() => showResultSheet(false), 3000);
     }
   }
 
@@ -272,6 +274,92 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     else if (result === 'text')  showToast(tx.copied);
   }
 
+  function showResultSheet(won) {
+    document.getElementById('resultSheet')?.remove();
+    document.getElementById('resultBackdrop')?.remove();
+
+    const state  = get();
+    const stats  = state.stats[lang];
+    const streak = state.streak[lang];
+    const winPct = stats.played ? Math.round((stats.won / stats.played) * 100) : 0;
+    const maxDist = Math.max(...stats.dist, 1);
+
+    function getCountdown() {
+      const istNow  = Date.now() + 19800000;
+      const secsLeft = Math.floor((Math.ceil(istNow / 86400000) * 86400000 - istNow) / 1000);
+      return [
+        Math.floor(secsLeft / 3600),
+        Math.floor((secsLeft % 3600) / 60),
+        secsLeft % 60,
+      ].map(n => String(n).padStart(2, '0')).join(':');
+    }
+
+    const distRows = stats.dist.map((count, i) => {
+      const pct = Math.round((count / maxDist) * 100);
+      const highlight = won && history.length === i + 1;
+      return `
+        <div class="dist-row">
+          <div class="dist-num">${i + 1}</div>
+          <div class="dist-bar-wrap">
+            <div class="dist-bar ${highlight ? 'active' : 'inactive'}" style="width:${Math.max(pct, 8)}%">${count}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'resultBackdrop';
+    backdrop.className = 'result-backdrop';
+
+    const sheet = document.createElement('div');
+    sheet.id = 'resultSheet';
+    sheet.className = 'result-sheet';
+    sheet.innerHTML = `
+      <div class="result-handle"></div>
+      <div class="result-title">${won ? tx.brilliant : tx.lossTitle(puzzle.target)}</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-big grad-gold">${streak.current}🔥</div><div class="stat-name">${tx.streak}</div></div>
+        <div class="stat-card"><div class="stat-big">${stats.played}</div><div class="stat-name">${tx.played}</div></div>
+        <div class="stat-card"><div class="stat-big">${winPct}%</div><div class="stat-name">${tx.winRate}</div></div>
+        <div class="stat-card"><div class="stat-big">${streak.max}</div><div class="stat-name">${tx.bestStreak}</div></div>
+      </div>
+      <div class="result-dist">${distRows}</div>
+      <div class="result-countdown">
+        <div class="countdown-label">${tx.nextWord}</div>
+        <div class="countdown-time" id="sheetCountdown">${getCountdown()}</div>
+      </div>
+      <button class="share-btn" id="sheetShareBtn">${tx.shareResult}</button>
+      <button class="sheet-menu-btn" id="sheetMenuBtn">${tx.backToMenu}</button>
+    `;
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(sheet);
+
+    requestAnimationFrame(() => {
+      sheet.classList.add('result-sheet-open');
+      backdrop.classList.add('result-backdrop-open');
+    });
+
+    const countdownTimer = setInterval(() => {
+      const el = document.getElementById('sheetCountdown');
+      if (!el) { clearInterval(countdownTimer); return; }
+      el.textContent = getCountdown();
+    }, 1000);
+
+    function dismiss() {
+      sheet.classList.remove('result-sheet-open');
+      backdrop.classList.remove('result-backdrop-open');
+      setTimeout(() => { sheet.remove(); backdrop.remove(); }, 350);
+      clearInterval(countdownTimer);
+      _dismissSheet = null;
+    }
+
+    _dismissSheet = () => { clearInterval(countdownTimer); sheet.remove(); backdrop.remove(); };
+
+    backdrop.addEventListener('click', dismiss);
+    sheet.querySelector('#sheetShareBtn').addEventListener('click', () => { dismiss(); share(); });
+    sheet.querySelector('#sheetMenuBtn').addEventListener('click', () => navigate('menu'));
+  }
+
   function spawnStars(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -285,6 +373,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
   }
 
   return {
-    onLeave() { document.removeEventListener('keydown', onKeydown); }
+    onLeave() {
+      document.removeEventListener('keydown', onKeydown);
+      _dismissSheet?.();
+    }
   };
 }
