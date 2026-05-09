@@ -1,4 +1,4 @@
-package in.shabd.app;
+package in.shabd.game;
 
 import com.getcapacitor.BridgeActivity;
 
