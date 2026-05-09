@@ -7,23 +7,29 @@ const EN_ROWS = [
   ['ENTER','Z','X','C','V','B','N','M','⌫'],
 ];
 
-// Devanagari two-page layout
+// ── Devanagari layout (InScript-inspired) ─────────────────────────────
+// Always-visible matra strip — same pattern as GBoard/InScript
+const HI_MATRA_STRIP = ['ा','ि','ी','ु','ू','े','ो','ौ','ं','ँ','्','़'];
+
+// Consonant rows — all 31 consonants + special keys
 const HI_CONSONANT_ROWS = [
   ['क','ख','ग','घ','च','छ','ज','झ'],
-  ['ट','ठ','ड','ढ','त','थ','द','ध'],
-  ['न','प','फ','ब','भ','म','य','र','स'],
-  ['ENTER','ल','व','श','ष','ह','ण','अा','⌫'],
+  ['ट','ड','त','थ','द','ध','न','प'],
+  ['फ','ब','भ','म','य','र','ल','व'],
+  ['ENTER','श','ष','ह','ण','स','ठ','अा','⌫'],
 ];
 
-const HI_MATRA_ROWS = [
-  ['अ','आ','इ','ई','उ','ऊ','ए','ओ','औ'],
-  ['ा','ि','ी','ु','ू','े','ो','ौ','ॉ'],
-  ['ENTER','ं','ँ','ै','ृ','्','़','क','⌫'],
+// Vowel page (toggle) — standalone vowels + rare matras
+const HI_VOWEL_ROWS = [
+  ['अ','आ','इ','ई','उ','ऊ','ए','ओ'],
+  ['औ','ऐ','ॉ','ऑ','ऋ','ः','ै','ृ'],
+  ['ENTER','ढ','ञ','ङ','ठ','क','⌫'],
 ];
 
 // Characters that attach to the previous akshara instead of starting a new one
 export const DEVANAGARI_MODIFIERS = new Set([
   'ा','ि','ी','ु','ू','े','ो','ौ','ै','ृ', // vowel matras
+  'ॉ',                                        // o-matra for loanwords
   'ं','ँ','ः',                               // anusvara, chandrabindu, visarga
   '्',                                        // halant/virama
   '़',                                        // nukta
@@ -37,55 +43,54 @@ export function createKeyboard(lang, onKey) {
   container.className = 'keyboard';
 
   if (lang !== 'hi') {
-    buildStaticKeyboard(EN_ROWS, container, keyMap, onKey);
+    buildRows(EN_ROWS, container, keyMap, onKey);
     return { el: container, updateKeys: makeUpdater(keyStates, keyMap) };
   }
 
-  // Devanagari: two-page keyboard
-  const consonantPage = document.createElement('div');
-  consonantPage.className = 'kb-page';
-  const matraPage = document.createElement('div');
-  matraPage.className = 'kb-page kb-page-hidden';
+  // ── Devanagari: matra strip + consonants (always visible) + vowel toggle page
+  const mainPage = document.createElement('div');
+  mainPage.className = 'kb-page';
 
-  buildPage(HI_CONSONANT_ROWS, consonantPage, keyMap, key => {
+  const vowelPage = document.createElement('div');
+  vowelPage.className = 'kb-page kb-page-hidden';
+
+  // Matra strip — always on top of main page
+  const stripRow = buildRow(HI_MATRA_STRIP, keyMap, onKey, 'strip');
+  mainPage.appendChild(stripRow);
+
+  // Consonant rows
+  buildRows(HI_CONSONANT_ROWS, mainPage, keyMap, key => {
     if (key === 'अा') {
-      consonantPage.classList.add('kb-page-hidden');
-      matraPage.classList.remove('kb-page-hidden');
+      mainPage.classList.add('kb-page-hidden');
+      vowelPage.classList.remove('kb-page-hidden');
     } else {
       onKey(key);
     }
-  });
+  }, 'compact');
 
-  buildPage(HI_MATRA_ROWS, matraPage, keyMap, key => {
+  // Vowel page
+  buildRows(HI_VOWEL_ROWS, vowelPage, keyMap, key => {
     if (key === 'क') {
-      matraPage.classList.add('kb-page-hidden');
-      consonantPage.classList.remove('kb-page-hidden');
+      vowelPage.classList.add('kb-page-hidden');
+      mainPage.classList.remove('kb-page-hidden');
     } else {
       onKey(key);
     }
-  });
+  }, 'compact');
 
-  container.appendChild(consonantPage);
-  container.appendChild(matraPage);
+  container.appendChild(mainPage);
+  container.appendChild(vowelPage);
 
   return { el: container, updateKeys: makeUpdater(keyStates, keyMap) };
 }
 
-function buildStaticKeyboard(rows, container, keyMap, onKey) {
+function buildRows(rows, parent, keyMap, onKey, style = '') {
   rows.forEach(row => {
-    const rowEl = buildRow(row, keyMap, onKey);
-    container.appendChild(rowEl);
+    parent.appendChild(buildRow(row, keyMap, onKey, style));
   });
 }
 
-function buildPage(rows, pageEl, keyMap, onKey) {
-  rows.forEach(row => {
-    const rowEl = buildRow(row, keyMap, onKey, true);
-    pageEl.appendChild(rowEl);
-  });
-}
-
-function buildRow(row, keyMap, onKey, compact = false) {
+function buildRow(row, keyMap, onKey, style = '') {
   const rowEl = document.createElement('div');
   rowEl.className = 'key-row';
 
@@ -93,10 +98,11 @@ function buildRow(row, keyMap, onKey, compact = false) {
     const btn = document.createElement('button');
     btn.textContent = letter;
 
-    const isEnter = letter === 'ENTER';
-    const isBack  = letter === '⌫';
+    const isEnter  = letter === 'ENTER';
+    const isBack   = letter === '⌫';
     const isToggle = letter === 'अा' || letter === 'क';
     const isMatra  = DEVANAGARI_MODIFIERS.has(letter);
+    const isStrip  = style === 'strip';
 
     btn.className = [
       'key',
@@ -104,13 +110,13 @@ function buildRow(row, keyMap, onKey, compact = false) {
       isBack   ? 'key-wide' : '',
       isToggle ? 'key-toggle' : '',
       isMatra  ? 'key-matra' : '',
-      compact  ? 'key-compact' : '',
+      isStrip  ? 'key-strip' : '',
+      (style === 'compact' && !isEnter && !isBack) ? 'key-compact' : '',
     ].filter(Boolean).join(' ');
 
     btn.addEventListener('click', () => onKey(letter));
     rowEl.appendChild(btn);
 
-    // Register in keyMap (for colour updates after guesses)
     if (!isEnter && !isBack && !isToggle) {
       keyMap[letter] = btn;
     }
@@ -122,10 +128,8 @@ function buildRow(row, keyMap, onKey, compact = false) {
 function makeUpdater(keyStates, keyMap) {
   return function updateKeys(perTileState, letters) {
     letters.forEach((letter, i) => {
-      // For Devanagari aksharas, update each unicode char in the akshara
-      const chars = letter.length > 1 ? [...letter] : [letter];
+      const chars = [...letter]; // Unicode-safe
       const state = perTileState[i];
-
       chars.forEach(ch => {
         const existing = keyStates[ch];
         if (existing === TILE_CORRECT) return;
