@@ -102,7 +102,7 @@ export function normalize(word, lang) {
   return lang === 'en' ? word.toLowerCase().trim() : word.trim();
 }
 
-function computeTileStates(input, target) {
+export function computeTileStates(input, target) {
   const n = target.length;
   const states = new Array(n).fill(TILE_ABSENT);
   const remaining = {};
