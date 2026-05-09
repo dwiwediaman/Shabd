@@ -125,7 +125,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* ── Main Menu ─────────────────────────────────────────────────────── */
-.menu-screen { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); }
+.menu-screen { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; }
 
 .menu-topbar { display: flex; justify-content: flex-end; margin-bottom: 0; }
 
@@ -180,7 +180,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .streak-lbl { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
 .streak-divider { width: 1px; background: var(--border); align-self: stretch; }
 
-.menu-actions { display: flex; flex-direction: column; gap: 10px; }
+.menu-actions { display: flex; flex-direction: column; gap: 10px; max-width: 420px; width: 100%; margin: 0 auto; }
 
 .btn-primary {
   width: 100%; padding: 17px 20px;
