@@ -10,7 +10,7 @@ global.localStorage = {
 };
 
 // Dynamic import so the mock is in place first
-const { load, get, recordCompletion, saveSession, getSession, setSetting } =
+const { load, get, save, recordCompletion, saveSession, getSession, setSetting, setFlag, refreshFreezes } =
   await import('../game/gameState.js');
 
 beforeEach(() => {
@@ -95,5 +95,74 @@ describe('setSetting', () => {
   it('persists a setting value', () => {
     setSetting('lang', 'hi');
     expect(get().settings.lang).toBe('hi');
+  });
+
+  it('round-trips through localStorage', () => {
+    setSetting('hardMode', true);
+    load(); // reload from localStorage
+    expect(get().settings.hardMode).toBe(true);
+  });
+});
+
+describe('setFlag', () => {
+  it('sets a flag value', () => {
+    setFlag('seenTutorial', true);
+    expect(get().flags.seenTutorial).toBe(true);
+  });
+
+  it('persists across reload', () => {
+    setFlag('seenTutorial', true);
+    load();
+    expect(get().flags.seenTutorial).toBe(true);
+  });
+});
+
+describe('refreshFreezes', () => {
+  it('resets freeze count to 1 on a new ISO week', () => {
+    // Drain the freeze via a skipped day, then call refreshFreezes on a new week
+    recordCompletion('en', true, 3, '2026-01-05'); // W02
+    recordCompletion('en', true, 2, '2026-01-07'); // skipped 01-06, uses freeze → count=0
+    expect(get().freezes.en.count).toBe(0);
+
+    // New week (W03 starts ~Jan 12)
+    refreshFreezes('en', '2026-01-12');
+    expect(get().freezes.en.count).toBe(1);
+  });
+
+  it('does NOT reset freeze within the same ISO week', () => {
+    // Start fresh — freeze count is 1
+    refreshFreezes('en', '2026-05-09'); // same week as initial
+    // Should not double-reset — still 1
+    expect(get().freezes.en.count).toBe(1);
+  });
+
+  it('tracks hi and en freezes independently', () => {
+    // Drain EN freeze
+    recordCompletion('en', true, 3, '2026-01-05');
+    recordCompletion('en', true, 2, '2026-01-07');
+    expect(get().freezes.en.count).toBe(0);
+    // HI freeze should still be 1
+    expect(get().freezes.hi.count).toBe(1);
+  });
+});
+
+describe('load — deepMerge with existing state', () => {
+  it('merges stored state over defaults without losing new default keys', () => {
+    // Store partial state (simulates old app version with missing keys)
+    const partial = { settings: { lang: 'hi' } };
+    localStorage.setItem('shabd_state_v1', JSON.stringify(partial));
+    load();
+    // Should have merged lang override
+    expect(get().settings.lang).toBe('hi');
+    // Should still have default keys that weren't in stored state
+    expect(get().settings.sound).toBe(true);
+    expect(get().streak).toBeDefined();
+  });
+
+  it('falls back to defaults on invalid JSON', () => {
+    localStorage.setItem('shabd_state_v1', 'not-valid-json');
+    load();
+    expect(get().settings.lang).toBe('en');
+    expect(get().stats.en.played).toBe(0);
   });
 });

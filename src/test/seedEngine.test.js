@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getISTDate, getPuzzleIndex, getDailySeed } from '../game/seedEngine.js';
+import { getISTDate, getPuzzleIndex, getDailySeed, today, forDate } from '../game/seedEngine.js';
 
 describe('getISTDate', () => {
   it('returns YYYY-MM-DD format', () => {
@@ -58,5 +58,58 @@ describe('getDailySeed', () => {
     const s1 = await getDailySeed('2026-05-09', 'en');
     const s2 = await getDailySeed('2026-05-09', 'hi');
     expect(s1).not.toBe(s2);
+  });
+});
+
+describe('today', () => {
+  it('returns an object with date, index, seed, and lang', async () => {
+    const result = await today('en');
+    expect(result).toHaveProperty('date');
+    expect(result).toHaveProperty('index');
+    expect(result).toHaveProperty('seed');
+    expect(result.lang).toBe('en');
+  });
+
+  it('date matches getISTDate()', async () => {
+    const result = await today('en');
+    expect(result.date).toBe(getISTDate());
+  });
+
+  it('seed is a positive number', async () => {
+    const result = await today('hi');
+    expect(result.seed).toBeGreaterThan(0);
+  });
+
+  it('index matches getPuzzleIndex for today', async () => {
+    const result = await today('en');
+    expect(result.index).toBe(getPuzzleIndex(result.date));
+  });
+});
+
+describe('forDate', () => {
+  it('returns an object with the given date', async () => {
+    const result = await forDate('2026-03-15', 'en');
+    expect(result.date).toBe('2026-03-15');
+    expect(result.lang).toBe('en');
+  });
+
+  it('returns correct index for a specific date', async () => {
+    const result = await forDate('2026-01-01', 'en');
+    expect(result.index).toBe(1);
+  });
+
+  it('seed is deterministic for a fixed date', async () => {
+    const r1 = await forDate('2026-06-01', 'hi');
+    const r2 = await forDate('2026-06-01', 'hi');
+    expect(r1.seed).toBe(r2.seed);
+  });
+
+  it('seed differs from today() when date is different', async () => {
+    const past = await forDate('2026-01-01', 'en');
+    const present = await today('en');
+    // They should differ unless today happens to be 2026-01-01
+    if (present.date !== '2026-01-01') {
+      expect(past.seed).not.toBe(present.seed);
+    }
   });
 });

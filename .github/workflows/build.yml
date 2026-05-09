@@ -43,8 +43,8 @@ jobs:
       - name: Validate Android config
         run: npm run validate
 
-      - name: Run unit tests
-        run: npm test
+      - name: Run unit tests with coverage
+        run: npm run test:ci
 
       - name: Build web app
         run: npm run build
@@ -63,6 +63,15 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > "$HOME/upload.keystore"
           echo "KEYSTORE_PATH=$HOME/upload.keystore" >> "$GITHUB_ENV"
           echo "Keystore decoded: $(stat -c %s $HOME/upload.keystore) bytes"
+
+      - name: Bump versionCode
+        run: |
+          GRADLE=android/app/build.gradle
+          CURRENT=$(grep -oP 'versionCode \K[0-9]+' "$GRADLE")
+          NEW=$((CURRENT + 1))
+          sed -i "s/versionCode $CURRENT/versionCode $NEW/" "$GRADLE"
+          echo "versionCode: $CURRENT → $NEW"
+          echo "NEW_VERSION_CODE=$NEW" >> "$GITHUB_ENV"
 
       - name: Build signed AAB
         env:
@@ -84,7 +93,7 @@ jobs:
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: shabd-aab-${{ github.sha }}
+          name: shabd-v${{ env.NEW_VERSION_CODE }}-${{ github.sha }}
           path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 30
 

@@ -1,11 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   computeTileStates,
   splitTiles,
+  normalize,
+  renderShareGrid,
+  validateGuess,
   TILE_CORRECT,
   TILE_PRESENT,
   TILE_ABSENT,
 } from '../game/wordleMechanic.js';
+
+// ── Mock wordDb so validateGuess doesn't need actual word lists ────────────
+vi.mock('../game/wordDb.js', () => ({
+  getDailyPool: vi.fn(() => [{ word: 'crane', frequency_rank: 1 }]),
+  isValidGuess: vi.fn((word) => ['crane', 'trace', 'brave', 'bliss'].includes(word)),
+}));
 
 describe('computeTileStates', () => {
   it('all correct when guess matches target', () => {
@@ -75,5 +84,116 @@ describe('splitTiles', () => {
     // "कमल" — no matras, 3 aksharas
     const tiles = splitTiles('कमल', 'hi');
     expect(tiles).toEqual(['क', 'म', 'ल']);
+  });
+});
+
+describe('normalize', () => {
+  it('lowercases English words', () => {
+    expect(normalize('CRANE', 'en')).toBe('crane');
+  });
+
+  it('trims whitespace in English', () => {
+    expect(normalize('  crane  ', 'en')).toBe('crane');
+  });
+
+  it('trims Hindi without changing characters', () => {
+    expect(normalize('  कमल  ', 'hi')).toBe('कमल');
+  });
+
+  it('does not lowercase Hindi', () => {
+    expect(normalize('कमल', 'hi')).toBe('कमल');
+  });
+});
+
+describe('renderShareGrid', () => {
+  const puzzle = { lang: 'en', puzzleIndex: 42, maxGuesses: 6 };
+
+  it('includes app name and puzzle number', () => {
+    const result = renderShareGrid(puzzle, []);
+    expect(result).toContain('Shabd');
+    expect(result).toContain('#42');
+  });
+
+  it('shows X/6 when lost', () => {
+    const history = [
+      { perTileState: ['absent','absent','absent','absent','absent'], isCorrect: false },
+      { perTileState: ['absent','absent','absent','absent','absent'], isCorrect: false },
+      { perTileState: ['absent','absent','absent','absent','absent'], isCorrect: false },
+      { perTileState: ['absent','absent','absent','absent','absent'], isCorrect: false },
+      { perTileState: ['absent','absent','absent','absent','absent'], isCorrect: false },
+      { perTileState: ['absent','absent','absent','absent','absent'], isCorrect: false },
+    ];
+    expect(renderShareGrid(puzzle, history)).toContain('X/6');
+  });
+
+  it('shows attempt count on win', () => {
+    const history = [
+      { perTileState: ['absent','present','correct','absent','present'], isCorrect: false },
+      { perTileState: ['correct','correct','correct','correct','correct'], isCorrect: true },
+    ];
+    expect(renderShareGrid(puzzle, history)).toContain('2/6');
+  });
+
+  it('uses correct emoji for each tile state', () => {
+    const history = [
+      { perTileState: ['correct', 'present', 'absent'], isCorrect: false },
+    ];
+    const result = renderShareGrid({ ...puzzle, maxGuesses: 6 }, history);
+    expect(result).toContain('🟩');
+    expect(result).toContain('🟨');
+    expect(result).toContain('⬜');
+  });
+
+  it('includes shabd.in link', () => {
+    expect(renderShareGrid(puzzle, [])).toContain('shabd.in');
+  });
+
+  it('uses HI label for Hindi puzzle', () => {
+    const hiPuzzle = { ...puzzle, lang: 'hi' };
+    expect(renderShareGrid(hiPuzzle, [])).toContain('HI');
+  });
+});
+
+describe('validateGuess', () => {
+  const puzzle = {
+    target: 'crane',
+    tileCount: 5,
+    maxGuesses: 6,
+    lang: 'en',
+  };
+
+  it('rejects guess with wrong length', () => {
+    const result = validateGuess('hi', puzzle);
+    expect(result.isValid).toBe(false);
+    expect(result.rejectionReason).toBe('wrong_length');
+  });
+
+  it('rejects guess not in dictionary', () => {
+    const result = validateGuess('zzzzz', puzzle);
+    expect(result.isValid).toBe(false);
+    expect(result.rejectionReason).toBe('not_in_dictionary');
+  });
+
+  it('accepts valid guess and returns tile states', () => {
+    const result = validateGuess('crane', puzzle);
+    expect(result.isValid).toBe(true);
+    expect(result.perTileState).toHaveLength(5);
+  });
+
+  it('marks isCorrect true when guess matches target', () => {
+    const result = validateGuess('crane', puzzle);
+    expect(result.isCorrect).toBe(true);
+    expect(result.perTileState).toEqual(Array(5).fill(TILE_CORRECT));
+  });
+
+  it('marks isCorrect false for partial match', () => {
+    const result = validateGuess('trace', puzzle);
+    expect(result.isCorrect).toBe(false);
+    expect(result.isValid).toBe(true);
+  });
+
+  it('preserves original input in result', () => {
+    const result = validateGuess('crane', puzzle);
+    expect(result.input).toBe('crane');
   });
 });
