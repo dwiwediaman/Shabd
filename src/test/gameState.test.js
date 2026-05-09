@@ -49,9 +49,18 @@ describe('recordCompletion', () => {
     expect(get().streak.en.max).toBe(2);
   });
 
-  it('resets streak when a day is skipped', () => {
+  it('uses freeze when exactly one day is skipped', () => {
     recordCompletion('en', true, 3, '2026-05-09');
-    recordCompletion('en', true, 2, '2026-05-11'); // skipped 05-10
+    recordCompletion('en', true, 2, '2026-05-11'); // skipped 05-10 — freeze consumed
+    expect(get().streak.en.current).toBe(2);
+    expect(get().freezes.en.count).toBe(0);
+  });
+
+  it('resets streak when a day is skipped and no freeze available', () => {
+    recordCompletion('en', true, 3, '2026-05-09');
+    recordCompletion('en', true, 2, '2026-05-11'); // skipped 05-10 — freeze consumed
+    // Now skipped again with no freeze left
+    recordCompletion('en', true, 2, '2026-05-13'); // skipped 05-12
     expect(get().streak.en.current).toBe(1);
   });
 
