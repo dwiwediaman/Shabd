@@ -1,61 +1,66 @@
 import { navigate } from '../components/router.js';
+import { get } from '../game/gameState.js';
+import { t } from '../i18n.js';
 
 export function howToPlayScreen(root) {
+  const lang = get().settings.lang;
+  const tx = t(lang);
+
   root.innerHTML = `
     <div class="stars" id="htpStars"></div>
     <div class="orb orb-1"></div>
     <div class="settings-screen">
       <div class="stats-header">
         <button class="stats-back" id="backBtn">←</button>
-        <div class="stats-title">How to Play</div>
+        <div class="stats-title">${tx.howToPlayTitle}</div>
       </div>
 
-      <p class="rule-text">Guess the <strong>Shabd</strong> in 6 tries.</p>
+      <p class="rule-text">${tx.howToPlayIntro}</p>
       <ul class="rule-list">
-        <li>Each guess must be a valid word.</li>
-        <li>The color of the tiles will change to show how close your guess was.</li>
+        <li>${tx.htpRule1}</li>
+        <li>${tx.htpRule2}</li>
       </ul>
 
-      <div class="rule-section-title">Examples</div>
+      <div class="rule-section-title">${tx.htpExamples}</div>
 
       <div class="rule-example">
         <div class="rule-tile-row">
-          <div class="tile tile-correct">W</div>
-          <div class="tile tile-absent">E</div>
-          <div class="tile tile-absent">A</div>
-          <div class="tile tile-absent">R</div>
-          <div class="tile tile-absent">Y</div>
+          <div class="tile tile-correct">${tx.htpEx1Letter}</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">·</div>
         </div>
-        <p><strong>W</strong> is in the word and in the correct spot.</p>
+        <p>${tx.htpEx1Text}</p>
       </div>
 
       <div class="rule-example">
         <div class="rule-tile-row">
-          <div class="tile tile-absent">P</div>
-          <div class="tile tile-present">I</div>
-          <div class="tile tile-absent">L</div>
-          <div class="tile tile-absent">L</div>
-          <div class="tile tile-absent">S</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-present">${tx.htpEx2Letter}</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">·</div>
         </div>
-        <p><strong>I</strong> is in the word but in the wrong spot.</p>
+        <p>${tx.htpEx2Text}</p>
       </div>
 
       <div class="rule-example">
         <div class="rule-tile-row">
-          <div class="tile tile-absent">V</div>
-          <div class="tile tile-absent">A</div>
-          <div class="tile tile-absent">G</div>
-          <div class="tile tile-absent">U</div>
-          <div class="tile tile-absent">E</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">${tx.htpEx3Letter}</div>
+          <div class="tile tile-absent">·</div>
+          <div class="tile tile-absent">·</div>
         </div>
-        <p><strong>U</strong> is not in the word in any spot.</p>
+        <p>${tx.htpEx3Text}</p>
       </div>
 
-      <p class="rule-footer">A new word is available each day at midnight IST.</p>
+      <p class="rule-footer">${tx.htpFooter}</p>
 
       <button class="btn-primary" id="playBtn" style="margin-top:24px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Play Now
+        ${tx.playNow}
       </button>
     </div>
   `;

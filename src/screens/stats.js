@@ -1,10 +1,11 @@
 import { navigate } from '../components/router.js';
 import { get } from '../game/gameState.js';
-import { getISTDate } from '../game/seedEngine.js';
+import { t } from '../i18n.js';
 
 export function statsScreen(root) {
   const state = get();
   const lang  = state.settings.lang;
+  const tx    = t(lang);
   const stats  = state.stats[lang];
   const streak = state.streak[lang];
   const winPct = stats.played ? Math.round((stats.won / stats.played) * 100) : 0;
@@ -38,27 +39,27 @@ export function statsScreen(root) {
     <div class="stats-screen">
       <div class="stats-header">
         <button class="stats-back" id="backBtn">←</button>
-        <div class="stats-title">Your Stats</div>
+        <div class="stats-title">${tx.yourStats}</div>
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-big">${stats.played}</div><div class="stat-name">Played</div></div>
-        <div class="stat-card"><div class="stat-big">${winPct}%</div><div class="stat-name">Win Rate</div></div>
-        <div class="stat-card"><div class="stat-big grad-gold">${streak.current}🔥</div><div class="stat-name">Streak</div></div>
-        <div class="stat-card"><div class="stat-big">${streak.max}</div><div class="stat-name">Best Streak</div></div>
+        <div class="stat-card"><div class="stat-big">${stats.played}</div><div class="stat-name">${tx.played}</div></div>
+        <div class="stat-card"><div class="stat-big">${winPct}%</div><div class="stat-name">${tx.winRate}</div></div>
+        <div class="stat-card"><div class="stat-big grad-gold">${streak.current}🔥</div><div class="stat-name">${tx.streak}</div></div>
+        <div class="stat-card"><div class="stat-big">${streak.max}</div><div class="stat-name">${tx.bestStreak}</div></div>
       </div>
 
-      <div class="section-title">Guess Distribution</div>
+      <div class="section-title">${tx.guessDist}</div>
       ${distRows}
 
       <div style="height:16px"></div>
-      <div class="section-title">Next Puzzle</div>
+      <div class="section-title">${tx.nextPuzzle}</div>
       <div class="countdown-card">
         <div class="countdown-time" id="countdown">${hh}:${mm}:${ss}</div>
-        <div class="countdown-label">Hours until next word</div>
+        <div class="countdown-label">${tx.hoursLeft}</div>
       </div>
 
-      <button class="share-btn" id="shareBtn">↗ Share Today's Result</button>
+      <button class="share-btn" id="shareBtn">${tx.shareResult}</button>
     </div>
   `;
 

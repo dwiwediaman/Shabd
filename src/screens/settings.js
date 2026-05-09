@@ -1,8 +1,10 @@
 import { navigate } from '../components/router.js';
 import { get, setSetting } from '../game/gameState.js';
+import { t } from '../i18n.js';
 
 export function settingsScreen(root) {
   const s = get().settings;
+  const tx = t(s.lang);
 
   root.innerHTML = `
     <div class="stars" id="stgStars"></div>
@@ -10,11 +12,11 @@ export function settingsScreen(root) {
     <div class="settings-screen">
       <div class="stats-header">
         <button class="stats-back" id="backBtn">←</button>
-        <div class="stats-title">Settings</div>
+        <div class="stats-title">${tx.settingsTitle}</div>
       </div>
 
       <div class="setting-group">
-        <div class="setting-label">Language</div>
+        <div class="setting-label">${tx.language}</div>
         <div class="toggle-row">
           <button class="toggle-btn ${s.lang === 'en' ? 'active' : ''}" data-key="lang" data-val="en">English</button>
           <button class="toggle-btn ${s.lang === 'hi' ? 'active' : ''}" data-key="lang" data-val="hi">हिन्दी</button>
@@ -22,7 +24,7 @@ export function settingsScreen(root) {
       </div>
 
       <div class="setting-group" id="kbGroup" style="${s.lang !== 'hi' ? 'opacity:0.4;pointer-events:none' : ''}">
-        <div class="setting-label">Hindi Keyboard</div>
+        <div class="setting-label">${tx.hindiKb}</div>
         <div class="toggle-row">
           <button class="toggle-btn ${s.kbMode === 'hinglish' ? 'active' : ''}" data-key="kbMode" data-val="hinglish">Hinglish</button>
           <button class="toggle-btn ${s.kbMode === 'devanagari' ? 'active' : ''}" data-key="kbMode" data-val="devanagari">देवनागरी</button>
@@ -32,8 +34,8 @@ export function settingsScreen(root) {
       <div class="setting-group">
         <div class="setting-row">
           <div>
-            <div class="setting-label">Sound Effects</div>
-            <div class="setting-sub">Tile flip and win sounds</div>
+            <div class="setting-label">${tx.soundEffects}</div>
+            <div class="setting-sub">${tx.soundSub}</div>
           </div>
           <label class="switch">
             <input type="checkbox" id="soundToggle" ${s.sound ? 'checked' : ''}>
@@ -45,8 +47,8 @@ export function settingsScreen(root) {
       <div class="setting-group">
         <div class="setting-row">
           <div>
-            <div class="setting-label">Haptics</div>
-            <div class="setting-sub">Vibration feedback on key press</div>
+            <div class="setting-label">${tx.haptics}</div>
+            <div class="setting-sub">${tx.hapticsSub}</div>
           </div>
           <label class="switch">
             <input type="checkbox" id="hapticToggle" ${s.haptics ? 'checked' : ''}>
@@ -70,6 +72,8 @@ export function settingsScreen(root) {
         const kbGroup = document.getElementById('kbGroup');
         kbGroup.style.opacity = val === 'hi' ? '1' : '0.4';
         kbGroup.style.pointerEvents = val === 'hi' ? '' : 'none';
+        // Re-render settings in new language
+        navigate('settings');
       }
     });
   });

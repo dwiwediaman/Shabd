@@ -4,10 +4,12 @@ import { createKeyboard } from '../components/keyboard.js';
 import { get, recordCompletion, saveSession, getSession } from '../game/gameState.js';
 import { today } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
+import { t } from '../i18n.js';
 
 export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
   const state = get();
   const lang  = state.settings.lang;
+  const tx    = t(lang);
 
   // Generate puzzle
   const todayInfo = await today(lang);
@@ -30,7 +32,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     <div class="puzzle-screen">
       <div class="puzzle-header">
         <button class="hdr-btn" id="backBtn">←</button>
-        <div class="hdr-title">${mode === 'daily' ? `Shabd · Day ${puzzle.puzzleIndex}` : 'Practice'}</div>
+        <div class="hdr-title">${mode === 'daily' ? tx.dayLabel(puzzle.puzzleIndex) : tx.practice}</div>
         <button class="hdr-btn" id="shareBtn" style="display:none">↗</button>
       </div>
       <div class="puzzle-progress"><div class="puzzle-progress-fill" id="progressFill"></div></div>
@@ -103,7 +105,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
 
     if (!result.isValid) {
       grid.shakeRow(currentRow);
-      showToast(result.rejectionReason === 'wrong_length' ? 'Not enough letters' : 'Not in word list');
+      showToast(result.rejectionReason === 'wrong_length' ? tx.notEnoughLetters : tx.notInWordList);
       return;
     }
 
@@ -121,12 +123,12 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
 
     if (result.isCorrect) {
       gameOver = true;
-      showToast('Brilliant! 🎉', 2500);
+      showToast(tx.brilliant, 2500);
       if (mode === 'daily') recordCompletion(lang, true, history.length, todayInfo.date);
       setTimeout(showShareBtn, 1600);
     } else if (currentRow >= puzzle.maxGuesses) {
       gameOver = true;
-      showToast(`Answer: ${puzzle.target}`, 3000);
+      showToast(tx.answer(puzzle.target), 3000);
       if (mode === 'daily') recordCompletion(lang, false, history.length, todayInfo.date);
       setTimeout(showShareBtn, 2000);
     }
@@ -164,7 +166,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
       navigator.share({ text }).catch(() => {});
     } else {
       navigator.clipboard?.writeText(text);
-      showToast('Copied to clipboard!');
+      showToast(tx.copied);
     }
   }
 
