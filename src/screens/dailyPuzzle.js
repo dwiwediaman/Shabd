@@ -47,7 +47,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
         <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint">
           💡<span class="hint-count" id="hintCount">${MAX_HINTS}</span>
         </button>
-        <button class="hdr-btn" id="shareBtn" style="display:none">↗</button>
+        <button class="hdr-btn" id="shareBtn" style="display:none" title="Share">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
       </div>
       <div class="puzzle-progress"><div class="puzzle-progress-fill" id="progressFill"></div></div>
       <div class="attempt-row" id="attemptDots"></div>
@@ -353,7 +355,10 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       <div class="result-definition" id="wordDefinition">
         <div class="def-loading">${tx.loadingDef}</div>
       </div>
-      <button class="share-btn" id="sheetShareBtn">${tx.shareResult}</button>
+      <button class="share-btn" id="sheetShareBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        ${tx.shareResult}
+      </button>
       <button class="sheet-menu-btn" id="sheetMenuBtn">${tx.backToMenu}</button>
     `;
 
@@ -397,7 +402,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     _dismissSheet = () => { clearInterval(countdownTimer); sheet.remove(); backdrop.remove(); };
 
     backdrop.addEventListener('click', dismiss);
-    sheet.querySelector('#sheetShareBtn').addEventListener('click', () => { dismiss(); share(); });
+    sheet.querySelector('#sheetShareBtn').addEventListener('click', () => { share(); });
     sheet.querySelector('#sheetMenuBtn').addEventListener('click', () => navigate('menu'));
   }
 

@@ -1,10 +1,80 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
-dist/
-.DS_Store
-*.local
 
-# Capacitor
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+build/
+*.aab
+*.apk
+
+# ── Capacitor / Android ───────────────────────────────────────────────────────
 android/.gradle/
 android/app/build/
+android/.idea/
+android/app/.cxx/
+android/local.properties
+android/captures/
+android/app/release/
+
+# ── iOS ───────────────────────────────────────────────────────────────────────
 ios/App/Pods/
 ios/App/App.xcworkspace/
+ios/App/App.xcodeproj/project.xcworkspace/
+ios/.idea/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ── Secrets — NEVER commit ────────────────────────────────────────────────────
+*.keystore
+*.jks
+*.p12
+*.pem
+*.cer
+*.pfx
+google-services.json
+google-play-service-account.json
+service-account*.json
+.env
+.env.*
+secrets/
+credentials/
+
+# ── OS junk ───────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+Thumbs.db
+Desktop.ini
+*.local
+
+# ── Editor / IDE ──────────────────────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# ── Logs & temp ───────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.tmp/
+tmp/
+temp/
+
+# ── Test & coverage ───────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Vite ──────────────────────────────────────────────────────────────────────
+.vite/
+vite.config.js.timestamp-*
+
+# ── Claude / AI tools ─────────────────────────────────────────────────────────
+.claude/
+
+# ── Release binaries (stored separately, not in git) ─────────────────────────
+releases/**/*.aab
+releases/**/*.apk
