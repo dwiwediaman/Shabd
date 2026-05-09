@@ -57,6 +57,11 @@ const translations = {
     // Hints
     hintRevealed:    (pos) => `Letter ${pos} revealed!`,
     noHints:         'No hints left',
+
+    // Notifications
+    notifications:   'Daily Reminder',
+    notifSub:        'Get notified when today\'s puzzle is ready',
+    notifTime:       'Reminder Time',
   },
 
   hi: {
@@ -117,6 +122,11 @@ const translations = {
     // Hints
     hintRevealed:    (pos) => `अक्षर ${pos} दिखाया!`,
     noHints:         'कोई संकेत नहीं बचा',
+
+    // Notifications
+    notifications:   'दैनिक अनुस्मारक',
+    notifSub:        'आज की पहेली तैयार होने पर सूचना पाएं',
+    notifTime:       'अनुस्मारक समय',
   },
 };
 

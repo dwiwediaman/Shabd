@@ -4,7 +4,7 @@ const KEY = 'shabd_state_v1';
 const DEFAULTS = {
   streak:   { hi: { current: 0, max: 0, lastDate: '' }, en: { current: 0, max: 0, lastDate: '' } },
   stats:    { hi: { played: 0, won: 0, dist: [0,0,0,0,0,0] }, en: { played: 0, won: 0, dist: [0,0,0,0,0,0] } },
-  settings: { lang: 'en', kbMode: 'hinglish', sound: true, haptics: true, theme: 'default' },
+  settings: { lang: 'en', kbMode: 'hinglish', sound: true, haptics: true, notifications: true, notifHour: 20, theme: 'default' },
   flags:    { seenTutorial: false },
   // today's in-progress guess history, keyed by "YYYY-MM-DD|lang"
   sessions: {},
