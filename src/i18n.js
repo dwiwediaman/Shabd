@@ -62,6 +62,7 @@ const translations = {
     notifications:   'Daily Reminder',
     notifSub:        'Get notified when today\'s puzzle is ready',
     notifTime:       'Reminder Time',
+    imageSaved:      'Image saved!',
   },
 
   hi: {
@@ -127,6 +128,7 @@ const translations = {
     notifications:   'दैनिक अनुस्मारक',
     notifSub:        'आज की पहेली तैयार होने पर सूचना पाएं',
     notifTime:       'अनुस्मारक समय',
+    imageSaved:      'चित्र सेव हुआ!',
   },
 };
 

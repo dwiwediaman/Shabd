@@ -4,6 +4,7 @@ import { createKeyboard } from '../components/keyboard.js';
 import { get, recordCompletion, saveSession, getSession } from '../game/gameState.js';
 import { today } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
+import { shareImage } from '../game/shareImage.js';
 import { t } from '../i18n.js';
 import { feedbackKeyPress, feedbackBackspace, feedbackInvalid, feedbackTileReveal, feedbackWin, feedbackLoss, feedbackHint } from '../feedback.js';
 
@@ -214,14 +215,11 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     document.getElementById('shareBtn').style.display = 'flex';
   }
 
-  function share() {
-    const text = renderShareGrid(puzzle, history);
-    if (navigator.share) {
-      navigator.share({ text }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(text);
-      showToast(tx.copied);
-    }
+  async function share() {
+    const text   = renderShareGrid(puzzle, history);
+    const result = await shareImage(puzzle, history, text);
+    if (result === 'downloaded') showToast(tx.imageSaved);
+    else if (result === 'text')  showToast(tx.copied);
   }
 
   function spawnStars(id) {
