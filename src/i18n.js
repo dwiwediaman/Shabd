@@ -84,9 +84,9 @@ const translations = {
     lossTitle:       (w) => `The word was ${w}`,
     loadingDef:      'Looking up definition…',
 
-    // Archive
-    archive:         'Archive',
-    archiveSubtitle: 'Play the last 30 days of Shabd',
+    // Time Travel
+    timeTravel:      'Time Travel',
+    timeTravelSub:   'Relive your past puzzles',
     archiveDay:      (n) => `Shabd #${n}`,
   },
 
@@ -175,9 +175,9 @@ const translations = {
     lossTitle:       (w) => `उत्तर था: ${w}`,
     loadingDef:      'शब्द का अर्थ ढूंढ रहे हैं…',
 
-    // Archive
-    archive:         'पुरालेख',
-    archiveSubtitle: 'पिछले 30 दिनों के शब्द खेलें',
+    // Time Travel
+    timeTravel:      'समय यात्रा',
+    timeTravelSub:   'पुरानी पहेलियाँ फिर से खेलें',
     archiveDay:      (n) => `शब्द #${n}`,
   },
 };
