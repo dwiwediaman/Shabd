@@ -53,6 +53,10 @@ const translations = {
     htpEx3Text:      '<strong>U</strong> is not in the word in any spot.',
     htpFooter:       'A new word is available each day at midnight IST.',
     playNow:         'Play Now',
+
+    // Hints
+    hintRevealed:    (pos) => `Letter ${pos} revealed!`,
+    noHints:         'No hints left',
   },
 
   hi: {
@@ -109,6 +113,10 @@ const translations = {
     htpEx3Text:      '<strong>ग</strong> शब्द में कहीं भी नहीं है।',
     htpFooter:       'हर रात 12 बजे (IST) नया शब्द आता है।',
     playNow:         'खेलें',
+
+    // Hints
+    hintRevealed:    (pos) => `अक्षर ${pos} दिखाया!`,
+    noHints:         'कोई संकेत नहीं बचा',
   },
 };
 

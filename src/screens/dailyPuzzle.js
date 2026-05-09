@@ -25,6 +25,10 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
     history.length >= puzzle.maxGuesses
   );
 
+  const MAX_HINTS = 3;
+  let hintsLeft = MAX_HINTS;
+  const hintedPositions = new Set();
+
   // Build UI
   root.innerHTML = `
     <div class="stars" id="pzStars"></div>
@@ -33,6 +37,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
       <div class="puzzle-header">
         <button class="hdr-btn" id="backBtn">←</button>
         <div class="hdr-title">${mode === 'daily' ? tx.dayLabel(puzzle.puzzleIndex) : tx.practice}</div>
+        <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint">
+          💡<span class="hint-count" id="hintCount">${MAX_HINTS}</span>
+        </button>
         <button class="hdr-btn" id="shareBtn" style="display:none">↗</button>
       </div>
       <div class="puzzle-progress"><div class="puzzle-progress-fill" id="progressFill"></div></div>
@@ -65,9 +72,47 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
 
   if (gameOver) showShareBtn();
 
-  // Back
+  // Back / share
   document.getElementById('backBtn').addEventListener('click', () => navigate('menu'));
   document.getElementById('shareBtn').addEventListener('click', share);
+
+  // Hint
+  document.getElementById('hintBtn').addEventListener('click', () => {
+    if (gameOver || hintsLeft <= 0) return;
+
+    const targetTiles = splitTiles(puzzle.target, lang);
+
+    // Find positions not yet correctly guessed and not already hinted
+    const correctPositions = new Set();
+    history.forEach(g => {
+      g.perTileState.forEach((s, i) => { if (s === 'correct') correctPositions.add(i); });
+    });
+
+    const available = targetTiles
+      .map((_, i) => i)
+      .filter(i => !correctPositions.has(i) && !hintedPositions.has(i));
+
+    if (available.length === 0) return;
+
+    const pos = available[Math.floor(Math.random() * available.length)];
+    const letter = targetTiles[pos];
+    hintedPositions.add(pos);
+    hintsLeft--;
+
+    // Show in grid and pre-fill current input
+    grid.setHintLetter(currentRow, pos, letter);
+    currentInput[pos] = letter;
+
+    // Update badge
+    const badge = document.getElementById('hintCount');
+    if (badge) badge.textContent = hintsLeft;
+    if (hintsLeft === 0) {
+      const btn = document.getElementById('hintBtn');
+      if (btn) btn.style.opacity = '0.35';
+    }
+
+    showToast(tx.hintRevealed(pos + 1));
+  });
 
   // Physical keyboard
   const onKeydown = e => {
@@ -157,6 +202,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily' }) {
   }
 
   function showShareBtn() {
+    document.getElementById('hintBtn').style.display = 'none';
     document.getElementById('shareBtn').style.display = 'flex';
   }
 

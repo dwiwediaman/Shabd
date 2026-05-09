@@ -255,6 +255,30 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .tile-present { background: linear-gradient(135deg,#CA8A04,#EAB308); border: none; color: #fff; box-shadow: 0 0 20px rgba(234,179,8,.45), 0 4px 12px rgba(0,0,0,.3); }
 .tile-absent  { background: var(--absent); border: none; color: #6B7280; }
 
+/* Hint tile */
+.tile-hint {
+  border: 2px solid var(--gold);
+  background: rgba(245,166,35,.15);
+  color: var(--gold);
+  box-shadow: 0 0 14px rgba(245,166,35,.4);
+}
+
+/* Hint button */
+.hdr-hint {
+  position: relative;
+}
+.hint-count {
+  position: absolute;
+  top: -4px; right: -4px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #000;
+  font-size: 10px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+
 /* Shake animation */
 @keyframes shake {
   0%,100% { transform: translateX(0); }

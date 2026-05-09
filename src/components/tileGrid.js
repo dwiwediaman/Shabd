@@ -22,6 +22,8 @@ export function createTileGrid(tileCount, maxGuesses) {
 
   function setLetter(rowIndex, colIndex, letter) {
     const tile = rows[rowIndex].tiles[colIndex];
+    // Don't overwrite a hint tile with empty
+    if (!letter && tile.className.includes('tile-hint')) return;
     tile.textContent = letter;
     tile.className = letter ? 'tile tile-active' : 'tile tile-empty';
   }
@@ -55,5 +57,11 @@ export function createTileGrid(tileCount, maxGuesses) {
     });
   }
 
-  return { el: grid, setLetter, revealRow, shakeRow, restoreHistory };
+  function setHintLetter(rowIndex, colIndex, letter) {
+    const tile = rows[rowIndex].tiles[colIndex];
+    tile.textContent = letter;
+    tile.className = 'tile tile-hint';
+  }
+
+  return { el: grid, setLetter, revealRow, shakeRow, restoreHistory, setHintLetter };
 }
