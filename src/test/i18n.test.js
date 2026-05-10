@@ -13,9 +13,20 @@ const REQUIRED_KEYS = [
   // Settings
   'settingsTitle', 'language', 'hindiKb', 'soundEffects', 'soundSub', 'haptics', 'hapticsSub',
   // How to play
-  'howToPlayTitle', 'howToPlayIntro', 'htpRule1', 'htpRule2',
-  'htpExamples', 'htpEx1Letter', 'htpEx1Text', 'htpEx2Letter',
-  'htpEx2Text', 'htpEx3Letter', 'htpEx3Text', 'htpFooter', 'playNow',
+  'howToPlayTitle', 'howToPlayIntro',
+  'htpDemoLabel', 'htpDemoCaption',
+  'htpStepsTitle', 'htpStep1', 'htpStep2', 'htpStep3', 'htpStep4',
+  'htpColorTitle',
+  'htpExamples', 'htpEx1Letter', 'htpEx1Heading', 'htpEx1Text',
+  'htpEx2Letter', 'htpEx2Heading', 'htpEx2Text',
+  'htpEx3Letter', 'htpEx3Heading', 'htpEx3Text',
+  'htpKeyboardTitle', 'htpKeyboardText',
+  'htpFeaturesTitle',
+  'htpHardModeTitle', 'htpHardModeText',
+  'htpHintsTitle', 'htpHintsText',
+  'htpArchiveTitle', 'htpArchiveText',
+  'htpTipsTitle', 'htpTip1', 'htpTip2', 'htpTip3',
+  'htpFooter', 'playNow',
   // Hints
   'hintRevealed', 'noHints',
   // Notifications
