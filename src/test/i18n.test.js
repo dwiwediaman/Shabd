@@ -4,7 +4,11 @@ import { t } from '../i18n.js';
 const REQUIRED_KEYS = [
   // Main menu
   'tagline', 'streak', 'played', 'winRate', 'playToday',
-  'badgeNew', 'practiceMode', 'stats', 'settings', 'rules', 'footer',
+  'badgeNew', 'badgeActive', 'badgeDone', 'badgeFailed',
+  'playContinue', 'playDone',
+  'practiceMode', 'practiceSub',
+  'stats', 'settings', 'rules', 'footer',
+  'freezeTapHint', 'timeTravelSubMenu',
   // Puzzle
   'dayLabel', 'practice', 'notEnoughLetters', 'notInWordList',
   'brilliant', 'answer', 'copied',

@@ -129,6 +129,36 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .menu-topbar { display: flex; justify-content: flex-end; margin-bottom: 0; }
 
+/* Prominent dual-button language toggle */
+.lang-toggle {
+  display: inline-flex;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 22px;
+  padding: 3px;
+  gap: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.lang-opt {
+  background: transparent;
+  border: none;
+  border-radius: 18px;
+  padding: 6px 14px;
+  font-size: 13px; font-weight: 700;
+  color: rgba(255,255,255,.55);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  min-width: 44px;
+}
+.lang-opt.active {
+  background: linear-gradient(135deg, var(--violet), #5B21B6);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(124,58,237,.45);
+}
+.lang-opt:not(.active):active { background: rgba(255,255,255,.08); }
+
+/* Legacy lang-pill kept for compat */
 .lang-pill {
   background: rgba(255,255,255,.07);
   border: 1px solid var(--border);
@@ -214,10 +244,31 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .btn-secondary:active { background: rgba(255,255,255,.08); }
 
+/* Played-state variants for the primary button */
+.btn-primary.btn-played-won {
+  background: linear-gradient(135deg, #16A34A, #22C55E);
+  box-shadow: 0 0 0 1px rgba(34,197,94,.5), 0 8px 32px rgba(34,197,94,.35);
+}
+.btn-primary.btn-played-won:active { box-shadow: 0 4px 16px rgba(34,197,94,.3); }
+.btn-primary.btn-played-lost {
+  background: linear-gradient(135deg, #6B7280, #4B5563);
+  box-shadow: 0 0 0 1px rgba(107,114,128,.5), 0 8px 24px rgba(0,0,0,.35);
+}
+.btn-primary.btn-played-active {
+  background: linear-gradient(135deg, #CA8A04, #EAB308);
+  box-shadow: 0 0 0 1px rgba(234,179,8,.5), 0 8px 32px rgba(234,179,8,.35);
+}
+
+/* Secondary buttons with a sub-label */
+.btn-with-sub { align-items: center; }
+.btn-with-sub .btn-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; flex: 1; }
+.btn-with-sub .btn-text-main { font-size: 15px; font-weight: 600; color: var(--text); }
+.btn-with-sub .btn-text-sub  { font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 2px; letter-spacing: 0.2px; }
+
 .btn-row { display: flex; gap: 10px; }
 .btn-row .btn-secondary { flex: 1; }
 
-/* Invite button — subtle dashed border, WhatsApp-green tint */
+/* Invite button — subtle dashed border, WhatsApp-green tint (legacy) */
 .btn-invite {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 13px 20px;
@@ -228,6 +279,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   cursor: pointer; transition: background 0.18s, border-color 0.18s;
 }
 .btn-invite:active { background: rgba(37,211,102,.16); border-color: rgba(37,211,102,.7); }
+
+/* Themed invite — matches app violet/gold palette */
+.btn-invite-themed {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 20px;
+  background: rgba(124,58,237,.08);
+  border: 1px dashed rgba(167,139,250,.4);
+  border-radius: 14px; color: var(--violet2);
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: background 0.18s, border-color 0.18s;
+  margin-top: 4px;
+}
+.btn-invite-themed:active { background: rgba(124,58,237,.16); border-color: rgba(167,139,250,.7); }
+.btn-invite-themed svg { opacity: .85; }
 
 .btn-icon-stack {
   flex-direction: column !important;
@@ -544,11 +609,55 @@ input:checked + .slider::before { transform: translateX(20px); }
 .rule-tile-row .tile { width: 44px; height: 44px; font-size: 18px; border-radius: 8px; }
 .rule-footer { font-size: 13px; color: var(--muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px; }
 
-/* ── Freeze indicator ────────────────────────────────────────────────── */
+/* ── Freeze indicator (legacy) ─────────────────────────────────────────── */
 .freeze-indicator {
   font-size: 12px; color: #93C5FD; text-align: center;
   margin-top: 8px; letter-spacing: 0.3px;
 }
+
+/* Tappable freeze chip — explains the mechanic on tap */
+.freeze-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: rgba(147,197,253,.10);
+  border: 1px solid rgba(147,197,253,.28);
+  border-radius: 14px;
+  color: #BFDBFE;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; letter-spacing: 0.2px;
+  transition: background .15s;
+}
+.freeze-chip:active { background: rgba(147,197,253,.20); }
+.freeze-info-icon {
+  font-size: 11px; opacity: .75;
+  width: 14px; height: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 1px solid currentColor;
+  font-weight: 700; line-height: 1;
+}
+
+/* Floating toast for menu screen */
+.menu-toast {
+  position: fixed;
+  bottom: 88px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  max-width: 320px; width: calc(100% - 48px);
+  background: rgba(30,30,50,.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13px; line-height: 1.45;
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  opacity: 0;
+  transition: opacity .25s, transform .25s;
+  z-index: 100;
+  pointer-events: none;
+  text-align: center;
+}
+.menu-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ── Hard mode badge ─────────────────────────────────────────────────── */
 .hard-badge {

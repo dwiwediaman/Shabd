@@ -1,5 +1,6 @@
 import { navigate } from '../components/router.js';
-import { get, refreshFreezes } from '../game/gameState.js';
+import { get, getSession, refreshFreezes, save } from '../game/gameState.js';
+import { getISTDate } from '../game/seedEngine.js';
 import { t } from '../i18n.js';
 
 export function mainMenuScreen(root) {
@@ -10,9 +11,28 @@ export function mainMenuScreen(root) {
   const stats  = state.stats[lang];
   const winPct = stats.played ? Math.round((stats.won / stats.played) * 100) : 0;
 
-  const todayIST = new Date(Date.now() + 19800000).toISOString().slice(0, 10);
+  const todayIST = getISTDate();
   refreshFreezes(lang, todayIST);
   const freeze = get().freezes[lang];
+
+  // ─── Determine today's play state ─────────────────────────────────────────
+  const todaySession = getSession(`${todayIST}|${lang}`) || [];
+  const lastGuess = todaySession[todaySession.length - 1];
+  const todayWon  = !!(lastGuess && lastGuess.isCorrect);
+  const todayLost = !todayWon && todaySession.length >= 6;
+  const todayDone = todayWon || todayLost;
+  const todayInProgress = todaySession.length > 0 && !todayDone;
+
+  let playLabel, playBadge, playClass;
+  if (todayWon) {
+    playLabel = tx.playDone;       playBadge = tx.badgeDone;     playClass = 'btn-played-won';
+  } else if (todayLost) {
+    playLabel = tx.playDone;       playBadge = tx.badgeFailed;   playClass = 'btn-played-lost';
+  } else if (todayInProgress) {
+    playLabel = tx.playContinue;   playBadge = tx.badgeActive;   playClass = 'btn-played-active';
+  } else {
+    playLabel = tx.playToday;      playBadge = tx.badgeNew;      playClass = '';
+  }
 
   root.innerHTML = `
     <div class="stars" id="menuStars"></div>
@@ -20,8 +40,12 @@ export function mainMenuScreen(root) {
     <div class="orb orb-2"></div>
 
     <div class="menu-screen">
+      <!-- ── Top bar: prominent language toggle ─────────────────────────── -->
       <div class="menu-topbar">
-        <button class="lang-pill" id="langToggle">${lang === 'en' ? 'EN ⇌ हि' : 'हि ⇌ EN'}</button>
+        <div class="lang-toggle" id="langToggle" role="tablist" aria-label="Language">
+          <button class="lang-opt ${lang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
+          <button class="lang-opt ${lang === 'hi' ? 'active' : ''}" data-lang="hi">हि</button>
+        </div>
       </div>
 
       <div class="menu-hero">
@@ -45,29 +69,35 @@ export function mainMenuScreen(root) {
             <div class="streak-lbl">${tx.winRate}</div>
           </div>
         </div>
-        ${freeze.count > 0 ? `<div class="freeze-indicator">${tx.streakFreezeAvail}</div>` : ''}
+        ${freeze.count > 0
+          ? `<button class="freeze-chip" id="freezeChip" aria-label="streak freeze info">${tx.streakFreezeAvail} <span class="freeze-info-icon">ⓘ</span></button>`
+          : ''}
       </div>
 
       <div class="menu-actions">
-        <button class="btn-primary" id="btnPlay">
+        <!-- Primary CTA — adapts to today's state -->
+        <button class="btn-primary ${playClass}" id="btnPlay">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          ${tx.playToday}
-          <span class="btn-badge">${tx.badgeNew}</span>
+          ${playLabel}
+          <span class="btn-badge">${playBadge}</span>
         </button>
 
-        <button class="btn-secondary" id="btnPractice">
+        <!-- Practice — with sub-label -->
+        <button class="btn-secondary btn-with-sub" id="btnPractice">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          ${tx.practiceMode}
+          <div class="btn-text">
+            <div class="btn-text-main">${tx.practiceMode}</div>
+            <div class="btn-text-sub">${tx.practiceSub}</div>
+          </div>
         </button>
 
-        <button class="btn-secondary" id="btnArchive">
+        <!-- Past Puzzles (was Time Travel) — with sub-label -->
+        <button class="btn-secondary btn-with-sub" id="btnArchive">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          ${tx.timeTravel}
-        </button>
-
-        <button class="btn-invite" id="btnInvite">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          ${tx.inviteBtn}
+          <div class="btn-text">
+            <div class="btn-text-main">${tx.timeTravel}</div>
+            <div class="btn-text-sub">${tx.timeTravelSubMenu}</div>
+          </div>
         </button>
 
         <div class="btn-row">
@@ -80,10 +110,16 @@ export function mainMenuScreen(root) {
             <span>${tx.settings}</span>
           </button>
           <button class="btn-secondary btn-icon-stack" id="btnRules">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
             <span>${tx.rules}</span>
           </button>
         </div>
+
+        <!-- Invite — restyled to match app theme -->
+        <button class="btn-invite-themed" id="btnInvite">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          ${tx.inviteBtn}
+        </button>
       </div>
 
       <div class="menu-footer">${tx.footer}</div>
@@ -92,13 +128,19 @@ export function mainMenuScreen(root) {
 
   spawnStars('menuStars');
 
-  root.querySelector('#langToggle').addEventListener('click', () => {
-    const s = get();
-    s.settings.lang = s.settings.lang === 'en' ? 'hi' : 'en';
-    import('../game/gameState.js').then(m => m.save());
-    navigate('menu');
+  // ─── Language toggle ─────────────────────────────────────────────────────
+  root.querySelectorAll('.lang-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const newLang = btn.dataset.lang;
+      if (newLang === lang) return;
+      const s = get();
+      s.settings.lang = newLang;
+      save();
+      navigate('menu');
+    });
   });
 
+  // ─── Primary actions ─────────────────────────────────────────────────────
   root.querySelector('#btnPlay').addEventListener('click', () => navigate('puzzle', { mode: 'daily' }));
   root.querySelector('#btnPractice').addEventListener('click', () => navigate('puzzle', { mode: 'practice' }));
   root.querySelector('#btnArchive').addEventListener('click', () => navigate('archive'));
@@ -106,18 +148,36 @@ export function mainMenuScreen(root) {
   root.querySelector('#btnSettings').addEventListener('click', () => navigate('settings'));
   root.querySelector('#btnRules').addEventListener('click', () => navigate('howToPlay'));
 
+  // ─── Streak freeze tap → show explanation toast ──────────────────────────
+  const freezeChip = root.querySelector('#freezeChip');
+  if (freezeChip) {
+    freezeChip.addEventListener('click', () => showFreezeToast(tx.freezeTapHint));
+  }
+
+  // ─── Invite ─────────────────────────────────────────────────────────────
   root.querySelector('#btnInvite').addEventListener('click', async () => {
     const text = tx.inviteText;
     if (navigator.share) {
-      try {
-        await navigator.share({ text });
-        return;
-      } catch (_) { /* cancelled or unsupported — fall through */ }
+      try { await navigator.share({ text }); return; }
+      catch (_) { /* cancelled or unsupported — fall through */ }
     }
-    // Fallback: open WhatsApp with pre-filled message
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(waUrl, '_blank');
   });
+}
+
+function showFreezeToast(msg) {
+  // Remove any existing toast
+  document.querySelector('.menu-toast')?.remove();
+  const toast = document.createElement('div');
+  toast.className = 'menu-toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 250);
+  }, 3500);
 }
 
 function spawnStars(id) {
