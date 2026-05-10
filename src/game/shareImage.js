@@ -17,9 +17,15 @@ const C = {
   tag:     '#1A1A35',
 };
 
+// ── Font preload (call once at app boot) ───────────────────────────────────
+let _fontsReady = false;
+export async function preloadShareFonts() {
+  if (!_fontsReady) { await document.fonts.ready; _fontsReady = true; }
+}
+
 // ── Canvas renderer ────────────────────────────────────────────────────────
 export async function renderShareImage(puzzle, history) {
-  await document.fonts.ready;
+  await preloadShareFonts();
 
   const cols   = puzzle.tileCount;
   const rows   = puzzle.maxGuesses;
@@ -140,13 +146,37 @@ export async function renderShareImage(puzzle, history) {
   return canvas;
 }
 
-// ── Main share entry point ─────────────────────────────────────────────────
-export async function shareImage(puzzle, history, fallbackText) {
-  const canvas = await renderShareImage(puzzle, history);
-  const blob   = await canvasToBlob(canvas);
-  const file   = new File([blob], 'shabd-result.png', { type: 'image/png' });
+// ── Pre-render cache (call when game ends, before user taps Share) ─────────
+let _cache = null; // { canvas, blob, puzzle, history }
 
-  // Try native share with image (works on Android / iOS)
+export async function preRenderShare(puzzle, history) {
+  try {
+    const canvas = await renderShareImage(puzzle, history);
+    const blob   = await canvasToBlob(canvas);
+    _cache = { canvas, blob };
+  } catch (e) {
+    _cache = null;
+  }
+}
+
+// ── Main share entry point ─────────────────────────────────────────────────
+// Call this directly inside the user-gesture handler (tap).
+// Blob is already ready from preRenderShare — so navigator.share fires
+// instantly while the gesture window is still open.
+export async function shareImage(puzzle, history, fallbackText) {
+  // Use pre-rendered cache, or render now if somehow not ready
+  let canvas, blob;
+  if (_cache) {
+    ({ canvas, blob } = _cache);
+    _cache = null; // consume
+  } else {
+    canvas = await renderShareImage(puzzle, history);
+    blob   = await canvasToBlob(canvas);
+  }
+
+  const file = new File([blob], 'shabd-result.png', { type: 'image/png' });
+
+  // Try native share with image (Android / iOS — carries both image and text)
   if (navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], text: fallbackText, title: 'Shabd' });
@@ -157,7 +187,7 @@ export async function shareImage(puzzle, history, fallbackText) {
     }
   }
 
-  // Show custom share sheet
+  // Show custom share sheet (web / desktop fallback)
   showShareSheet(canvas, blob, fallbackText);
   return 'sheet';
 }
@@ -238,8 +268,18 @@ function showShareSheet(canvas, blob, text) {
   bg.addEventListener('click', e => { if (e.target === bg) close(); });
   sheet.querySelector('#ss-cancel').addEventListener('click', close);
 
-  // WhatsApp
-  sheet.querySelector('#ss-whatsapp').addEventListener('click', () => {
+  // WhatsApp — native share with image so WhatsApp receives the PNG
+  sheet.querySelector('#ss-whatsapp').addEventListener('click', async () => {
+    const file = new File([blob], 'shabd-result.png', { type: 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text, title: 'Shabd' });
+        close(); return;
+      } catch (e) {
+        if (e?.name === 'AbortError') { close(); return; }
+      }
+    }
+    // Fallback: wa.me with text only (image not supported via URL)
     window.open(`https://wa.me/?text=${waText}`, '_blank');
     close();
   });

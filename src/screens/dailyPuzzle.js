@@ -4,7 +4,7 @@ import { createKeyboard, DEVANAGARI_MODIFIERS } from '../components/keyboard.js'
 import { get, recordCompletion, saveSession, getSession, refreshFreezes } from '../game/gameState.js';
 import { today, forDate } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
-import { shareImage } from '../game/shareImage.js';
+import { shareImage, preRenderShare, preloadShareFonts } from '../game/shareImage.js';
 import { t } from '../i18n.js';
 import { feedbackKeyPress, feedbackBackspace, feedbackInvalid, feedbackTileReveal, feedbackWin, feedbackLoss, feedbackHint } from '../feedback.js';
 
@@ -58,6 +58,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       <div class="toast" id="toast"></div>
     </div>
   `;
+
+  // Warm fonts in background so share is instant when game ends
+  preloadShareFonts();
 
   spawnStars('pzStars');
 
@@ -244,6 +247,8 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
         const { freezeUsed } = recordCompletion(lang, true, history.length, puzzleInfo.date);
         if (freezeUsed) setTimeout(() => showToast(tx.freezeUsed, 3000), 2100);
       }
+      // Pre-render share image in background while animations play
+      preRenderShare(puzzle, history);
       setTimeout(showShareBtn, 1600);
       setTimeout(() => showResultSheet(true), 2400);
     } else if (currentRow >= puzzle.maxGuesses) {
@@ -251,6 +256,8 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       setTimeout(feedbackLoss, tiles.length * 120 + 100);
       showToast(tx.answer(puzzle.target), 2500);
       if (mode === 'daily') recordCompletion(lang, false, history.length, puzzleInfo.date);
+      // Pre-render share image in background while animations play
+      preRenderShare(puzzle, history);
       setTimeout(showShareBtn, 2000);
       setTimeout(() => showResultSheet(false), 3000);
     }
