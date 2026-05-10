@@ -51,7 +51,7 @@ const REQUIRED_KEYS = [
 
 const FUNCTION_KEYS = [
   'dayLabel', 'answer', 'hintRevealed', 'hardModeCorrect',
-  'hardModePresent', 'lossTitle', 'archiveDay',
+  'hardModePresent', 'lossTitle', 'archiveDay', 'footer',
 ];
 
 describe('i18n — English', () => {

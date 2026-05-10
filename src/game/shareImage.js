@@ -141,7 +141,7 @@ export async function renderShareImage(puzzle, history) {
   ctx.fillStyle    = C.muted;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('Can you beat this? 👉 shabd.in', W / 2, footY + FTR / 2);
+  ctx.fillText("Can you beat this? 👉 Get 'Shabd' on Google Play", W / 2, footY + FTR / 2);
 
   return canvas;
 }

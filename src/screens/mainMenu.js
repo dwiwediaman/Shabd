@@ -122,7 +122,7 @@ export function mainMenuScreen(root) {
         </button>
       </div>
 
-      <div class="menu-footer">${tx.footer}</div>
+      <div class="menu-footer">${tx.footer(__APP_VERSION__, __VERSION_CODE__)}</div>
     </div>
   `;
 

@@ -19,7 +19,7 @@ const translations = {
     rules:         'How to Play',
     freezeTapHint: 'A streak freeze auto-saves your streak if you miss a day. Resets weekly.',
     timeTravelSubMenu: 'Play any past puzzle',
-    footer:        'v1.0.0 · Made with ❤️ in India',
+    footer:        (v, vc) => `v${v} (${vc}) · Made with ❤️ in India`,
 
     // Puzzle
     dayLabel:      (n) => `Shabd · Day ${n}`,
@@ -144,7 +144,7 @@ const translations = {
     rules:         'कैसे खेलें',
     freezeTapHint: 'एक दिन छूटने पर फ्रीज़ अपने आप आपकी स्ट्रीक बचा लेगा। साप्ताहिक रिसेट।',
     timeTravelSubMenu: 'पुरानी कोई भी पहेली खेलें',
-    footer:        'v1.0.0 · भारत में बनाया ❤️',
+    footer:        (v, vc) => `v${v} (${vc}) · भारत में बनाया ❤️`,
 
     // Puzzle
     dayLabel:      (n) => `शब्द · दिन ${n}`,

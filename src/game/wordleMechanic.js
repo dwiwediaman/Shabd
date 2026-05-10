@@ -63,7 +63,8 @@ export function renderShareGrid(puzzle, history) {
     ).join(''));
   }
   lines.push('');
-  lines.push('Play at: shabd.in');
+  lines.push('Play Shabd on Google Play:');
+  lines.push('https://play.google.com/store/apps/details?id=in.shabd.game');
   return lines.join('\n');
 }
 

@@ -144,8 +144,8 @@ describe('renderShareGrid', () => {
     expect(result).toContain('⬜');
   });
 
-  it('includes shabd.in link', () => {
-    expect(renderShareGrid(puzzle, [])).toContain('shabd.in');
+  it('includes Play Store link', () => {
+    expect(renderShareGrid(puzzle, [])).toContain('play.google.com/store/apps/details?id=in.shabd.game');
   });
 
   it('uses HI label for Hindi puzzle', () => {
