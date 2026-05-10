@@ -67,10 +67,11 @@ jobs:
       - name: Bump versionCode
         run: |
           GRADLE=android/app/build.gradle
+          # Use total git commit count — unique per commit, always increases, no write-back needed
+          NEW=$(git rev-list --count HEAD)
           CURRENT=$(grep -oP 'versionCode \K[0-9]+' "$GRADLE")
-          NEW=$((CURRENT + 1))
           sed -i "s/versionCode $CURRENT/versionCode $NEW/" "$GRADLE"
-          echo "versionCode: $CURRENT → $NEW"
+          echo "versionCode: $CURRENT → $NEW (commit count)"
           echo "NEW_VERSION_CODE=$NEW" >> "$GITHUB_ENV"
 
       - name: Build signed AAB
