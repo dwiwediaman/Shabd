@@ -217,6 +217,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .btn-row { display: flex; gap: 10px; }
 .btn-row .btn-secondary { flex: 1; }
 
+/* Invite button — subtle dashed border, WhatsApp-green tint */
+.btn-invite {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 20px;
+  background: rgba(37,211,102,.08);
+  border: 1.5px dashed rgba(37,211,102,.45);
+  border-radius: 14px; color: #25D366;
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: background 0.18s, border-color 0.18s;
+}
+.btn-invite:active { background: rgba(37,211,102,.16); border-color: rgba(37,211,102,.7); }
+
 .btn-icon-stack {
   flex-direction: column !important;
   gap: 6px !important;

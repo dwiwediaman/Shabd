@@ -65,6 +65,11 @@ export function mainMenuScreen(root) {
           ${tx.timeTravel}
         </button>
 
+        <button class="btn-invite" id="btnInvite">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          ${tx.inviteBtn}
+        </button>
+
         <div class="btn-row">
           <button class="btn-secondary btn-icon-stack" id="btnStats">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
@@ -100,6 +105,19 @@ export function mainMenuScreen(root) {
   root.querySelector('#btnStats').addEventListener('click', () => navigate('stats'));
   root.querySelector('#btnSettings').addEventListener('click', () => navigate('settings'));
   root.querySelector('#btnRules').addEventListener('click', () => navigate('howToPlay'));
+
+  root.querySelector('#btnInvite').addEventListener('click', async () => {
+    const text = tx.inviteText;
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch (_) { /* cancelled or unsupported — fall through */ }
+    }
+    // Fallback: open WhatsApp with pre-filled message
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  });
 }
 
 function spawnStars(id) {

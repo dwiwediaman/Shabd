@@ -88,6 +88,10 @@ const translations = {
     timeTravel:      'Time Travel',
     timeTravelSub:   'Relive your past puzzles',
     archiveDay:      (n) => `Shabd #${n}`,
+
+    // Invite
+    inviteBtn:  'Invite a Friend',
+    inviteText: `🔤 I'm playing Shabd — a daily word puzzle (English + हिन्दी)!\nToday's challenge is live. Think you can solve it? 👉 https://play.google.com/store/apps/details?id=in.shabd.game`,
   },
 
   hi: {
@@ -179,6 +183,10 @@ const translations = {
     timeTravel:      'समय यात्रा',
     timeTravelSub:   'पुरानी पहेलियाँ फिर से खेलें',
     archiveDay:      (n) => `शब्द #${n}`,
+
+    // Invite
+    inviteBtn:  'दोस्त को बुलाएं',
+    inviteText: `🔤 मैं Shabd खेल रहा हूँ — रोज़ एक नया शब्द (English + हिन्दी)!\nआज की पहेली तैयार है। क्या आप सुलझा सकते हैं? 👉 https://play.google.com/store/apps/details?id=in.shabd.game`,
   },
 };
 

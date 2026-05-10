@@ -30,6 +30,8 @@ const REQUIRED_KEYS = [
   'nextWord', 'backToMenu', 'lossTitle', 'loadingDef',
   // Time Travel
   'timeTravel', 'timeTravelSub', 'archiveDay',
+  // Invite
+  'inviteBtn', 'inviteText',
 ];
 
 const FUNCTION_KEYS = [
