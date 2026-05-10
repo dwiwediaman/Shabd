@@ -433,6 +433,108 @@ input:checked + .slider { background: var(--violet); box-shadow: 0 0 12px rgba(1
 input:checked + .slider::before { transform: translateX(20px); }
 
 /* ── How To Play ───────────────────────────────────────────────────── */
+.htp-screen { padding: 0 20px 40px; overflow-y: auto; max-height: 100vh; }
+.htp-intro  { font-size: 15px; color: var(--text); line-height: 1.65; margin-bottom: 20px; }
+
+/* Demo section */
+.htp-demo-section {
+  background: rgba(124,58,237,.07);
+  border: 1px solid rgba(124,58,237,.22);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.htp-section-label {
+  font-size: 11px; font-weight: 700; color: var(--violet2);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 14px;
+}
+.htp-demo-board {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.demo-tile-row { display: flex; gap: 6px; }
+.demo-tile     { width: 44px; height: 44px; font-size: 17px; border-radius: 8px;
+                 will-change: transform; }
+.htp-demo-caption {
+  font-size: 11px; color: var(--muted); margin-top: 10px;
+  letter-spacing: 0.3px;
+}
+
+/* Section titles */
+.htp-section-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin: 22px 0 12px;
+}
+
+/* Steps */
+.htp-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 4px; }
+.htp-step  { display: flex; align-items: flex-start; gap: 12px; }
+.htp-step-num {
+  flex-shrink: 0;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--violet1), var(--violet2));
+  color: #fff; font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.htp-step-text { font-size: 14px; color: var(--text); line-height: 1.55; }
+
+/* Color guide cards */
+.htp-color-card {
+  display: flex; align-items: stretch;
+  border-radius: 12px; overflow: hidden;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+.htp-color-row  { display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px 14px; }
+.htp-ex-tile    { width: 46px; height: 46px; font-size: 20px; border-radius: 8px; flex-shrink: 0; }
+.htp-color-info { flex: 1; }
+.htp-color-heading { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.htp-color-desc    { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.htp-color-correct { background: rgba(22,163,74,.08); border-color: rgba(34,197,94,.25); }
+.htp-color-present { background: rgba(202,138,4,.08);  border-color: rgba(234,179,8,.25); }
+.htp-color-absent  { background: rgba(255,255,255,.04); }
+
+/* Keyboard callout */
+.htp-keyboard-callout {
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 4px;
+}
+.htp-keyboard-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.htp-keyboard-mini  { display: flex; gap: 6px; margin-bottom: 10px; }
+.htp-kb-key {
+  width: 36px; height: 36px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+}
+.htp-kb-correct { background: linear-gradient(135deg,#16A34A,#22C55E); color: #fff; }
+.htp-kb-present { background: linear-gradient(135deg,#CA8A04,#EAB308); color: #fff; }
+.htp-kb-absent  { background: var(--absent); color: #6B7280; }
+.htp-keyboard-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* Feature cards */
+.htp-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+.htp-feature-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.htp-feature-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.htp-feature-desc  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* Tips */
+.htp-tips { display: flex; flex-direction: column; gap: 9px; }
+.htp-tip  { font-size: 13px; color: var(--muted); line-height: 1.5;
+            background: rgba(255,255,255,.03); border-radius: 8px;
+            padding: 10px 12px; border: 1px solid var(--border); }
+
+/* Legacy classes kept for compat */
 .rule-text  { font-size: 15px; color: var(--text); margin-bottom: 12px; line-height: 1.6; }
 .rule-list  { font-size: 14px; color: var(--muted); padding-left: 18px; margin-bottom: 20px; line-height: 1.8; }
 .rule-section-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
