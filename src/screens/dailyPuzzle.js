@@ -25,7 +25,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   // State
   let history = (mode === 'daily' ? getSession(sessionKey) : null) ?? [];
   let currentRow = history.length;
-  let currentInput = [];
+  let currentInput = new Array(puzzle.tileCount).fill('');
   let _dismissSheet = null;
   let gameOver = history.length > 0 && (
     history[history.length - 1]?.isCorrect ||
@@ -136,18 +136,21 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     if (gameOver) return;
 
     if (key === '⌫') {
-      if (currentInput.length > 0) {
-        feedbackBackspace();
-        const last = currentInput[currentInput.length - 1];
-        const chars = [...last]; // Unicode-safe split
-        if (chars.length > 1) {
-          // Strip last char from the current akshara (remove matra/modifier)
-          currentInput[currentInput.length - 1] = chars.slice(0, -1).join('');
-          grid.setLetter(currentRow, currentInput.length - 1, currentInput[currentInput.length - 1]);
-        } else {
-          currentInput.pop();
-          grid.setLetter(currentRow, currentInput.length, '');
-        }
+      // Find last non-hint, non-empty position
+      let lastIdx = -1;
+      for (let i = currentInput.length - 1; i >= 0; i--) {
+        if (currentInput[i] !== '' && !hintedPositions.has(i)) { lastIdx = i; break; }
+      }
+      if (lastIdx === -1) return;
+      feedbackBackspace();
+      const chars = [...currentInput[lastIdx]];
+      if (chars.length > 1) {
+        // Strip last char from akshara (matra/modifier)
+        currentInput[lastIdx] = chars.slice(0, -1).join('');
+        grid.setLetter(currentRow, lastIdx, currentInput[lastIdx]);
+      } else {
+        currentInput[lastIdx] = '';
+        grid.setLetter(currentRow, lastIdx, '');
       }
       return;
     }
@@ -157,20 +160,26 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       return;
     }
 
-    // Devanagari modifier (matra, halant, nukta, etc.) — attaches to last akshara
+    // Devanagari modifier (matra, halant, nukta, etc.) — attaches to last typed akshara
     if (lang === 'hi' && DEVANAGARI_MODIFIERS.has(key)) {
-      if (currentInput.length > 0) {
+      let lastIdx = -1;
+      for (let i = currentInput.length - 1; i >= 0; i--) {
+        if (currentInput[i] !== '' && !hintedPositions.has(i)) { lastIdx = i; break; }
+      }
+      if (lastIdx !== -1) {
         feedbackKeyPress();
-        currentInput[currentInput.length - 1] += key;
-        grid.setLetter(currentRow, currentInput.length - 1, currentInput[currentInput.length - 1]);
+        currentInput[lastIdx] += key;
+        grid.setLetter(currentRow, lastIdx, currentInput[lastIdx]);
       }
       return;
     }
 
-    if (currentInput.length < puzzle.tileCount) {
+    // Normal character — fill first empty non-hint slot
+    const firstEmpty = currentInput.findIndex((c, i) => c === '' && !hintedPositions.has(i));
+    if (firstEmpty !== -1) {
       feedbackKeyPress();
-      currentInput.push(lang === 'en' ? key.toUpperCase() : key);
-      grid.setLetter(currentRow, currentInput.length - 1, currentInput[currentInput.length - 1]);
+      currentInput[firstEmpty] = lang === 'en' ? key.toUpperCase() : key;
+      grid.setLetter(currentRow, firstEmpty, currentInput[firstEmpty]);
     }
   }
 
@@ -222,7 +231,8 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     if (mode === 'daily' || mode === 'archive') saveSession(sessionKey, history);
 
     currentRow++;
-    currentInput = [];
+    currentInput = new Array(puzzle.tileCount).fill('');
+    hintedPositions.clear();
     updateProgress();
     updateDots();
 

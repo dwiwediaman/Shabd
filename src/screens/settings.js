@@ -1,11 +1,17 @@
 import { navigate } from '../components/router.js';
-import { get, setSetting } from '../game/gameState.js';
+import { get, setSetting, getSession } from '../game/gameState.js';
 import { t } from '../i18n.js';
+import { getISTDate } from '../game/seedEngine.js';
 import { setupNotifications, scheduleDailyReminder, cancelReminder } from '../notifications.js';
 
 export function settingsScreen(root) {
   const s = get().settings;
   const tx = t(s.lang);
+
+  // Hard mode can only be toggled before the daily game starts
+  const todayStr = getISTDate();
+  const todaySession = getSession(`${todayStr}|${s.lang}`);
+  const hardModeLocked = !!(todaySession && todaySession.length > 0);
 
   // Build hour options 6am–11pm IST
   const hourOptions = Array.from({ length: 18 }, (_, i) => {
@@ -69,10 +75,10 @@ export function settingsScreen(root) {
         <div class="setting-row">
           <div>
             <div class="setting-label">${tx.hardMode}</div>
-            <div class="setting-sub">${tx.hardModeSub}</div>
+            <div class="setting-sub">${hardModeLocked ? '🔒 Complete today\'s puzzle to change' : tx.hardModeSub}</div>
           </div>
-          <label class="switch">
-            <input type="checkbox" id="hardModeToggle" ${s.hardMode ? 'checked' : ''}>
+          <label class="switch" style="${hardModeLocked ? 'opacity:0.45;pointer-events:none' : ''}">
+            <input type="checkbox" id="hardModeToggle" ${s.hardMode ? 'checked' : ''} ${hardModeLocked ? 'disabled' : ''}>
             <span class="slider"></span>
           </label>
         </div>
