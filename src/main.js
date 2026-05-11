@@ -9,6 +9,7 @@ import { settingsScreen }    from './screens/settings.js';
 import { howToPlayScreen }   from './screens/howToPlay.js';
 import { archiveScreen }     from './screens/archive.js';
 import { setupNotifications, scheduleDailyReminder } from './notifications.js';
+import { checkForUpdate } from './updateCheck.js';
 
 // Register all screens
 register('menu',     mainMenuScreen);
@@ -48,6 +49,10 @@ async function boot() {
       if (granted) scheduleDailyReminder(s.notifHour);
     });
   }
+
+  // Check for app update on launch (Android only — silent no-op elsewhere).
+  // Fire-and-forget — don't block boot.
+  checkForUpdate();
 }
 
 boot().catch(console.error);
