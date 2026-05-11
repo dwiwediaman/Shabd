@@ -1,4 +1,7 @@
 import { splitTiles } from './wordleMechanic.js';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const TILE   = 52;
@@ -161,35 +164,80 @@ export async function preRenderShare(puzzle, history) {
 
 // ── Main share entry point ─────────────────────────────────────────────────
 // Call this directly inside the user-gesture handler (tap).
-// Blob is already ready from preRenderShare — so navigator.share fires
-// instantly while the gesture window is still open.
+//
+// On native (Capacitor Android/iOS): writes PNG to cache dir, calls Capacitor
+// Share plugin which fires Android's Intent.ACTION_SEND — the real native
+// sharesheet with the image attached. WhatsApp / Instagram / Telegram all
+// receive it as a proper image, not text.
+//
+// On web: tries Web Share API with files, falls back to custom sheet.
 export async function shareImage(puzzle, history, fallbackText) {
   // Use pre-rendered cache, or render now if somehow not ready
   let canvas, blob;
   if (_cache) {
     ({ canvas, blob } = _cache);
-    _cache = null; // consume
+    _cache = null;
   } else {
     canvas = await renderShareImage(puzzle, history);
     blob   = await canvasToBlob(canvas);
   }
 
-  const file = new File([blob], 'shabd-result.png', { type: 'image/png' });
-
-  // Try native share with image (Android / iOS — carries both image and text)
-  if (navigator.canShare?.({ files: [file] })) {
+  // ── Native (Capacitor): write to filesystem + use Share plugin ───────────
+  if (Capacitor.isNativePlatform()) {
     try {
-      await navigator.share({ files: [file], text: fallbackText, title: 'Shabd' });
+      const base64 = await blobToBase64(blob);
+      const fileName = `shabd-result-${Date.now()}.png`;
+      const writeResult = await Filesystem.writeFile({
+        path:      fileName,
+        data:      base64,
+        directory: Directory.Cache,
+      });
+      // writeResult.uri is a file:// URI Android can attach to Intent.ACTION_SEND
+      await Share.share({
+        title:  'Shabd',
+        text:   fallbackText,
+        url:    writeResult.uri,
+        dialogTitle: 'Share your Shabd result',
+      });
       return 'shared';
     } catch (e) {
-      if (e?.name === 'AbortError') return 'cancelled';
+      // If user cancels, Capacitor throws — treat as cancelled, not error
+      if (String(e?.message || '').toLowerCase().includes('cancel')) return 'cancelled';
+      console.warn('Native share failed, falling back:', e);
       // Fall through to custom sheet
     }
   }
 
-  // Show custom share sheet (web / desktop fallback)
+  // ── Web: Web Share API with files (Chrome desktop / iOS Safari) ──────────
+  if (typeof File !== 'undefined') {
+    const file = new File([blob], 'shabd-result.png', { type: 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text: fallbackText, title: 'Shabd' });
+        return 'shared';
+      } catch (e) {
+        if (e?.name === 'AbortError') return 'cancelled';
+      }
+    }
+  }
+
+  // ── Custom sheet (desktop browsers without Web Share) ────────────────────
   showShareSheet(canvas, blob, fallbackText);
   return 'sheet';
+}
+
+// Convert Blob → base64 string (without data: prefix) — required by Filesystem.writeFile
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result; // "data:image/png;base64,XXXX"
+      const base64 = String(result).split(',')[1] || '';
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 // ── Custom share sheet ─────────────────────────────────────────────────────
@@ -268,31 +316,38 @@ function showShareSheet(canvas, blob, text) {
   bg.addEventListener('click', e => { if (e.target === bg) close(); });
   sheet.querySelector('#ss-cancel').addEventListener('click', close);
 
-  // WhatsApp — native share with image so WhatsApp receives the PNG
-  sheet.querySelector('#ss-whatsapp').addEventListener('click', async () => {
+  // Helper: try Capacitor native share (with image), fall back to Web Share
+  async function tryNativeShareWithImage() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const base64 = await blobToBase64(blob);
+        const writeResult = await Filesystem.writeFile({
+          path:      `shabd-result-${Date.now()}.png`,
+          data:      base64,
+          directory: Directory.Cache,
+        });
+        await Share.share({ title: 'Shabd', text, url: writeResult.uri, dialogTitle: 'Share your Shabd result' });
+        return true;
+      } catch (e) { /* fall through */ }
+    }
     const file = new File([blob], 'shabd-result.png', { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], text, title: 'Shabd' });
-        close(); return;
-      } catch (e) {
-        if (e?.name === 'AbortError') { close(); return; }
-      }
+      try { await navigator.share({ files: [file], text, title: 'Shabd' }); return true; }
+      catch (e) { if (e?.name === 'AbortError') return true; }
     }
-    // Fallback: wa.me with text only (image not supported via URL)
-    window.open(`https://wa.me/?text=${waText}`, '_blank');
+    return false;
+  }
+
+  // WhatsApp — native share with image (works on Android + iOS Capacitor)
+  sheet.querySelector('#ss-whatsapp').addEventListener('click', async () => {
+    const ok = await tryNativeShareWithImage();
+    if (!ok) window.open(`https://wa.me/?text=${waText}`, '_blank'); // last-resort web fallback
     close();
   });
 
-  // Native share (text fallback)
+  // Native share (any app)
   sheet.querySelector('#ss-native').addEventListener('click', async () => {
-    try {
-      if (navigator.canShare?.({ files: [new File([blob], 'shabd-result.png', { type: 'image/png' })] })) {
-        await navigator.share({ files: [new File([blob], 'shabd-result.png', { type: 'image/png' })], title: 'Shabd', text });
-      } else if (navigator.share) {
-        await navigator.share({ title: 'Shabd', text });
-      }
-    } catch {}
+    await tryNativeShareWithImage();
     close();
   });
 
