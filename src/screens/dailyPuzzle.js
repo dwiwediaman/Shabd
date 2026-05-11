@@ -290,11 +290,24 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     document.getElementById('shareBtn').style.display = 'flex';
   }
 
-  async function share() {
-    const text   = renderShareGrid(puzzle, history);
-    const result = await shareImage(puzzle, history, text);
-    if (result === 'downloaded') showToast(tx.imageSaved);
-    else if (result === 'text')  showToast(tx.copied);
+  let _sharing = false;
+  async function share(triggerEl) {
+    if (_sharing) return; // guard against double-tap
+    _sharing = true;
+
+    // Mark every share button as loading (header + result sheet)
+    const allBtns = document.querySelectorAll('#shareBtn, #sheetShareBtn');
+    allBtns.forEach(b => b.classList.add('is-sharing'));
+
+    try {
+      const text   = renderShareGrid(puzzle, history);
+      const result = await shareImage(puzzle, history, text);
+      if (result === 'downloaded') showToast(tx.imageSaved);
+      else if (result === 'text')  showToast(tx.copied);
+    } finally {
+      _sharing = false;
+      allBtns.forEach(b => b.classList.remove('is-sharing'));
+    }
   }
 
   async function fetchDefinition(word, language) {

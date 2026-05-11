@@ -383,6 +383,31 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   pointer-events: none;
 }
 
+/* Share button loading state — applies to both #shareBtn (header) and #sheetShareBtn (result sheet) */
+.is-sharing {
+  pointer-events: none;
+  position: relative;
+}
+.is-sharing > svg,
+.is-sharing > span,
+.is-sharing > * {
+  opacity: 0.25;
+  transition: opacity 0.15s;
+}
+.is-sharing::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 18px; height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btnSpin .7s linear infinite;
+  opacity: 0.9;
+}
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
 /* Shake animation */
 @keyframes shake {
   0%,100% { transform: translateX(0); }
