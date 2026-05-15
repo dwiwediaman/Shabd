@@ -1,0 +1,19 @@
+name = "shabd-api"
+main = "src/index.js"
+compatibility_date = "2025-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 database binding — created via `npm run db:create` then paste the
+# returned database_id below. Until then this section is just a placeholder.
+[[d1_databases]]
+binding       = "DB"
+database_name = "shabd-db"
+database_id   = "PASTE_AFTER_DB_CREATE"
+migrations_dir = "migrations"
+
+# Public vars (non-secret). Secrets go via `wrangler secret put`.
+[vars]
+APP_ENV          = "production"
+GOOGLE_CLIENT_ID = "PASTE_FROM_GOOGLE_CLOUD_CONSOLE"
+# Secrets to set later with wrangler secret put:
+#   SESSION_JWT_SECRET   (random 32+ char string)

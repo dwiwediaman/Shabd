@@ -1,0 +1,57 @@
+name: Deploy Shabd API (Cloudflare Worker)
+
+on:
+  push:
+    branches: [main, capacitor-app]
+    paths:
+      - 'workers/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: workers
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run D1 migrations (remote)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: d1 migrations apply shabd-db --remote
+        continue-on-error: true   # OK if no new migrations
+
+      - name: Deploy worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: deploy
+
+      - name: Smoke test /health
+        run: |
+          # Wait a moment for global propagation
+          sleep 5
+          URL="https://shabd-api.${{ secrets.CLOUDFLARE_WORKERS_SUBDOMAIN }}.workers.dev/health"
+          echo "Hitting $URL"
+          curl -fsS "$URL" | tee /tmp/health.json
+          jq -e '.ok == true' /tmp/health.json

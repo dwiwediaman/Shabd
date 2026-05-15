@@ -1,0 +1,22 @@
+{
+  "name": "shabd-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create shabd-db",
+    "db:migrate:local": "wrangler d1 migrations apply shabd-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply shabd-db --remote",
+    "db:console:local": "wrangler d1 execute shabd-db --local --command",
+    "db:console:remote": "wrangler d1 execute shabd-db --remote --command",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.80.0"
+  }
+}

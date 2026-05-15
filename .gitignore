@@ -78,3 +78,8 @@ vite.config.js.timestamp-*
 # ── Release binaries (stored separately, not in git) ─────────────────────────
 releases/**/*.aab
 releases/**/*.apk
+
+# ── Cloudflare Workers ────────────────────────────────────────────────────────
+workers/.wrangler/
+workers/.dev.vars
+workers/node_modules/
