@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -38,4 +39,16 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+        Explicitly REMOVE the advertising-ID permission that Google Play Services
+        Auth pulls in via transitive dependencies (Google Sign-In). We do not use
+        ads or the advertising ID, and the Play Console Data Safety form declares
+        this. Without this `tools:node="remove"`, the merged manifest would still
+        include the permission and Play Console would block releases with
+        "Incomplete advertising ID declaration".
+    -->
+    <uses-permission
+        android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
 </manifest>
