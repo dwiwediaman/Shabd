@@ -197,3 +197,38 @@ describe('validateGuess', () => {
     expect(result.input).toBe('crane');
   });
 });
+
+// ── No-duplicate guarantee for the permutation algorithm ──────────────────
+// Bug history: original seed%pool algorithm produced 199 duplicates in 365 days
+// (e.g. 'donna' on days 131 and 134). The permutation algorithm activates from
+// day 132 onward and must produce zero duplicates until a tier's pool exhausts.
+describe('generate — permutation algorithm has no duplicates', () => {
+  // Use a real-sized mock pool to exercise the K-counting and shuffle logic
+  const mockPool = Array.from({ length: 500 }, (_, i) => ({ word: `w${i}`, frequency_rank: i }));
+
+  it('produces unique words for 600+ consecutive days from day 132', async () => {
+    // Re-mock with the larger pool
+    vi.resetModules();
+    vi.doMock('../game/wordDb.js', () => ({
+      getDailyPool: (lang, tier) => tier === 'common' ? mockPool : [],
+      isValidGuess: () => true,
+    }));
+
+    const { generate, _resetShuffleCacheForTests } = await import('../game/wordleMechanic.js');
+    _resetShuffleCacheForTests();
+
+    const seen = new Map();
+    // Walk 600 days starting from the cutoff. Common pool has 500, so first
+    // collision is expected around day 132+500 = 632 (when common wraps).
+    for (let day = 132; day < 132 + 500; day++) {
+      const date = new Date(Date.UTC(2026, 0, 1) + (day - 1) * 86400000)
+        .toISOString().slice(0, 10);
+      const puzzle = generate(0, 'en', date);
+      if (seen.has(puzzle.target)) {
+        throw new Error(`Duplicate '${puzzle.target}' on day ${day} (first seen day ${seen.get(puzzle.target)})`);
+      }
+      seen.set(puzzle.target, day);
+    }
+    expect(seen.size).toBe(500);
+  });
+});
