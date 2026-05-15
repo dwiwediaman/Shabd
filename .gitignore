@@ -83,3 +83,4 @@ releases/**/*.apk
 workers/.wrangler/
 workers/.dev.vars
 workers/node_modules/
+workers/.local-secrets.md

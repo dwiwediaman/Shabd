@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding       = "DB"
 database_name = "shabd-db"
-database_id   = "PASTE_AFTER_DB_CREATE"
+database_id   = "524986b4-a85a-4c78-aa73-e142f9bfa93b"
 migrations_dir = "migrations"
 
 # Public vars (non-secret). Secrets go via `wrangler secret put`.
