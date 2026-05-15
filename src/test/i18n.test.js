@@ -47,11 +47,37 @@ const REQUIRED_KEYS = [
   'timeTravel', 'timeTravelSub', 'archiveDay',
   // Invite
   'inviteBtn', 'inviteText',
+  // Cloud sync (Phase 4)
+  'cloudBackupTitle', 'cloudBackupSub', 'cloudSignIn', 'cloudSignOut',
+  'cloudSyncNow', 'cloudSyncing', 'cloudSyncedAgo', 'cloudNeverSynced',
+  'cloudSignedInAs', 'cloudDelete', 'cloudDeleteConfirm',
+  'cloudSignInError', 'cloudNetworkError',
+  'cloudJustNow', 'cloudMinutesAgo', 'cloudHoursAgo', 'cloudDaysAgo',
+  // Squads
+  'squadsBtn', 'squadsBtnSub', 'squadsTitle', 'squadsEmpty',
+  'squadsCreateBtn', 'squadsJoinBtn',
+  'squadsCreateTitle', 'squadsCreateNameLabel', 'squadsCreateNamePlaceholder',
+  'squadsJoinTitle', 'squadsJoinCodeLabel', 'squadsJoinPlaceholder',
+  'squadsCreate', 'squadsJoin', 'squadsCancel',
+  'squadsInviteShare', 'squadsInviteMsg', 'squadsCopyCode', 'squadsCodeCopied',
+  'squadsToday', 'squadsLeaveSquad', 'squadsDisband',
+  'squadsConfirmLeave', 'squadsConfirmDisband',
+  'squadsMembers', 'squadsMembersCap',
+  'squadsMyRank', 'squadsRankWon', 'squadsRankLost', 'squadsRankNotPlayed',
+  'squadsHardModeBadge', 'squadsInviteCodeLabel',
+  'squadsErrorInvalidCode', 'squadsErrorFull', 'squadsErrorAlready', 'squadsErrorLimit',
+  'squadsSignInPrompt',
 ];
 
 const FUNCTION_KEYS = [
   'dayLabel', 'answer', 'hintRevealed', 'hardModeCorrect',
   'hardModePresent', 'lossTitle', 'archiveDay', 'footer',
+  // Cloud
+  'cloudSyncedAgo', 'cloudSignedInAs',
+  'cloudMinutesAgo', 'cloudHoursAgo', 'cloudDaysAgo',
+  // Squads
+  'squadsInviteMsg', 'squadsMembers', 'squadsMembersCap',
+  'squadsMyRank', 'squadsRankWon', 'squadsErrorLimit',
 ];
 
 describe('i18n — English', () => {
