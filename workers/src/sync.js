@@ -65,6 +65,10 @@ export async function handlePush(c) {
   // ── Upsert sessions (last-write-wins by submitted_at) ───────────────────
   for (const s of sessions) {
     if (!isValidSession(s)) continue;
+    // Same regression guard as /scores/submit:
+    //   - Newer timestamp required
+    //   - Can't overwrite a win
+    //   - Otherwise only upgrade (to a win, or to more attempts)
     const result = await db.prepare(`
       INSERT INTO sessions (user_id, puzzle_date, lang, guesses_json, won, attempts,
                             hard_mode, duration_ms, submitted_at)
@@ -77,6 +81,8 @@ export async function handlePush(c) {
         duration_ms  = excluded.duration_ms,
         submitted_at = excluded.submitted_at
       WHERE excluded.submitted_at > sessions.submitted_at
+        AND sessions.won = 0
+        AND (excluded.won = 1 OR excluded.attempts > sessions.attempts)
     `).bind(
       userId, s.date, s.lang, JSON.stringify(s.guesses),
       s.won ? 1 : 0, s.attempts, s.hardMode ? 1 : 0,

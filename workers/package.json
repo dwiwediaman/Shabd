@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "regen-pools": "node scripts/regen-pools.js",
+    "predeploy": "node scripts/regen-pools.js",
     "db:create": "wrangler d1 create shabd-db",
     "db:migrate:local": "wrangler d1 migrations apply shabd-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply shabd-db --remote",

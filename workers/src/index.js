@@ -13,6 +13,11 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { handleGoogleAuth, requireAuth, handleAccountDelete } from './auth.js';
 import { handlePull, handlePush } from './sync.js';
+import { handleScoreSubmit } from './scores.js';
+import {
+  handleSquadCreate, handleSquadJoin, handleSquadsList,
+  handleSquadBoard, handleSquadLeave,
+} from './squads.js';
 
 const app = new Hono();
 
@@ -35,7 +40,7 @@ app.use('*', cors({
 app.get('/health', (c) => c.json({
   ok:      true,
   service: 'shabd-api',
-  version: '0.2.0',
+  version: '0.3.0',
   env:     c.env.APP_ENV ?? 'unknown',
   time:    new Date().toISOString(),
 }));
@@ -43,9 +48,22 @@ app.get('/health', (c) => c.json({
 app.post('/auth/google', handleGoogleAuth);
 
 // ── Authenticated endpoints ───────────────────────────────────────────────
-app.get   ('/sync/pull', requireAuth, handlePull);
-app.post  ('/sync/push', requireAuth, handlePush);
-app.delete('/account',   requireAuth, handleAccountDelete);
+// Cloud save
+app.get   ('/sync/pull',       requireAuth, handlePull);
+app.post  ('/sync/push',       requireAuth, handlePush);
+
+// Score submission (server replays guesses against the day's target — anti-cheat)
+app.post  ('/scores/submit',   requireAuth, handleScoreSubmit);
+
+// Squads (private leaderboards)
+app.post  ('/squads/create',   requireAuth, handleSquadCreate);
+app.post  ('/squads/join',     requireAuth, handleSquadJoin);
+app.get   ('/squads',          requireAuth, handleSquadsList);
+app.get   ('/squads/:id/board',requireAuth, handleSquadBoard);
+app.delete('/squads/:id',      requireAuth, handleSquadLeave);
+
+// Account
+app.delete('/account',         requireAuth, handleAccountDelete);
 
 // ── Catch-all ─────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ ok: false, error: 'not_found' }, 404));
