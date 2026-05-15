@@ -1,51 +1,54 @@
 // Shabd API — Cloudflare Worker entry point.
 //
-// Endpoints (Phase 1):
-//   GET  /health                  → service liveness
+// Endpoints:
+//   GET    /health                  → service liveness
+//   POST   /auth/google             → exchange Google ID token for session JWT
+//   GET    /sync/pull               Bearer → cloud-save read
+//   POST   /sync/push               Bearer → cloud-save write (last-write-wins)
+//   DELETE /account                 Bearer → GDPR/DPDP right-to-delete
 //
-// Phase 2 will add:
-//   POST /auth/google             → exchange Google ID token for session JWT
-//   GET  /sync/pull               → cloud-save read
-//   POST /sync/push               → cloud-save write
-//   POST /squads/create           → create a leaderboard squad
-//   POST /squads/join             → join via invite code
-//   GET  /squads/:id/board        → today's leaderboard
-//   POST /scores/submit           → submit a play (server replays vs word DB)
-//   DELETE /account               → wipe user data (GDPR / DPDP)
+// Phase 3 will add: /squads/*, /scores/submit, /squads/:id/board
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { handleGoogleAuth, requireAuth, handleAccountDelete } from './auth.js';
+import { handlePull, handlePush } from './sync.js';
 
 const app = new Hono();
 
-// CORS — allow the Capacitor WebView origins + localhost dev.
+// ── CORS ──────────────────────────────────────────────────────────────────
+// Capacitor Android WebView ships requests from `https://localhost` (default)
+// or `capacitor://localhost` (older config). We allow both.
 app.use('*', cors({
   origin: [
     'http://localhost',
     'https://localhost',
-    'capacitor://localhost',  // Capacitor Android WebView
-    'ionic://localhost',      // Capacitor iOS WebView (just in case)
+    'capacitor://localhost',
+    'ionic://localhost',
   ],
   allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400,
 }));
 
-// ── Health check ───────────────────────────────────────────────────────────
-app.get('/health', (c) => {
-  return c.json({
-    ok:      true,
-    service: 'shabd-api',
-    version: '0.1.0',
-    env:     c.env.APP_ENV ?? 'unknown',
-    time:    new Date().toISOString(),
-  });
-});
+// ── Public endpoints ──────────────────────────────────────────────────────
+app.get('/health', (c) => c.json({
+  ok:      true,
+  service: 'shabd-api',
+  version: '0.2.0',
+  env:     c.env.APP_ENV ?? 'unknown',
+  time:    new Date().toISOString(),
+}));
 
-// 404 fallback
+app.post('/auth/google', handleGoogleAuth);
+
+// ── Authenticated endpoints ───────────────────────────────────────────────
+app.get   ('/sync/pull', requireAuth, handlePull);
+app.post  ('/sync/push', requireAuth, handlePush);
+app.delete('/account',   requireAuth, handleAccountDelete);
+
+// ── Catch-all ─────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ ok: false, error: 'not_found' }, 404));
-
-// Unhandled error fallback
 app.onError((err, c) => {
   console.error('[shabd-api]', err);
   return c.json({ ok: false, error: 'internal_error' }, 500);
