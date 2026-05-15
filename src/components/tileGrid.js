@@ -20,18 +20,23 @@ export function createTileGrid(tileCount, maxGuesses) {
     rows.push({ row, tiles });
   }
 
+  // Display normalization — match the keyboard's UPPERCASE so lowercase
+  // "l" can't be misread as uppercase "I" (Wordle convention).
+  // Devanagari has no case → .toUpperCase() is identity for Hindi tiles.
+  const display = (letter) => (letter ?? '').toUpperCase();
+
   function setLetter(rowIndex, colIndex, letter) {
     const tile = rows[rowIndex].tiles[colIndex];
     // Don't overwrite a hint tile with empty
     if (!letter && tile.className.includes('tile-hint')) return;
-    tile.textContent = letter;
+    tile.textContent = display(letter);
     tile.className = letter ? 'tile tile-active' : 'tile tile-empty';
   }
 
   function revealRow(rowIndex, perTileState, letters) {
     const { tiles } = rows[rowIndex];
     tiles.forEach((tile, i) => {
-      tile.textContent = letters[i] ?? '';
+      tile.textContent = display(letters[i]);
       // Stagger the flip animation
       setTimeout(() => {
         tile.className = `tile tile-${perTileState[i]}`;
@@ -51,7 +56,7 @@ export function createTileGrid(tileCount, maxGuesses) {
       const letters = [...guess.input].slice(0, tileCount); // crude; works for en
       guess.perTileState.forEach((state, c) => {
         const tile = rows[r].tiles[c];
-        tile.textContent = letters[c] ?? '';
+        tile.textContent = display(letters[c]);
         tile.className = `tile tile-${state}`;
       });
     });
@@ -59,7 +64,7 @@ export function createTileGrid(tileCount, maxGuesses) {
 
   function setHintLetter(rowIndex, colIndex, letter) {
     const tile = rows[rowIndex].tiles[colIndex];
-    tile.textContent = letter;
+    tile.textContent = display(letter);
     tile.className = 'tile tile-hint';
   }
 

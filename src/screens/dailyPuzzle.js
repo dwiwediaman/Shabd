@@ -370,7 +370,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     sheet.className = 'result-sheet';
     sheet.innerHTML = `
       <div class="result-handle"></div>
-      <div class="result-title">${won ? tx.brilliant : tx.lossTitle(puzzle.target)}</div>
+      <div class="result-title">${won ? tx.brilliant : tx.lossTitle(puzzle.target.toUpperCase())}</div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-big grad-gold">${streak.current}🔥</div><div class="stat-name">${tx.streak}</div></div>
         <div class="stat-card"><div class="stat-big">${stats.played}</div><div class="stat-name">${tx.played}</div></div>
@@ -406,7 +406,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       if (!el) return;
       if (def) {
         el.innerHTML = `
-          <div class="def-word">${puzzle.target}</div>
+          <div class="def-word">${puzzle.target.toUpperCase()}</div>
           <div class="def-meaning">${def.meaning}</div>
           ${def.example ? `<div class="def-example">"${def.example}"</div>` : ''}
         `;
