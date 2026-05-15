@@ -14,6 +14,6 @@ migrations_dir = "migrations"
 # Public vars (non-secret). Secrets go via `wrangler secret put`.
 [vars]
 APP_ENV          = "production"
-GOOGLE_CLIENT_ID = "PASTE_FROM_GOOGLE_CLOUD_CONSOLE"
+GOOGLE_CLIENT_ID = "345143844571-bc5hflbdgue0qphais119t4fob9ounik.apps.googleusercontent.com"
 # Secrets to set later with wrangler secret put:
 #   SESSION_JWT_SECRET   (random 32+ char string)
