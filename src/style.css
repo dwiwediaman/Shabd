@@ -589,7 +589,16 @@ input:checked + .slider { background: var(--violet); box-shadow: 0 0 12px rgba(1
 input:checked + .slider::before { transform: translateX(20px); }
 
 /* ── How To Play ───────────────────────────────────────────────────── */
-.htp-screen { padding: 0 20px 40px; overflow-y: auto; max-height: 100vh; }
+.htp-screen {
+  padding:
+    max(env(safe-area-inset-top, 0px), 28px)
+    20px
+    max(env(safe-area-inset-bottom, 0px), 40px);
+  overflow-y: auto;
+  height: 100vh;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
 .htp-intro  { font-size: 15px; color: var(--text); line-height: 1.65; margin-bottom: 20px; }
 
 /* Demo section */
