@@ -8,8 +8,11 @@ import { statsScreen }       from './screens/stats.js';
 import { settingsScreen }    from './screens/settings.js';
 import { howToPlayScreen }   from './screens/howToPlay.js';
 import { archiveScreen }     from './screens/archive.js';
+import { squadsScreen }      from './screens/squads.js';
 import { setupNotifications, scheduleDailyReminder } from './notifications.js';
 import { checkForUpdate } from './updateCheck.js';
+import { isSignedIn } from './cloud/auth.js';
+import { pullAndMerge } from './cloud/sync.js';
 
 // Register all screens
 register('menu',     mainMenuScreen);
@@ -18,6 +21,7 @@ register('stats',    statsScreen);
 register('settings', settingsScreen);
 register('howToPlay', howToPlayScreen);
 register('archive',   archiveScreen);
+register('squads',    squadsScreen);
 
 async function boot() {
   loadState();
@@ -53,6 +57,12 @@ async function boot() {
   // Check for app update on launch (Android only — silent no-op elsewhere).
   // Fire-and-forget — don't block boot.
   checkForUpdate();
+
+  // If signed in, pull cloud state in the background. Failures are non-fatal —
+  // the app remains fully usable on local data.
+  if (isSignedIn()) {
+    pullAndMerge().catch(e => console.warn('[boot] sync pull failed:', e));
+  }
 }
 
 boot().catch(console.error);

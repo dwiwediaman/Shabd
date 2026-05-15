@@ -5,6 +5,9 @@ import { get, recordCompletion, saveSession, getSession, refreshFreezes } from '
 import { today, forDate } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
 import { shareImage, preRenderShare, preloadShareFonts } from '../game/shareImage.js';
+import { isSignedIn } from '../cloud/auth.js';
+import { submitScore } from '../cloud/sync.js';
+import { listMySquads, getSquadBoard } from '../cloud/squads.js';
 import { t } from '../i18n.js';
 import { feedbackKeyPress, feedbackBackspace, feedbackInvalid, feedbackTileReveal, feedbackWin, feedbackLoss, feedbackHint } from '../feedback.js';
 
@@ -246,6 +249,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       if (mode === 'daily') {
         const { freezeUsed } = recordCompletion(lang, true, history.length, puzzleInfo.date);
         if (freezeUsed) setTimeout(() => showToast(tx.freezeUsed, 3000), 2100);
+        submitToCloudInBackground(true);
       }
       // Pre-render share image in background while animations play
       preRenderShare(puzzle, history);
@@ -255,12 +259,60 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       gameOver = true;
       setTimeout(feedbackLoss, tiles.length * 120 + 100);
       showToast(tx.answer(puzzle.target), 2500);
-      if (mode === 'daily') recordCompletion(lang, false, history.length, puzzleInfo.date);
+      if (mode === 'daily') {
+        recordCompletion(lang, false, history.length, puzzleInfo.date);
+        submitToCloudInBackground(false);
+      }
       // Pre-render share image in background while animations play
       preRenderShare(puzzle, history);
       setTimeout(showShareBtn, 2000);
       setTimeout(() => showResultSheet(false), 3000);
     }
+  }
+
+  // Fire-and-forget: send the game result to the cloud anti-cheat endpoint
+  // so squad leaderboards update. Failures are silent — the local game state
+  // is authoritative for the player's own stats.
+  function submitToCloudInBackground(/* won */) {
+    if (mode !== 'daily' || !isSignedIn()) return;
+    const guesses = history.map(h => h.input);
+    submitScore({
+      date:     puzzleInfo.date,
+      lang,
+      guesses,
+      hardMode: !!get().settings.hardMode,
+      durationMs: null, // we don't currently track puzzle duration
+    }).then(refreshResultSheetRank, () => {});
+  }
+
+  // After cloud submit succeeds, look up the user's squads + rank
+  // and inject the badge into the result sheet (if it's open).
+  async function refreshResultSheetRank() {
+    try {
+      const squads = await listMySquads();
+      if (!squads.length) return;
+      const squad = squads[0]; // primary squad — UX: show first one
+      const board = await getSquadBoard(squad.squadId, puzzleInfo.date, lang);
+      const slot  = document.getElementById('resultRankSlot');
+      if (slot) slot.innerHTML = rankBadgeHtml(squad.name, board.myRank, board.memberCount, tx);
+    } catch { /* no-op */ }
+  }
+
+  function rankBadgeHtml(squadName, rank, total, tx) {
+    if (!rank || rank < 1) return '';
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏆';
+    const safe  = (s) => String(s).replace(/[&<>"']/g, ch => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
+    return `
+      <div class="result-rank-badge">
+        <div class="result-rank-emoji">${medal}</div>
+        <div class="result-rank-text">
+          <div class="result-rank-name">${safe(squadName)}</div>
+          <div class="result-rank-line">${tx.squadsMyRank(rank, total)}</div>
+        </div>
+      </div>
+    `;
   }
 
   function updateProgress() {
@@ -378,6 +430,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
         <div class="stat-card"><div class="stat-big">${streak.max}</div><div class="stat-name">${tx.bestStreak}</div></div>
       </div>
       <div class="result-dist">${distRows}</div>
+      <div id="resultRankSlot"></div>
       <div class="result-countdown">
         <div class="countdown-label">${tx.nextWord}</div>
         <div class="countdown-time" id="sheetCountdown">${getCountdown()}</div>

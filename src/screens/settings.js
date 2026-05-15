@@ -3,6 +3,10 @@ import { get, setSetting, getSession } from '../game/gameState.js';
 import { t } from '../i18n.js';
 import { getISTDate } from '../game/seedEngine.js';
 import { setupNotifications, scheduleDailyReminder, cancelReminder } from '../notifications.js';
+import { Capacitor } from '@capacitor/core';
+import { isSignedIn, getCurrentUser, signIn, signOut, deleteCloudAccount } from '../cloud/auth.js';
+import { pullAndMerge, pushAll } from '../cloud/sync.js';
+import { LS_KEYS } from '../cloud/config.js';
 
 export function settingsScreen(root) {
   const s = get().settings;
@@ -103,6 +107,8 @@ export function settingsScreen(root) {
         </div>
       </div>
 
+      ${cloudSectionHtml(tx)}
+
       <div class="setting-group">
         <button class="setting-row setting-link" id="feedbackBtn" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;padding:0;">
           <div>
@@ -166,6 +172,9 @@ export function settingsScreen(root) {
     }
   });
 
+  // ── Cloud backup wiring ────────────────────────────────────────────────
+  wireCloudSection(tx);
+
   function spawnStars(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -177,4 +186,147 @@ export function settingsScreen(root) {
       el.appendChild(s);
     }
   }
+}
+
+// ── Cloud Backup section ──────────────────────────────────────────────────
+function cloudSectionHtml(tx) {
+  // On web, the social-login plugin can't sign in — hide the section entirely.
+  if (!Capacitor.isNativePlatform()) return '';
+
+  const signedIn = isSignedIn();
+  const user     = getCurrentUser();
+  const lastSync = readLastSync();
+
+  return `
+    <div class="setting-group" id="cloudGroup">
+      <div class="setting-row" style="align-items:flex-start;">
+        <div style="flex:1;min-width:0;">
+          <div class="setting-label">${tx.cloudBackupTitle}</div>
+          <div class="setting-sub">${signedIn && user ? tx.cloudSignedInAs(escapeHtml(user.nickname)) : tx.cloudBackupSub}</div>
+        </div>
+      </div>
+
+      ${signedIn ? `
+        <div id="cloudSyncStatus" class="setting-sub" style="margin-top:4px;font-size:11px;opacity:.65;">
+          ${lastSync ? tx.cloudSyncedAgo(formatAgo(lastSync, tx)) : tx.cloudNeverSynced}
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+          <button class="btn-cloud" id="cloudSyncBtn">${tx.cloudSyncNow}</button>
+          <button class="btn-cloud btn-cloud-secondary" id="cloudSignOutBtn">${tx.cloudSignOut}</button>
+          <button class="btn-cloud btn-cloud-danger" id="cloudDeleteBtn">${tx.cloudDelete}</button>
+        </div>
+      ` : `
+        <button class="btn-google-signin" id="cloudSignInBtn" style="margin-top:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21.35 11.1H12v3.84h5.36c-.23 1.23-.93 2.27-1.98 2.97v2.46h3.21c1.88-1.74 2.96-4.3 2.96-7.34 0-.6-.06-1.17-.2-1.93z" fill="#4285F4"/>
+            <path d="M12 22c2.7 0 4.96-.9 6.61-2.43l-3.21-2.46c-.9.6-2.04.96-3.4.96-2.61 0-4.82-1.76-5.6-4.13H3.07v2.6C4.72 19.7 8.1 22 12 22z" fill="#34A853"/>
+            <path d="M6.4 13.94a6 6 0 010-3.88v-2.6H3.07a10 10 0 000 9.08l3.33-2.6z" fill="#FBBC05"/>
+            <path d="M12 6c1.47 0 2.78.5 3.82 1.5l2.86-2.86C16.96 3.05 14.7 2 12 2 8.1 2 4.72 4.3 3.07 7.46l3.33 2.6C7.18 7.76 9.39 6 12 6z" fill="#EA4335"/>
+          </svg>
+          <span>${tx.cloudSignIn}</span>
+        </button>
+      `}
+    </div>
+  `;
+}
+
+function wireCloudSection(tx) {
+  if (!Capacitor.isNativePlatform()) return;
+
+  const signInBtn  = document.getElementById('cloudSignInBtn');
+  const syncBtn    = document.getElementById('cloudSyncBtn');
+  const signOutBtn = document.getElementById('cloudSignOutBtn');
+  const deleteBtn  = document.getElementById('cloudDeleteBtn');
+
+  if (signInBtn) {
+    signInBtn.addEventListener('click', async () => {
+      signInBtn.disabled = true;
+      signInBtn.innerHTML = `<span>${tx.cloudSyncing}</span>`;
+      try {
+        await signIn();
+        await pushAll();  // upload existing local state to cloud on first sign-in
+        await pullAndMerge();
+        navigate('settings');
+      } catch (e) {
+        console.warn('[cloud] sign-in failed:', e);
+        showSettingsToast(tx.cloudSignInError);
+        signInBtn.disabled = false;
+        navigate('settings');
+      }
+    });
+  }
+
+  if (syncBtn) {
+    syncBtn.addEventListener('click', async () => {
+      syncBtn.disabled = true;
+      const original = syncBtn.textContent;
+      syncBtn.textContent = tx.cloudSyncing;
+      try {
+        await pushAll();
+        await pullAndMerge();
+        const status = document.getElementById('cloudSyncStatus');
+        if (status) status.textContent = tx.cloudSyncedAgo(tx.cloudJustNow);
+      } catch {
+        showSettingsToast(tx.cloudNetworkError);
+      } finally {
+        syncBtn.disabled = false;
+        syncBtn.textContent = original;
+      }
+    });
+  }
+
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async () => {
+      await signOut();
+      navigate('settings');
+    });
+  }
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async () => {
+      if (!confirm(tx.cloudDeleteConfirm)) return;
+      try {
+        await deleteCloudAccount();
+        navigate('settings');
+      } catch {
+        showSettingsToast(tx.cloudNetworkError);
+      }
+    });
+  }
+}
+
+function readLastSync() {
+  try {
+    const v = localStorage.getItem(LS_KEYS.lastSyncAt);
+    return v ? Number(v) : null;
+  } catch { return null; }
+}
+
+function formatAgo(ts, tx) {
+  const diffMs = Date.now() - ts;
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1) return tx.cloudJustNow;
+  if (min < 60) return tx.cloudMinutesAgo(min);
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return tx.cloudHoursAgo(hr);
+  const day = Math.floor(hr / 24);
+  return tx.cloudDaysAgo(day);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, ch => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+  ));
+}
+
+function showSettingsToast(msg) {
+  const existing = document.querySelector('.settings-toast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'settings-toast menu-toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 250); }, 3000);
 }

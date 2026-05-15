@@ -775,6 +775,198 @@ input:checked + .slider::before { transform: translateX(20px); }
   padding: 12px; margin-bottom: 16px;
 }
 
+/* ── Result-sheet squad rank badge ────────────────────────────────────── */
+.result-rank-badge {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(124,58,237,.18), rgba(91,33,182,.12));
+  border: 1px solid rgba(167,139,250,.4);
+  border-radius: 12px;
+  margin: 12px 0 4px;
+}
+.result-rank-emoji { font-size: 28px; line-height: 1; }
+.result-rank-text  { flex: 1; min-width: 0; }
+.result-rank-name  { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.result-rank-line  { font-size: 15px; font-weight: 700; color: #fff; }
+
+/* ── Squads screen ────────────────────────────────────────────────────── */
+.squads-screen {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  height: 100%; overflow-y: auto;
+  padding:
+    max(env(safe-area-inset-top, 0px), 28px)
+    20px
+    max(env(safe-area-inset-bottom, 0px), 32px);
+  box-sizing: border-box;
+}
+
+.squads-loading, .squads-error {
+  text-align: center; padding: 40px 20px;
+  font-size: 13px; color: var(--muted);
+}
+
+.squads-empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 40px 16px;
+  gap: 16px;
+}
+.squads-icon-big { font-size: 64px; line-height: 1; }
+.squads-empty-title {
+  font-size: 22px; font-weight: 700; color: var(--text);
+}
+.squads-empty-sub {
+  font-size: 14px; color: var(--muted); line-height: 1.5;
+  max-width: 320px; margin: 0;
+}
+.squads-empty-actions {
+  display: flex; flex-direction: column; gap: 10px;
+  width: 100%; max-width: 280px; margin-top: 8px;
+}
+
+.squads-list { display: flex; flex-direction: column; gap: 10px; }
+.squad-card {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text); font-family: inherit;
+  cursor: pointer;
+  transition: background .15s;
+}
+.squad-card:active { background: rgba(255,255,255,.08); }
+.squad-card-emoji { font-size: 28px; flex-shrink: 0; }
+.squad-card-main { flex: 1; min-width: 0; text-align: left; }
+.squad-card-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.squad-card-meta { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.3px; }
+
+.squads-list-actions {
+  display: flex; gap: 10px; margin-top: 20px;
+}
+.squads-list-actions > * { flex: 1; }
+
+.squad-detail-header {
+  text-align: center; padding: 8px 0 20px;
+}
+.squad-detail-title { font-size: 22px; font-weight: 800; color: var(--text); }
+.squad-detail-sub  { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+.squad-invite-card {
+  background: rgba(124,58,237,.10);
+  border: 1px solid rgba(167,139,250,.32);
+  border-radius: 14px; padding: 14px;
+  margin-bottom: 20px;
+}
+.squad-invite-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+.squad-invite-row { display: flex; gap: 8px; align-items: center; }
+.squad-invite-code {
+  flex: 1; min-width: 0;
+  font-size: 20px; font-weight: 800; letter-spacing: 4px;
+  color: #fff; background: rgba(0,0,0,.25);
+  padding: 8px 12px; border-radius: 10px;
+  font-family: 'Space Grotesk', monospace; text-align: center;
+}
+
+.squad-board { display: flex; flex-direction: column; gap: 10px; }
+.squad-board-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding: 0 4px 4px;
+}
+.squad-my-rank { color: var(--violet2); font-weight: 700; }
+.squad-board-list { display: flex; flex-direction: column; gap: 6px; }
+.squad-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.squad-row.is-me { background: rgba(124,58,237,.10); border-color: rgba(167,139,250,.35); }
+.squad-row-rank { font-size: 16px; font-weight: 700; color: var(--text); min-width: 28px; text-align: center; }
+.squad-row-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-status { font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.rank-status.won    { color: #22C55E; }
+.rank-status.lost   { color: var(--muted); }
+.rank-status.notyet { color: var(--muted); opacity: .6; }
+
+/* ── Modal (used by Create / Join Squad) ──────────────────────────────── */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; transition: opacity .2s;
+}
+.modal-bg.show { opacity: 1; }
+.modal-card {
+  width: 100%; max-width: 360px;
+  background: linear-gradient(160deg, #1A1A30, #14142A);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+}
+.modal-title  { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+.modal-label  { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; display: block; margin-bottom: 6px; }
+.modal-input  {
+  width: 100%; padding: 12px 14px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text); font-size: 16px; font-family: inherit;
+  box-sizing: border-box;
+}
+.modal-input:focus { outline: none; border-color: var(--violet2); background: rgba(124,58,237,.08); }
+.modal-actions {
+  display: flex; gap: 10px; margin-top: 20px;
+}
+.modal-actions > * { flex: 1; }
+
+/* ── Cloud backup buttons (Settings) ──────────────────────────────────── */
+.btn-google-signin {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 12px 18px;
+  background: #fff;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  color: #1F1F2E;
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  transition: transform .1s, opacity .15s;
+}
+.btn-google-signin:active { transform: scale(.97); }
+.btn-google-signin:disabled { opacity: .55; cursor: default; }
+
+.btn-cloud {
+  background: rgba(124,58,237,.18);
+  border: 1px solid rgba(167,139,250,.4);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12px; font-weight: 600;
+  color: var(--violet2);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .12s, opacity .15s;
+}
+.btn-cloud:active { background: rgba(124,58,237,.30); }
+.btn-cloud:disabled { opacity: .55; cursor: default; }
+.btn-cloud-secondary {
+  background: rgba(255,255,255,.05);
+  border-color: var(--border);
+  color: var(--muted);
+}
+.btn-cloud-secondary:active { background: rgba(255,255,255,.1); }
+.btn-cloud-danger {
+  background: rgba(220,38,38,.12);
+  border-color: rgba(220,38,38,.4);
+  color: #FCA5A5;
+}
+.btn-cloud-danger:active { background: rgba(220,38,38,.22); }
+
 /* ── Settings link row ───────────────────────────────────────────────── */
 .setting-link { color: var(--text); }
 .setting-link .setting-label, .setting-link .setting-sub { margin-bottom: 0; }
