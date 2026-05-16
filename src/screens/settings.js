@@ -250,7 +250,10 @@ function wireCloudSection(tx) {
         navigate('settings');
       } catch (e) {
         console.warn('[cloud] sign-in failed:', e);
-        showSettingsToast(tx.cloudSignInError);
+        const msg = e?.message || '';
+        if (msg !== 'cancelled') {
+          showSettingsToast(tx.cloudSignInError + ' (' + (msg || 'unknown') + ')');
+        }
         signInBtn.disabled = false;
         navigate('settings');
       }

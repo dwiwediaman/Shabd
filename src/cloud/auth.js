@@ -48,22 +48,53 @@ export function getCurrentUser() {
 }
 
 // Triggers the native Google Sign-In sheet, then exchanges ID token for our session.
-// Returns { userId, nickname } on success, or throws.
+// Returns { userId, nickname } on success, or throws an Error whose .message is
+// a *stage-tagged* short string we can show to the user for debugging.
+//
+// Stages: init / google_signin / no_id_token / server / cancelled
 export async function signIn() {
   if (!Capacitor.isNativePlatform()) {
-    throw new Error('signin_native_only');
+    throw new Error('signin: native_only');
   }
-  await ensureInitialized();
 
-  const result = await SocialLogin.login({
-    provider: 'google',
-    options: { scopes: ['profile', 'email'] },
-  });
+  // 1. Plugin init
+  try {
+    await ensureInitialized();
+  } catch (e) {
+    console.warn('[auth] init failed:', e);
+    throw new Error('init: ' + shortReason(e));
+  }
+
+  // 2. Google Sign-In dialog
+  let result;
+  try {
+    result = await SocialLogin.login({
+      provider: 'google',
+      options: { scopes: ['profile', 'email'] },
+    });
+  } catch (e) {
+    console.warn('[auth] google signin failed:', e);
+    if (e?.code === 'USER_CANCELLED' || /cancel/i.test(e?.message || '')) {
+      throw new Error('cancelled');
+    }
+    throw new Error('google: ' + shortReason(e));
+  }
+
   const idToken = result?.result?.idToken;
-  if (!idToken) throw new Error('no_id_token');
+  if (!idToken) {
+    console.warn('[auth] no id token in result:', result);
+    throw new Error('no_id_token (responseType=' + (result?.result?.responseType ?? '?') + ')');
+  }
 
-  const resp = await apiPost('/auth/google', { idToken }, { auth: false });
-  if (!resp?.sessionToken) throw new Error('no_session_token');
+  // 3. Exchange with our worker
+  let resp;
+  try {
+    resp = await apiPost('/auth/google', { idToken }, { auth: false });
+  } catch (e) {
+    console.warn('[auth] server exchange failed:', e);
+    throw new Error('server: ' + shortReason(e));
+  }
+  if (!resp?.sessionToken) throw new Error('server: no_session_token');
 
   try {
     localStorage.setItem(LS_KEYS.sessionToken, resp.sessionToken);
@@ -73,6 +104,16 @@ export async function signIn() {
   } catch { /* localStorage full — caller can still proceed using returned values */ }
 
   return { userId: resp.userId, nickname: resp.nickname };
+}
+
+function shortReason(e) {
+  if (!e) return 'unknown';
+  if (typeof e === 'string') return e.slice(0, 60);
+  const parts = [];
+  if (e.code) parts.push('code=' + e.code);
+  if (e.status) parts.push('status=' + e.status);
+  if (e.message) parts.push(String(e.message).slice(0, 60));
+  return parts.join(' ') || 'unknown';
 }
 
 // Signs out locally. We don't call Google's signOut by default — most users

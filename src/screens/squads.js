@@ -69,7 +69,11 @@ function renderSignInPrompt(root, tx) {
     } catch (e) {
       console.warn('[squads] signin failed:', e);
       btn.disabled = false;
-      toast(t(get().settings.lang).cloudSignInError);
+      const msg = e?.message || '';
+      if (msg === 'cancelled') return; // user dismissed, no toast
+      // Show the stage-tagged reason so we can diagnose
+      const tx = t(get().settings.lang);
+      toast(tx.cloudSignInError + ' (' + (msg || 'unknown') + ')');
     }
   });
 }
