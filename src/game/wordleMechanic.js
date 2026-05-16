@@ -181,15 +181,36 @@ export function splitTiles(word, lang) {
 }
 
 function splitAksharas(word) {
+  // A Devanagari "akshara" is one orthographic syllable: a base consonant
+  // (possibly preceded by halant-joined consonants forming a conjunct) plus
+  // any attached matras / nukta / anusvara / visarga / virama / ZWJ / ZWNJ.
+  //
+  // Algorithm: a new akshara starts on a non-combining character only when
+  // the PREVIOUS character was NOT a halant (्). If it was a halant, the
+  // current consonant joins the cluster.
+  //
+  //   स्वाधीनता
+  //   = स + ् + व + ा + ध + ी + न + त + ा
+  //   → [स्व + ा, धी, न, ता]
+  //   → ['स्वा', 'धी', 'न', 'ता']   ← 4 aksharas (correct)
+  //
+  // Before this fix the splitter produced ['स्', 'वा', 'धी', 'न', 'ता']
+  // which made conjunct-cluster Hindi words unsolvable in a 4-tile grid.
+  const HALANT = 0x094D;
   const out = [];
   let current = '';
+  let prevWasHalant = false;
   for (const ch of word) {
-    if (isCombiningMark(ch)) {
+    const isCombining = isCombiningMark(ch);
+    if (isCombining) {
       current += ch;
+    } else if (prevWasHalant) {
+      current += ch;  // consonant joining a conjunct cluster
     } else {
       if (current) out.push(current);
       current = ch;
     }
+    prevWasHalant = (ch.codePointAt(0) === HALANT);
   }
   if (current) out.push(current);
   return out;

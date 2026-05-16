@@ -144,11 +144,22 @@ function isDevanagariCombining(ch) {
 }
 
 function splitAksharas(word) {
+  // Must match src/game/wordleMechanic.js exactly. See the comment there.
+  // Halant-joined consonants form a conjunct akshara (e.g. स् + व → स्व).
+  const HALANT = 0x094D;
   const out = [];
   let current = '';
+  let prevWasHalant = false;
   for (const ch of word) {
-    if (isDevanagariCombining(ch)) current += ch;
-    else { if (current) out.push(current); current = ch; }
+    if (isDevanagariCombining(ch)) {
+      current += ch;
+    } else if (prevWasHalant) {
+      current += ch;
+    } else {
+      if (current) out.push(current);
+      current = ch;
+    }
+    prevWasHalant = (ch.codePointAt(0) === HALANT);
   }
   if (current) out.push(current);
   return out;

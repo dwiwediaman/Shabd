@@ -85,6 +85,28 @@ describe('splitTiles', () => {
     const tiles = splitTiles('कमल', 'hi');
     expect(tiles).toEqual(['क', 'म', 'ल']);
   });
+
+  // Regression: prior to vc68 our splitter broke halant-joined conjuncts.
+  // "स्वाधीनता" was wrongly split as 5 aksharas ['स्', 'वा', 'धी', 'न', 'ता']
+  // instead of the correct 4 ['स्वा', 'धी', 'न', 'ता']. Every Hindi word
+  // with a conjunct cluster (स्व, क्ष, ज्ञ, etc.) was unsolvable in a 4-tile grid.
+  it('joins consonants across a halant into one conjunct akshara', () => {
+    // स्व is one akshara (s+v conjunct with halant)
+    expect(splitTiles('स्व', 'hi')).toEqual(['स्व']);
+  });
+
+  it('splits स्वाधीनता correctly into 4 aksharas', () => {
+    expect(splitTiles('स्वाधीनता', 'hi')).toEqual(['स्वा', 'धी', 'न', 'ता']);
+  });
+
+  it('handles क्षत्रिय (kshatriya) conjuncts', () => {
+    // क्ष = क+्+ष, त्रि = त+्+र+ि → ['क्ष', 'त्रि', 'य']
+    expect(splitTiles('क्षत्रिय', 'hi')).toEqual(['क्ष', 'त्रि', 'य']);
+  });
+
+  it('handles ज्ञान (jñāna) — double conjunct with matra', () => {
+    expect(splitTiles('ज्ञान', 'hi')).toEqual(['ज्ञा', 'न']);
+  });
 });
 
 describe('normalize', () => {
