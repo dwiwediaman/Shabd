@@ -68,9 +68,12 @@ export async function signIn() {
   // 2. Google Sign-In dialog
   let result;
   try {
+    // No `scopes` — the ID token already carries email + profile claims,
+    // and passing custom scopes requires registering GoogleSocialLogin in
+    // MainActivity (plugin v8 hard-errors otherwise).
     result = await SocialLogin.login({
       provider: 'google',
-      options: { scopes: ['profile', 'email'] },
+      options: {},
     });
   } catch (e) {
     console.warn('[auth] google signin failed:', e);

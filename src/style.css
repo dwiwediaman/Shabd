@@ -141,7 +141,10 @@ body::before {
 }
 
 /* ── Main Menu ─────────────────────────────────────────────────────── */
-.menu-screen { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; }
+/* Allow scrolling — on shorter phones (small viewports + gesture/nav
+   bar eating safe-area-bottom) the version + "Made in India" footer
+   was getting clipped because the shared wrapper sets overflow:hidden. */
+.menu-screen { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; overflow-y: auto; }
 
 .menu-topbar { display: flex; justify-content: flex-end; margin-bottom: 0; }
 
@@ -540,7 +543,21 @@ body::before {
 
 /* ── Stats Screen ──────────────────────────────────────────────────── */
 .stats-screen  { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
-.stats-header  { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+/* Header sticks to the top of the scroll container so the back-button
+   stays reachable while the user scrolls long pages (settings, htp,
+   stats). Extended horizontally via negative margins so the solid
+   background covers the screen's side padding and content can't peek
+   through. Sits just below the body::before notch backdrop (z=20). */
+.stats-header  {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: var(--bg);
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 -24px 16px;
+  padding: 8px 24px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
 .stats-title   { font-size: 22px; font-weight: 700; }
 .stats-back    { width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.10); color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; }
 .stats-back:active { background: rgba(255,255,255,.20); }
