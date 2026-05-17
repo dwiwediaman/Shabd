@@ -38,6 +38,22 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   position: relative;
 }
 
+/* ── Status-bar / notch backdrop ─────────────────────────────────────
+   A fixed bar covering the top safe-area inset so scrolled content
+   never bleeds into the notch/status-bar region. Sits above screen
+   content (z=20) but below modals/toasts (which use z >= 100). */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  z-index: 20;
+  pointer-events: none;
+}
+
 /* ── Stars / orbs (shared) ─────────────────────────────────────────── */
 .stars {
   position: absolute;

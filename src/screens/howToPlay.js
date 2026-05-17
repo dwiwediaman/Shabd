@@ -7,7 +7,7 @@ import { t } from '../i18n.js';
 // Word being guessed: DANCE (EN), शब्द-like sequence (HI)
 const DEMO_DATA = {
   en: [
-    { letters: ['G','R','A','C','E'], states: ['absent','absent','present','present','correct'] },
+    { letters: ['G','R','A','C','E'], states: ['absent','absent','present','correct','correct'] },
     { letters: ['D','A','N','C','E'], states: ['correct','correct','correct','correct','correct'] },
   ],
   hi: [
