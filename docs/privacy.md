@@ -120,6 +120,6 @@ We may update this policy as the app evolves. When we do, we'll update the **Eff
 
 For any privacy questions or to exercise your rights, contact the developer at:
 
-**Rahul Dwiwedi** · `dwiwediaman@gmail.com`
+**Manthan Studios** · `dwiwediaman@gmail.com`
 
 We aim to reply within 7 business days.
