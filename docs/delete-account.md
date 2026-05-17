@@ -32,7 +32,7 @@ Your local game data on the device is untouched. To also clear local data, unins
 
 If you cannot access the app (for example, you uninstalled it but want your cloud backup deleted):
 
-Send an email to **rahul.dwiwedi@decisionpoint.in** with:
+Send an email to **dwiwediaman@gmail.com** with:
 - Subject: `Shabd account deletion`
 - Body: The Google account email you used to sign in to Shabd.
 
@@ -59,4 +59,4 @@ We do **not** store your Google email, your real name, your phone number, your c
 
 ## Contact
 
-For any privacy or data-deletion questions, contact the developer at **rahul.dwiwedi@decisionpoint.in**.
+For any privacy or data-deletion questions, contact the developer at **dwiwediaman@gmail.com**.
