@@ -4,6 +4,8 @@
 // Max 50 members per squad (enforced here). Leaderboards are computed
 // per-day per-lang by joining squad_members against sessions.
 
+import { puzzleScore, compareForLeaderboard } from './score.js';
+
 const MAX_MEMBERS_PER_SQUAD     = 50;
 const MAX_SQUADS_PER_USER       = 10;
 const MAX_NAME_LEN              = 32;
@@ -183,7 +185,7 @@ export async function handleSquadBoard(c) {
   // Join members ⊕ their session for this puzzle (LEFT JOIN to include non-players)
   const rows = await c.env.DB.prepare(`
     SELECT u.user_id, u.nickname,
-           s.won, s.attempts, s.hard_mode, s.duration_ms, s.submitted_at
+           s.won, s.attempts, s.hard_mode, s.duration_ms, s.submitted_at, s.hints_used
     FROM squad_members m
     JOIN users u ON u.user_id = m.user_id
     LEFT JOIN sessions s ON s.user_id = m.user_id
@@ -192,30 +194,32 @@ export async function handleSquadBoard(c) {
     WHERE m.squad_id = ?
   `).bind(date, lang, squadId).all();
 
-  const members = (rows.results || []).map(r => ({
-    userId:      r.user_id,
-    nickname:    r.nickname,
-    played:      r.attempts != null,
-    won:         !!r.won,
-    attempts:    r.attempts,
-    hardMode:    !!r.hard_mode,
-    durationMs:  r.duration_ms,
-    submittedAt: r.submitted_at,
-    isMe:        r.user_id === userId,
-  }));
-
-  // Sort: won (fewer attempts better, faster better) > lost > unplayed
-  members.sort((a, b) => {
-    const aRank = a.won ? 0 : a.played ? 1 : 2;
-    const bRank = b.won ? 0 : b.played ? 1 : 2;
-    if (aRank !== bRank) return aRank - bRank;
-    if (a.won && b.won) {
-      if (a.attempts !== b.attempts) return a.attempts - b.attempts;
-      return (a.durationMs ?? Infinity) - (b.durationMs ?? Infinity);
-    }
-    if (a.played && b.played) return (a.submittedAt ?? 0) - (b.submittedAt ?? 0);
-    return 0;
+  // Build rows, computing each player's score from the same formula the
+  // client uses. We deliberately DO NOT include hintsUsed in the response
+  // — it's a private input to the score; opponents see only the result.
+  const members = (rows.results || []).map(r => {
+    const score = puzzleScore({
+      won:       !!r.won,
+      attempts:  r.attempts,
+      hardMode:  !!r.hard_mode,
+      hintsUsed: r.hints_used ?? 0,
+    });
+    return {
+      userId:      r.user_id,
+      nickname:    r.nickname,
+      played:      r.attempts != null,
+      won:         !!r.won,
+      attempts:    r.attempts,
+      hardMode:    !!r.hard_mode,
+      score,
+      submittedAt: r.submitted_at,
+      isMe:        r.user_id === userId,
+    };
   });
+
+  // Sort: higher score → fewer attempts → hard mode → nickname.
+  // Players who haven't played sink to the bottom inside the comparator.
+  members.sort(compareForLeaderboard);
 
   const myRank = members.findIndex(m => m.userId === userId) + 1; // 1-indexed
 

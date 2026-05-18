@@ -82,14 +82,11 @@ export function mainMenuScreen(root) {
           <span class="btn-badge">${playBadge}</span>
         </button>
 
-        <!-- Practice — with sub-label -->
-        <button class="btn-secondary btn-with-sub" id="btnPractice">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <div class="btn-text">
-            <div class="btn-text-main">${tx.practiceMode}</div>
-            <div class="btn-text-sub">${tx.practiceSub}</div>
-          </div>
-        </button>
+        <!--
+          Practice Mode card removed in vc76. The 'practice' route
+          stays registered for one release as a no-op safety net for
+          any in-flight share/intent URLs; full removal lands in vc77.
+        -->
 
         <!-- Past Puzzles (was Time Travel) — with sub-label -->
         <button class="btn-secondary btn-with-sub" id="btnArchive">
@@ -151,7 +148,7 @@ export function mainMenuScreen(root) {
 
   // ─── Primary actions ─────────────────────────────────────────────────────
   root.querySelector('#btnPlay').addEventListener('click', () => navigate('puzzle', { mode: 'daily' }));
-  root.querySelector('#btnPractice').addEventListener('click', () => navigate('puzzle', { mode: 'practice' }));
+  // btnPractice removed in vc76 — Practice Mode card pulled from the menu.
   root.querySelector('#btnArchive').addEventListener('click', () => navigate('archive'));
   root.querySelector('#btnSquads').addEventListener('click', () => navigate('squads'));
   root.querySelector('#btnStats').addEventListener('click', () => navigate('stats'));

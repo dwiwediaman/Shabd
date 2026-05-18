@@ -10,7 +10,7 @@
 import { apiGet, apiPost, ApiError } from './api.js';
 import { isSignedIn, clearLocalSession } from './auth.js';
 import { LS_KEYS } from './config.js';
-import { get, save, getSession, saveSession } from '../game/gameState.js';
+import { get, save, getSession, saveSession, setSessionMeta } from '../game/gameState.js';
 import { Capacitor } from '@capacitor/core';
 
 // ── Public API ────────────────────────────────────────────────────────────
@@ -36,6 +36,12 @@ export async function pullAndMerge() {
     const local = getSession(key);
     if (shouldAcceptRemote(local, s)) {
       saveSession(key, s.guesses);  // existing API stores any JSON shape
+      // Mirror server's score-relevant metadata locally so stats / share
+      // / squad rank can be recomputed offline.
+      setSessionMeta(key, {
+        hintsUsed:  s.hintsUsed ?? 0,
+        durationMs: s.durationMs ?? null,
+      });
       result.pulledSessions++;
     }
   }
@@ -98,10 +104,10 @@ export async function pushAll() {
 // Submit a single game result via the anti-cheat path (server replays guesses).
 // Returns { won, attempts, target?, submittedAt } from the server.
 // Use this on game end. Falls back to local-only if not signed in / offline.
-export async function submitScore({ date, lang, guesses, hardMode = false, durationMs = null }) {
+export async function submitScore({ date, lang, guesses, hardMode = false, durationMs = null, hintsUsed = 0 }) {
   if (!isSignedIn()) return { skipped: 'not_signed_in' };
   try {
-    return await apiPost('/scores/submit', { date, lang, guesses, hardMode, durationMs });
+    return await apiPost('/scores/submit', { date, lang, guesses, hardMode, durationMs, hintsUsed });
   } catch (e) {
     if (e instanceof ApiError && e.status === 401) { clearLocalSession(); return { error: 'session_expired' }; }
     return { error: e.code || 'submit_failed' };
@@ -171,17 +177,20 @@ export function shouldAcceptRemote(localGuesses, remoteSession) {
 
 function collectLocalSessions(state) {
   const out = [];
+  const meta = state.sessionMeta || {};
   for (const [key, guesses] of Object.entries(state.sessions || {})) {
     const [date, lang] = key.split('|');
     if (!date || !lang || !Array.isArray(guesses) || !guesses.length) continue;
-    const last     = guesses[guesses.length - 1];
-    const won      = !!last?.isCorrect;
-    const attempts = guesses.length;
+    const last       = guesses[guesses.length - 1];
+    const won        = !!last?.isCorrect;
+    const attempts   = guesses.length;
+    const sessionMeta = meta[key] || {};
     out.push({
       date, lang, guesses,
       won, attempts,
       hardMode:    !!state.settings?.hardMode,
-      durationMs:  null,
+      hintsUsed:   sessionMeta.hintsUsed ?? 0,
+      durationMs:  sessionMeta.durationMs ?? null,
       submittedAt: Date.now(),  // approximate — server preserves first-write timestamp
     });
   }

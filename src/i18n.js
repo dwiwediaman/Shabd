@@ -185,6 +185,7 @@ const translations = {
     squadsDeepLinkOwner:        (name) => `Created by ${name}`,
     squadsDeepLinkJoin:         'Join squad',
     squadsDeepLinkSignInAndJoin:'Sign in & join',
+    squadsPts:                  'pts',
   },
 
   hi: {
@@ -373,6 +374,7 @@ const translations = {
     squadsDeepLinkOwner:        (name) => `${name} द्वारा बनाया गया`,
     squadsDeepLinkJoin:         'स्क्वाड में जुड़ें',
     squadsDeepLinkSignInAndJoin:'साइन इन करें और जुड़ें',
+    squadsPts:                  'अंक',
   },
 };
 

@@ -9,6 +9,11 @@ const DEFAULTS = {
   freezes:  { hi: { count: 1, lastResetWeek: '' }, en: { count: 1, lastResetWeek: '' } },
   // today's in-progress guess history, keyed by "YYYY-MM-DD|lang"
   sessions: {},
+  // per-session metadata that doesn't fit in the guesses array (hint count,
+  // play duration). Same key shape as `sessions`. Added vc76 for leaderboard
+  // scoring — missing entries imply { hintsUsed: 0, durationMs: null }, which
+  // is the correct semantic for pre-vc76 historical sessions.
+  sessionMeta: {},
 };
 
 let _state = null;
@@ -55,6 +60,21 @@ export function saveSession(sessionKey, guesses) {
 
 export function getSession(sessionKey) {
   return get().sessions[sessionKey] ?? null;
+}
+
+// Per-session metadata (hints used so far, total duration when finished).
+// Reads return safe defaults so callers don't have to null-check every time.
+export function getSessionMeta(sessionKey) {
+  const s = get();
+  if (!s.sessionMeta) s.sessionMeta = {};
+  return s.sessionMeta[sessionKey] ?? { hintsUsed: 0, durationMs: null };
+}
+
+export function setSessionMeta(sessionKey, patch) {
+  const s = get();
+  if (!s.sessionMeta) s.sessionMeta = {};
+  s.sessionMeta[sessionKey] = { ...getSessionMeta(sessionKey), ...patch };
+  save();
 }
 
 export function setSetting(key, value) {

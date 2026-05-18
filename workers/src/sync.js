@@ -12,7 +12,7 @@ export async function handlePull(c) {
 
   const [sessions, freezes, prefs] = await Promise.all([
     db.prepare(`SELECT puzzle_date, lang, guesses_json, won, attempts, hard_mode,
-                       duration_ms, submitted_at
+                       duration_ms, submitted_at, hints_used
                 FROM sessions WHERE user_id = ?
                 ORDER BY puzzle_date DESC LIMIT 500`)
       .bind(userId).all(),
@@ -32,6 +32,7 @@ export async function handlePull(c) {
       hardMode:    !!row.hard_mode,
       durationMs:  row.duration_ms,
       submittedAt: row.submitted_at,
+      hintsUsed:   row.hints_used ?? 0,
     })),
     freezes: (freezes.results || []).map(row => ({
       lang:     row.lang,
@@ -69,24 +70,26 @@ export async function handlePush(c) {
     //   - Newer timestamp required
     //   - Can't overwrite a win
     //   - Otherwise only upgrade (to a win, or to more attempts)
+    const hintsSafe = Math.max(0, Math.min(6, Number(s.hintsUsed) | 0));
     const result = await db.prepare(`
       INSERT INTO sessions (user_id, puzzle_date, lang, guesses_json, won, attempts,
-                            hard_mode, duration_ms, submitted_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            hard_mode, duration_ms, submitted_at, hints_used)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(user_id, puzzle_date, lang) DO UPDATE SET
         guesses_json = excluded.guesses_json,
         won          = excluded.won,
         attempts     = excluded.attempts,
         hard_mode    = excluded.hard_mode,
         duration_ms  = excluded.duration_ms,
-        submitted_at = excluded.submitted_at
+        submitted_at = excluded.submitted_at,
+        hints_used   = excluded.hints_used
       WHERE excluded.submitted_at > sessions.submitted_at
         AND sessions.won = 0
         AND (excluded.won = 1 OR excluded.attempts > sessions.attempts)
     `).bind(
       userId, s.date, s.lang, JSON.stringify(s.guesses),
       s.won ? 1 : 0, s.attempts, s.hardMode ? 1 : 0,
-      s.durationMs ?? null, s.submittedAt,
+      s.durationMs ?? null, s.submittedAt, hintsSafe,
     ).run();
     counts.sessions++;
   }

@@ -70,6 +70,8 @@ const REQUIRED_KEYS = [
   // Squads — deep-link join confirm modal
   'squadsDeepLinkTitle', 'squadsDeepLinkMembers', 'squadsDeepLinkOwner',
   'squadsDeepLinkJoin', 'squadsDeepLinkSignInAndJoin',
+  // Squads — leaderboard score chip (vc76)
+  'squadsPts',
 ];
 
 const FUNCTION_KEYS = [

@@ -341,10 +341,17 @@ async function renderSquadDetail(root, tx, squadId) {
 }
 
 function squadBoardRowHtml(m, position, tx) {
+  // Score chip is the primary ranking signal (vc76+). The attempt count
+  // remains visible as a secondary readout so users see WHY the score
+  // is what it is. Players who haven't played show "—" instead of "0 pts"
+  // so it's visually distinct from a played-and-lost row.
+  const scoreText = m.played
+    ? `${m.score ?? 0} ${tx.squadsPts}`
+    : '—';
   let status;
-  if (m.won)        status = `<span class="rank-status won">${tx.squadsRankWon(m.attempts)}</span>`;
+  if (m.won)         status = `<span class="rank-status won">${tx.squadsRankWon(m.attempts)}</span>`;
   else if (m.played) status = `<span class="rank-status lost">${tx.squadsRankLost}</span>`;
-  else              status = `<span class="rank-status notyet">${tx.squadsRankNotPlayed}</span>`;
+  else               status = `<span class="rank-status notyet">${tx.squadsRankNotPlayed}</span>`;
 
   const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `#${position}`;
   return `
@@ -354,7 +361,10 @@ function squadBoardRowHtml(m, position, tx) {
         ${escapeHtml(m.nickname)}
         ${m.hardMode ? `<span class="hard-badge">${tx.squadsHardModeBadge}</span>` : ''}
       </div>
-      ${status}
+      <div class="squad-row-meta">
+        <span class="squad-row-score">${scoreText}</span>
+        ${status}
+      </div>
     </div>
   `;
 }

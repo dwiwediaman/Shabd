@@ -18,7 +18,7 @@ export async function handleScoreSubmit(c) {
   let body;
   try { body = await c.req.json(); } catch { return c.json({ error: 'invalid_json' }, 400); }
 
-  const { date, lang, guesses, hardMode = false, durationMs = null } = body;
+  const { date, lang, guesses, hardMode = false, durationMs = null, hintsUsed = 0 } = body;
 
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date))
     return c.json({ error: 'invalid_date' }, 400);
@@ -49,24 +49,26 @@ export async function handleScoreSubmit(c) {
   //   3. Otherwise: only overwrite if new state is better/longer
   //      (more attempts attempted = more progress through the game)
   const now = Date.now();
+  const hintsSafe = Math.max(0, Math.min(6, Number(hintsUsed) | 0));
   await c.env.DB.prepare(`
     INSERT INTO sessions (user_id, puzzle_date, lang, guesses_json, won, attempts,
-                          hard_mode, duration_ms, submitted_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          hard_mode, duration_ms, submitted_at, hints_used)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id, puzzle_date, lang) DO UPDATE SET
       guesses_json = excluded.guesses_json,
       won          = excluded.won,
       attempts     = excluded.attempts,
       hard_mode    = excluded.hard_mode,
       duration_ms  = excluded.duration_ms,
-      submitted_at = excluded.submitted_at
+      submitted_at = excluded.submitted_at,
+      hints_used   = excluded.hints_used
     WHERE excluded.submitted_at > sessions.submitted_at
       AND sessions.won = 0
       AND (excluded.won = 1 OR excluded.attempts > sessions.attempts)
   `).bind(
     userId, date, lang, JSON.stringify(guesses),
     result.won ? 1 : 0, result.attempts, hardMode ? 1 : 0,
-    durationMs, now,
+    durationMs, now, hintsSafe,
   ).run();
 
   return c.json({

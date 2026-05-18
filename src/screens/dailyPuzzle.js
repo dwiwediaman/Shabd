@@ -1,7 +1,7 @@
 import { navigate } from '../components/router.js';
 import { createTileGrid } from '../components/tileGrid.js';
 import { createKeyboard, DEVANAGARI_MODIFIERS } from '../components/keyboard.js';
-import { get, recordCompletion, saveSession, getSession, refreshFreezes } from '../game/gameState.js';
+import { get, recordCompletion, saveSession, getSession, getSessionMeta, setSessionMeta, refreshFreezes } from '../game/gameState.js';
 import { today, forDate } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
 import { shareImage, preRenderShare, preloadShareFonts } from '../game/shareImage.js';
@@ -36,8 +36,14 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   );
 
   const MAX_HINTS = 3;
-  let hintsLeft = MAX_HINTS;
+  // Restore hints used from prior session (e.g. user backgrounded mid-game).
+  // Only daily/archive games persist hint state — practice is ephemeral.
+  const persistedMeta = mode === 'daily' ? getSessionMeta(sessionKey) : { hintsUsed: 0 };
+  let hintsUsedSoFar = persistedMeta.hintsUsed ?? 0;
+  let hintsLeft = Math.max(0, MAX_HINTS - hintsUsedSoFar);
   const hintedPositions = new Set();
+  // Game-start timestamp for durationMs measurement.
+  const gameStartedAt = Date.now();
 
   // Build UI
   root.innerHTML = `
@@ -113,6 +119,10 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     const letter = targetTiles[pos];
     hintedPositions.add(pos);
     hintsLeft--;
+    hintsUsedSoFar++;
+    // Persist immediately so a mid-game close/reopen preserves the cost
+    // (only for daily; practice & archive don't go to cloud anyway)
+    if (mode === 'daily') setSessionMeta(sessionKey, { hintsUsed: hintsUsedSoFar });
 
     // Show in grid and pre-fill current input
     grid.setHintLetter(currentRow, pos, letter);
@@ -276,12 +286,16 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   function submitToCloudInBackground(/* won */) {
     if (mode !== 'daily' || !isSignedIn()) return;
     const guesses = history.map(h => h.input);
+    const durationMs = Date.now() - gameStartedAt;
+    // Persist final meta so cold-start backfill picks it up if cloud submit fails
+    setSessionMeta(sessionKey, { hintsUsed: hintsUsedSoFar, durationMs });
     submitScore({
       date:     puzzleInfo.date,
       lang,
       guesses,
-      hardMode: !!get().settings.hardMode,
-      durationMs: null, // we don't currently track puzzle duration
+      hardMode:  !!get().settings.hardMode,
+      hintsUsed: hintsUsedSoFar,
+      durationMs,
     }).then(refreshResultSheetRank, () => {});
   }
 
