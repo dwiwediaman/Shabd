@@ -26,3 +26,31 @@ name          = "RL_PREVIEW"
 type          = "ratelimit"
 namespace_id  = "1001"
 simple        = { limit = 30, period = 60 }
+
+# Rate limits for authenticated/sensitive endpoints (vc79 / H1).
+# All are eventually consistent (Cloudflare's approximate semantics) but
+# raise the cost of abuse significantly.
+
+# /auth/google — 10 sign-ins/min/IP. Sign-in is rare per-user; this just
+# prevents one IP from flooding user-creation.
+[[unsafe.bindings]]
+name          = "RL_AUTH"
+type          = "ratelimit"
+namespace_id  = "1002"
+simple        = { limit = 10, period = 60 }
+
+# /sync/push — 30 pushes/min/user. Even an active player typically pushes
+# once per minute or two; 30/min comfortably above legit ceiling.
+[[unsafe.bindings]]
+name          = "RL_PUSH"
+type          = "ratelimit"
+namespace_id  = "1003"
+simple        = { limit = 30, period = 60 }
+
+# /squads/create — 5 creates/min/user. Per-user cap (MAX_SQUADS_PER_USER=10)
+# already exists; this just stops a rapid-fire flood scenario.
+[[unsafe.bindings]]
+name          = "RL_CREATE"
+type          = "ratelimit"
+namespace_id  = "1004"
+simple        = { limit = 5, period = 60 }

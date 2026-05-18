@@ -12,6 +12,7 @@
 // attempts: 1 } with arbitrary guesses to inflate squad scores.
 
 import { replayGuesses } from './wordleReplay.js';
+import { checkRateLimit } from './rateLimit.js';
 
 const SUBMIT_WINDOW_DAYS = 7;
 
@@ -62,6 +63,12 @@ export async function handlePull(c) {
 // POST /sync/push  Bearer  { sessions?, freezes?, prefs? } → { merged: { sessions, freezes, prefs } }
 export async function handlePush(c) {
   const userId = c.get('userId');
+  // H1: rate-limit per user. ensureBackfilled (cold-start) only fires once
+  // per 24h, and finished-game submitScore goes to /scores/submit, so
+  // legit pushes are rare; 30/min is well above ceiling.
+  const limited = await checkRateLimit(c, c.env.RL_PUSH, userId);
+  if (limited) return limited;
+
   const db = c.env.DB;
 
   let body;

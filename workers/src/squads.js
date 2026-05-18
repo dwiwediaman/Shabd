@@ -5,6 +5,7 @@
 // per-day per-lang by joining squad_members against sessions.
 
 import { puzzleScore, compareForLeaderboard } from './score.js';
+import { checkRateLimit, clientIp } from './rateLimit.js';
 
 const MAX_MEMBERS_PER_SQUAD     = 50;
 const MAX_SQUADS_PER_USER       = 10;
@@ -32,6 +33,12 @@ function generateInviteCode() {
 // POST /squads/create  Bearer  { name } → { squadId, name, inviteCode }
 export async function handleSquadCreate(c) {
   const userId = c.get('userId');
+  // H1: rate-limit squad creation per user. MAX_SQUADS_PER_USER (10) already
+  // caps total ownership; this prevents a rapid-fire flood scenario where a
+  // user repeatedly creates+disbands.
+  const limited = await checkRateLimit(c, c.env.RL_CREATE, userId);
+  if (limited) return limited;
+
   let body;
   try { body = await c.req.json(); } catch { return c.json({ error: 'invalid_json' }, 400); }
 
@@ -84,13 +91,8 @@ export async function handleSquadCreate(c) {
 // kill the squad-enumeration attack. The check is wrapped in optional
 // chaining so local dev (no binding) still works.
 export async function handleSquadPreview(c) {
-  const ip = c.req.header('CF-Connecting-IP')
-          || c.req.header('X-Forwarded-For')
-          || 'unknown';
-  if (c.env.RL_PREVIEW?.limit) {
-    const { success } = await c.env.RL_PREVIEW.limit({ key: ip });
-    if (!success) return c.json({ error: 'rate_limited' }, 429);
-  }
+  const limited = await checkRateLimit(c, c.env.RL_PREVIEW, clientIp(c));
+  if (limited) return limited;
 
   const code = (c.req.query('code') ?? '').trim().toUpperCase();
   if (!code || !/^[A-Z0-9]{4,8}$/.test(code))
@@ -136,6 +138,15 @@ export async function handleSquadJoin(c) {
     .bind(squad.squad_id, userId).first();
   if (existing)
     return c.json({ squadId: squad.squad_id, name: squad.name, alreadyMember: true });
+
+  // M3: per-user membership cap (mirrors the create-time owner cap). Without
+  // this, a single user could join thousands of squads and bloat their
+  // /squads list response into a soft-DoS for the server.
+  const myCount = await c.env.DB
+    .prepare('SELECT COUNT(*) AS n FROM squad_members WHERE user_id = ?')
+    .bind(userId).first();
+  if ((myCount?.n ?? 0) >= MAX_SQUADS_PER_USER)
+    return c.json({ error: 'membership_limit_reached', max: MAX_SQUADS_PER_USER }, 400);
 
   // Capacity check
   const count = await c.env.DB

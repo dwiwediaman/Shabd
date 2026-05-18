@@ -26,11 +26,11 @@ If you choose to back up your progress, the following is sent to our servers
 hosted on Cloudflare:
 
 - **An opaque Google user identifier** (Google's "sub" claim from the ID token). We use this only to link your sign-in to your saved data. We do **not** store your email, name, or profile picture.
-- **A nickname**, automatically derived from the local part of your Google email (e.g. `rahul@example.com` becomes "Rahul"). This is shown to your friends inside a Squad. You can change it later.
-- **Game sessions**: for each puzzle you've played, the date, the language (English or Hindi), the words you guessed, whether you won, and how many attempts you took.
+- **A nickname**, by default derived from the local part of your Google email (e.g. `rahul@example.com` becomes "Rahul"). You can choose your own nickname instead. This is shown to your friends inside a Squad.
+- **Game sessions**: for each puzzle you've played, the date, the language (English or Hindi), the words you guessed, whether you won, how many attempts you took, how long the round took, and the number of hints you used during the round. (Hint usage is used in your private score calculation but is never shown to other players.)
 - **Streak freezes** that you've used or have available.
 - **Preferences**: the language you play in, whether Hard Mode is on, and whether you've seen the tutorial.
-- **Squads (private leaderboards)**: the name of any Squad you create, its 6-character invite code, the date you joined, and your rank for each day.
+- **Squads (private leaderboards)**: the name of any Squad you create, its invite code, the date you joined, and your rank for each day.
 
 That's the complete list.
 

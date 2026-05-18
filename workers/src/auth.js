@@ -8,6 +8,7 @@
 //   Returns { userId, nickname, sessionToken } to client
 
 import { signJwt, verifyJwt } from './jwt.js';
+import { checkRateLimit, clientIp } from './rateLimit.js';
 
 const GOOGLE_JWKS_URL  = 'https://www.googleapis.com/oauth2/v3/certs';
 const GOOGLE_ISS       = ['https://accounts.google.com', 'accounts.google.com'];
@@ -94,6 +95,10 @@ export async function verifyGoogleIdToken(idToken, expectedAudience) {
 // ── Auth route handler ──────────────────────────────────────────────────────
 // POST /auth/google  { idToken } → { userId, nickname, sessionToken }
 export async function handleGoogleAuth(c) {
+  // H1: rate-limit sign-in per IP (no user identity yet at this stage).
+  const limited = await checkRateLimit(c, c.env.RL_AUTH, clientIp(c));
+  if (limited) return limited;
+
   let body;
   try { body = await c.req.json(); } catch { return c.json({ error: 'invalid_json' }, 400); }
   const idToken = body?.idToken;
@@ -119,7 +124,7 @@ export async function handleGoogleAuth(c) {
 
   if (!user) {
     const userId   = crypto.randomUUID();
-    const nickname = body.nickname?.trim() || derivedNickname(claims) || `Player${userId.slice(0, 4)}`;
+    const nickname = sanitizeNickname(body.nickname) || derivedNickname(claims) || `Player${userId.slice(0, 4)}`;
     await db
       .prepare(`INSERT INTO users (user_id, google_sub, nickname, created_at, last_sync_at)
                 VALUES (?, ?, ?, ?, ?)`)
@@ -131,6 +136,23 @@ export async function handleGoogleAuth(c) {
       .prepare('UPDATE users SET last_sync_at = ? WHERE user_id = ?')
       .bind(now, user.user_id)
       .run();
+  }
+
+  // M1: replay protection for the Google ID token. Each ID token has a
+  // unique (sub, iat) pair — same physical token presented twice would
+  // collide on the PRIMARY KEY. We prefer the explicit `jti` claim when
+  // Google sets it, otherwise fall back to a deterministic composite.
+  const jti = claims.jti || `${googleSub}|${claims.iat}`;
+  const expMs = (claims.exp || (Math.floor(now / 1000) + 3600)) * 1000;
+  const nonceInsert = await db
+    .prepare('INSERT OR IGNORE INTO auth_nonces (jti, user_id, expires_at) VALUES (?, ?, ?)')
+    .bind(jti, user.user_id, expMs)
+    .run();
+  // `changes === 0` means the row already existed → this is a replay.
+  // Reject WITHOUT minting a new session JWT.
+  if (nonceInsert?.meta?.changes === 0) {
+    console.warn('[auth] id token replay detected for sub=', googleSub);
+    return c.json({ error: 'token_replay' }, 401);
   }
 
   const sessionToken = await signJwt(
@@ -145,6 +167,31 @@ export async function handleGoogleAuth(c) {
   });
 }
 
+// M2: bound + sanitize any client-supplied nickname before it ever reaches
+// the DB. 24 chars max, strips ASCII control chars + the zero-width and
+// RTL-override Unicode characters commonly abused for invisible "look-alike"
+// handles. Returns null on empty-after-strip so the caller falls through
+// to the derived/default nickname.
+const NICKNAME_MAX = 24;
+const NICK_STRIP = new RegExp(
+  // ASCII control (00-1F, 7F)
+  '[\\u0000-\\u001F\\u007F'
+  // Zero-width space / ZWNJ / ZWJ / LRM / RLM
+  + '\\u200B-\\u200F'
+  // Bidi embedding / override (RLO abuse classic)
+  + '\\u202A-\\u202E'
+  // Word joiner + other invisible formatting
+  + '\\u2060-\\u206F'
+  // BOM / zero-width no-break space
+  + '\\uFEFF]',
+  'g'
+);
+export function sanitizeNickname(raw) {
+  if (typeof raw !== 'string') return null;
+  const cleaned = raw.replace(NICK_STRIP, '').trim().slice(0, NICKNAME_MAX);
+  return cleaned || null;
+}
+
 // Pull a sensible default nickname from the email local-part (no PII stored).
 function derivedNickname(claims) {
   if (!claims.email) return null;
@@ -157,6 +204,13 @@ function derivedNickname(claims) {
 
 // ── Middleware: require valid session token ─────────────────────────────────
 // Use as: app.use('/sync/*', requireAuth)
+//
+// M4: also confirm the user_id still exists. After /account deletion the
+// session JWT remains signature-valid for its remaining TTL (up to 30d) —
+// without this check, the deleted user could keep hitting our endpoints
+// with their stale token, even though all their data is already gone.
+// The extra row-lookup is cheap (PRIMARY KEY hit) and is amortised across
+// the request's other DB work.
 export async function requireAuth(c, next) {
   const authHeader = c.req.header('Authorization') || '';
   const m = authHeader.match(/^Bearer\s+(.+)$/i);
@@ -164,6 +218,11 @@ export async function requireAuth(c, next) {
 
   const claims = await verifyJwt(m[1], c.env.SESSION_JWT_SECRET);
   if (!claims?.sub) return c.json({ error: 'invalid_session' }, 401);
+
+  const user = await c.env.DB
+    .prepare('SELECT 1 FROM users WHERE user_id = ?')
+    .bind(claims.sub).first();
+  if (!user) return c.json({ error: 'account_deleted' }, 401);
 
   c.set('userId', claims.sub);
   await next();
