@@ -23,6 +23,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep link: shabd://squad/<inviteCode>
+                 Lets squad-invite share-links jump straight into the app
+                 (Squads screen) with the join code pre-filled. The web
+                 fallback page at https://dwiwediaman.github.io/Shabd/s/
+                 triggers this scheme via window.location when the app
+                 is installed; otherwise it shows a Play Store CTA. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="shabd" />
+            </intent-filter>
+
         </activity>
 
         <provider

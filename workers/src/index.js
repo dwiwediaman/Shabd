@@ -16,7 +16,7 @@ import { handlePull, handlePush } from './sync.js';
 import { handleScoreSubmit } from './scores.js';
 import {
   handleSquadCreate, handleSquadJoin, handleSquadsList,
-  handleSquadBoard, handleSquadLeave,
+  handleSquadBoard, handleSquadLeave, handleSquadPreview,
 } from './squads.js';
 
 const app = new Hono();
@@ -45,7 +45,8 @@ app.get('/health', (c) => c.json({
   time:    new Date().toISOString(),
 }));
 
-app.post('/auth/google', handleGoogleAuth);
+app.post('/auth/google',   handleGoogleAuth);
+app.get ('/squads/preview', handleSquadPreview); // public — deep-link landing
 
 // ── Authenticated endpoints ───────────────────────────────────────────────
 // Cloud save

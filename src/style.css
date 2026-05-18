@@ -328,7 +328,10 @@ body::before {
 /* ── Puzzle Screen ─────────────────────────────────────────────────── */
 .puzzle-header {
   display: flex; align-items: center;
-  padding: max(env(safe-area-inset-top, 0px), 32px) 16px 12px;
+  /* Extra 8px on top so the hint-count badge (top:-4px) doesn't get
+     clipped by the body::before notch backdrop on phones where
+     env(safe-area-inset-top) exactly equals the header's padding-top. */
+  padding: calc(max(env(safe-area-inset-top, 0px), 32px) + 8px) 16px 12px;
   gap: 8px;
 }
 .hdr-btn {
@@ -957,6 +960,19 @@ input:checked + .slider::before { transform: translateX(20px); }
   display: flex; gap: 10px; margin-top: 20px;
 }
 .modal-actions > * { flex: 1; }
+
+/* ── Deep-link join confirm modal ──────────────────────────────────── */
+.squads-deeplink-card {
+  background: rgba(124,58,237,.08);
+  border: 1px solid rgba(167,139,250,.25);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+}
+.squads-deeplink-emoji  { font-size: 36px; margin-bottom: 6px; }
+.squads-deeplink-name   { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; word-break: break-word; }
+.squads-deeplink-meta   { font-size: 13px; color: var(--muted); margin-bottom: 2px; }
+.squads-deeplink-owner  { font-size: 12px; color: var(--muted); opacity: .85; }
 
 /* ── Cloud backup buttons (Settings) ──────────────────────────────────── */
 .btn-google-signin {

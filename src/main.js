@@ -12,7 +12,9 @@ import { squadsScreen }      from './screens/squads.js';
 import { setupNotifications, scheduleDailyReminder } from './notifications.js';
 import { checkForUpdate } from './updateCheck.js';
 import { isSignedIn } from './cloud/auth.js';
-import { pullAndMerge } from './cloud/sync.js';
+import { ensureBackfilled } from './cloud/sync.js';
+import { setPendingDeepLink, parseShabdDeepLink, consumePendingDeepLink } from './deepLink.js';
+import { App as CapApp } from '@capacitor/app';
 
 // Register all screens
 register('menu',     mainMenuScreen);
@@ -22,6 +24,26 @@ register('settings', settingsScreen);
 register('howToPlay', howToPlayScreen);
 register('archive',   archiveScreen);
 register('squads',    squadsScreen);
+
+// ── Deep-link listener (registered BEFORE boot so cold-start URLs aren't
+//    lost between the launch intent and screen registration) ───────────
+try {
+  // Capture any deep link the OS handed us at launch
+  CapApp.getLaunchUrl?.()
+    .then(res => {
+      const parsed = parseShabdDeepLink(res?.url);
+      if (parsed) setPendingDeepLink(parsed);
+    })
+    .catch(() => {});
+  // Warm-start: app already running, OS delivers a new URL
+  CapApp.addListener?.('appUrlOpen', (event) => {
+    const parsed = parseShabdDeepLink(event?.url);
+    if (!parsed) return;
+    if (parsed.kind === 'squad') navigate('squads', { joinCode: parsed.code });
+  });
+} catch (e) {
+  // Capacitor not available (running in browser/dev) — silently ignore
+}
 
 async function boot() {
   loadState();
@@ -39,6 +61,14 @@ async function boot() {
   const app = document.getElementById('app');
   app.classList.add('visible');
 
+  // If we got a deep link at cold start, route to it instead of menu/tutorial
+  const pending = consumePendingDeepLink();
+  if (pending?.kind === 'squad') {
+    navigate('squads', { joinCode: pending.code });
+    // skip the regular landing logic — user wants to handle this invite now
+    return scheduleBackgroundWork();
+  }
+
   const flags = get().flags;
   if (!flags.seenTutorial) {
     navigate('howToPlay', { firstTime: true });
@@ -46,6 +76,10 @@ async function boot() {
     navigate('menu');
   }
 
+  scheduleBackgroundWork();
+}
+
+function scheduleBackgroundWork() {
   // Re-schedule daily reminder on each launch (keeps it alive)
   const s = get().settings;
   if (s.notifications) {
@@ -58,10 +92,12 @@ async function boot() {
   // Fire-and-forget — don't block boot.
   checkForUpdate();
 
-  // If signed in, pull cloud state in the background. Failures are non-fatal —
-  // the app remains fully usable on local data.
+  // If signed in, push local-only sessions to the cloud (once per 24h max),
+  // then pull anything the server has. Failures are non-fatal — the app
+  // remains fully usable on local data. The throttle inside ensureBackfilled
+  // means warm starts still pull, but skip the full push every time.
   if (isSignedIn()) {
-    pullAndMerge().catch(e => console.warn('[boot] sync pull failed:', e));
+    ensureBackfilled().catch(e => console.warn('[boot] sync failed:', e));
   }
 }
 

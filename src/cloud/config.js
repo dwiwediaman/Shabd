@@ -9,9 +9,10 @@ export const WEB_CLIENT_ID   = '345143844571-bc5hflbdgue0qphais119t4fob9ounik.ap
 
 // LocalStorage keys (kept in one place so we can audit what we store)
 export const LS_KEYS = {
-  sessionToken: 'shabd_cloud_session',  // our HS256 session JWT
-  userId:       'shabd_cloud_userId',   // our internal user_id
-  nickname:     'shabd_cloud_nickname',
-  lastSyncAt:   'shabd_cloud_lastSyncAt',
-  signedIn:     'shabd_cloud_signedIn', // boolean string flag
+  sessionToken:    'shabd_cloud_session',       // our HS256 session JWT
+  userId:          'shabd_cloud_userId',        // our internal user_id
+  nickname:        'shabd_cloud_nickname',
+  lastSyncAt:      'shabd_cloud_lastSyncAt',
+  lastBackfillAt:  'shabd_cloud_lastBackfillAt',// last successful full push (cold-start throttle)
+  signedIn:        'shabd_cloud_signedIn',      // boolean string flag
 };

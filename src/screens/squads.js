@@ -14,18 +14,29 @@ import { getISTDate } from '../game/seedEngine.js';
 import { t } from '../i18n.js';
 import { Capacitor } from '@capacitor/core';
 import { isSignedIn, signIn } from '../cloud/auth.js';
+import { syncAfterSignIn } from '../cloud/sync.js';
 import {
   createSquad, joinSquad, listMySquads,
-  getSquadBoard, leaveOrDisbandSquad,
+  getSquadBoard, leaveOrDisbandSquad, previewSquad,
 } from '../cloud/squads.js';
 import { Share } from '@capacitor/share';
 
 // Top-level entry — picks the right view based on params.
-//   navigate('squads')                     → list view
-//   navigate('squads', { squadId: '...' }) → detail view
+//   navigate('squads')                       → list view
+//   navigate('squads', { squadId: '...' })   → detail view
+//   navigate('squads', { joinCode: 'ABC' })  → deep-link join flow
 export function squadsScreen(root, params = {}) {
   const lang = get().settings.lang;
   const tx   = t(lang);
+
+  // Deep-link join flow: arrives here from shabd://squad/<code>.
+  // Renders the list view in the background and overlays a preview /
+  // confirm-to-join modal. Works whether or not the user is signed in
+  // (preview endpoint is public; signing in is deferred to the "Join" tap).
+  if (params.joinCode) {
+    handleDeepLinkJoin(root, tx, params.joinCode);
+    return;
+  }
 
   if (!Capacitor.isNativePlatform() || !isSignedIn()) {
     renderSignInPrompt(root, tx);
@@ -37,6 +48,90 @@ export function squadsScreen(root, params = {}) {
   } else {
     renderSquadsList(root, tx);
   }
+}
+
+// ── Deep-link join flow ────────────────────────────────────────────────────
+// 1. Render the appropriate background screen (sign-in prompt OR squads list)
+// 2. Fetch public preview of the squad
+// 3. Show a confirm modal: name, member count, owner — with [Join] / [Cancel]
+// 4. If signed out, the Join button signs in first, then joins
+async function handleDeepLinkJoin(root, tx, rawCode) {
+  const code = String(rawCode).trim().toUpperCase();
+
+  // Render an appropriate background so the modal doesn't sit on a blank screen
+  if (!Capacitor.isNativePlatform() || !isSignedIn()) {
+    renderSignInPrompt(root, tx);
+  } else {
+    renderSquadsList(root, tx);
+  }
+
+  // Show a loading modal immediately — preview fetch may take a moment
+  const loading = openModal(`
+    <div class="modal-title">${tx.squadsDeepLinkTitle}</div>
+    <div class="squads-loading" style="margin:14px 0;">${tx.cloudSyncing}</div>
+  `);
+
+  let preview;
+  try {
+    preview = await previewSquad(code);
+  } catch (e) {
+    loading.close();
+    const msg = e?.code === 'invalid_code' ? tx.squadsErrorInvalidCode : tx.cloudNetworkError;
+    toast(msg);
+    return;
+  }
+  loading.close();
+
+  showDeepLinkConfirmModal(tx, code, preview);
+}
+
+function showDeepLinkConfirmModal(tx, code, preview) {
+  const signedIn   = isSignedIn();
+  const joinLabel  = signedIn ? tx.squadsDeepLinkJoin : tx.squadsDeepLinkSignInAndJoin;
+  const memberLine = tx.squadsDeepLinkMembers(preview.memberCount, preview.max);
+
+  const m = openModal(`
+    <div class="modal-title">${tx.squadsDeepLinkTitle}</div>
+    <div class="squads-deeplink-card">
+      <div class="squads-deeplink-emoji">🏅</div>
+      <div class="squads-deeplink-name">${escapeHtml(preview.name)}</div>
+      <div class="squads-deeplink-meta">${memberLine}</div>
+      ${preview.owner ? `<div class="squads-deeplink-owner">${tx.squadsDeepLinkOwner(preview.owner)}</div>` : ''}
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="modalCancel">${tx.squadsCancel}</button>
+      <button class="btn-primary"   id="modalSubmit">${joinLabel}</button>
+    </div>
+  `);
+
+  document.getElementById('modalCancel').addEventListener('click', m.close);
+  document.getElementById('modalSubmit').addEventListener('click', async () => {
+    const btn = document.getElementById('modalSubmit');
+    btn.disabled = true;
+    try {
+      if (!isSignedIn()) {
+        // Sign-in deferred until the user actually wanted to commit.
+        // After signing in, push any pre-existing local sessions so the
+        // user's history isn't stuck on the device that signed in first.
+        await signIn();
+        await syncAfterSignIn();
+      }
+      const resp = await joinSquad(code);
+      m.close();
+      navigate('squads', { squadId: resp.squadId });
+    } catch (e) {
+      console.warn('[squads] deep-link join failed:', e);
+      const reason = e?.message || '';
+      if (reason === 'cancelled') { btn.disabled = false; return; }
+      const msg = e?.code === 'invalid_code' ? tx.squadsErrorInvalidCode
+                : e?.code === 'squad_full'   ? tx.squadsErrorFull
+                : reason.startsWith('google:') || reason.startsWith('init:') || reason.startsWith('server')
+                  ? tx.cloudSignInError + ' (' + reason + ')'
+                  : tx.cloudNetworkError;
+      toast(msg);
+      btn.disabled = false;
+    }
+  });
 }
 
 // ── Sign-in prompt (shown to web users + signed-out native users) ──────────
@@ -65,6 +160,10 @@ function renderSignInPrompt(root, tx) {
     btn.disabled = true;
     try {
       await signIn();
+      // Backfill pre-existing local sessions to the cloud before navigating.
+      // Without this, a user whose first sign-in is via Squads (not Settings)
+      // would see their history "start from joining date" on other devices.
+      await syncAfterSignIn();
       navigate('squads');
     } catch (e) {
       console.warn('[squads] signin failed:', e);

@@ -108,14 +108,64 @@ export async function submitScore({ date, lang, guesses, hardMode = false, durat
   }
 }
 
+// ── Public: one-shot "sign in, then backfill + pull" used by every sign-in path ─
+// Centralises the post-signIn dance so the Settings, Squads, and deep-link
+// flows all sync identically. Returns { pushed, pulled, error? }.
+//
+// IMPORTANT: signIn() must already have completed before calling this — pass
+// a thunk if you want sign-in inside the helper.
+export async function syncAfterSignIn() {
+  if (!isSignedIn()) return { skipped: 'not_signed_in' };
+  const push = await pushAll();
+  if (push.error) return { error: push.error };
+  const pull = await pullAndMerge();
+  if (pull.error) return { error: pull.error };
+  try { localStorage.setItem(LS_KEYS.lastBackfillAt, String(Date.now())); } catch {}
+  return {
+    pushedSessions: push.pushedSessions ?? 0,
+    pulledSessions: pull.pulledSessions ?? 0,
+    pulledFreezes:  pull.pulledFreezes  ?? 0,
+  };
+}
+
+// Called from boot: push any local-only sessions to the server, then pull.
+// Throttled so we don't hammer the server on every warm start — only does the
+// full push once per 24h (or if no successful backfill is on record yet).
+const BACKFILL_THROTTLE_MS = 24 * 60 * 60 * 1000;
+export async function ensureBackfilled() {
+  if (!isSignedIn()) return { skipped: 'not_signed_in' };
+  const last = Number(localStorage.getItem(LS_KEYS.lastBackfillAt) || 0);
+  if (last && Date.now() - last < BACKFILL_THROTTLE_MS) {
+    // Still pull — server may have newer sessions from other devices
+    return await pullAndMerge();
+  }
+  return await syncAfterSignIn();
+}
+
 // ── Internal helpers ──────────────────────────────────────────────────────
 
-function shouldAcceptRemote(localGuesses, remoteSession) {
-  if (!localGuesses || !localGuesses.length) return true;     // no local → take remote
-  if (!remoteSession.submittedAt)            return false;   // remote has no timestamp
-  // Local doesn't carry submittedAt — be conservative: if local seems newer or equal
-  // (already-played today), skip. The server-side LWW guards already protect against
-  // wins being clobbered on push.
+// Decide whether the remote copy of a (date,lang) session should overwrite
+// the local one. Local is authoritative for in-progress play, but a remote
+// "more complete" session (won, or more attempts) wins so cross-device sync
+// actually works. Exported so it's directly testable.
+export function shouldAcceptRemote(localGuesses, remoteSession) {
+  if (!localGuesses || !localGuesses.length)       return true;   // no local → take remote
+  if (!remoteSession.guesses || !remoteSession.guesses.length)
+                                                   return false;  // remote has no payload
+
+  const localLast    = localGuesses[localGuesses.length - 1];
+  const localWon     = !!localLast?.isCorrect;
+  const localAttempt = localGuesses.length;
+
+  // Never let remote downgrade a local win
+  if (localWon && !remoteSession.won) return false;
+
+  // Remote is a win and local isn't → take remote (finished on another device)
+  if (remoteSession.won && !localWon) return true;
+
+  // Both same win/loss status → take whichever has more attempts (further along)
+  if (remoteSession.attempts > localAttempt) return true;
+
   return false;
 }
 

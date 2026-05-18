@@ -67,6 +67,9 @@ const REQUIRED_KEYS = [
   'squadsHardModeBadge', 'squadsInviteCodeLabel',
   'squadsErrorInvalidCode', 'squadsErrorFull', 'squadsErrorAlready', 'squadsErrorLimit',
   'squadsSignInPrompt',
+  // Squads — deep-link join confirm modal
+  'squadsDeepLinkTitle', 'squadsDeepLinkMembers', 'squadsDeepLinkOwner',
+  'squadsDeepLinkJoin', 'squadsDeepLinkSignInAndJoin',
 ];
 
 const FUNCTION_KEYS = [
@@ -78,6 +81,7 @@ const FUNCTION_KEYS = [
   // Squads
   'squadsInviteMsg', 'squadsMembers', 'squadsMembersCap',
   'squadsMyRank', 'squadsRankWon', 'squadsErrorLimit',
+  'squadsDeepLinkMembers', 'squadsDeepLinkOwner',
 ];
 
 describe('i18n — English', () => {

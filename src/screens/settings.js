@@ -5,7 +5,7 @@ import { getISTDate } from '../game/seedEngine.js';
 import { setupNotifications, scheduleDailyReminder, cancelReminder } from '../notifications.js';
 import { Capacitor } from '@capacitor/core';
 import { isSignedIn, getCurrentUser, signIn, signOut, deleteCloudAccount } from '../cloud/auth.js';
-import { pullAndMerge, pushAll } from '../cloud/sync.js';
+import { pullAndMerge, pushAll, syncAfterSignIn } from '../cloud/sync.js';
 import { LS_KEYS } from '../cloud/config.js';
 
 export function settingsScreen(root) {
@@ -245,8 +245,7 @@ function wireCloudSection(tx) {
       signInBtn.innerHTML = `<span>${tx.cloudSyncing}</span>`;
       try {
         await signIn();
-        await pushAll();  // upload existing local state to cloud on first sign-in
-        await pullAndMerge();
+        await syncAfterSignIn();  // push local history, then pull anything the server already has
         navigate('settings');
       } catch (e) {
         console.warn('[cloud] sign-in failed:', e);

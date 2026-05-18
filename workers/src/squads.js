@@ -65,6 +65,35 @@ export async function handleSquadCreate(c) {
   return c.json({ squadId, name, inviteCode });
 }
 
+// GET /squads/preview?code=ABC123 (PUBLIC, no auth) → { name, memberCount, owner }
+// Used by the deep-link landing flow: shows squad details in a confirm
+// modal before the user commits to joining. Returns just enough public
+// metadata for a decision; no PII beyond the owner's chosen nickname.
+export async function handleSquadPreview(c) {
+  const code = (c.req.query('code') ?? '').trim().toUpperCase();
+  if (!code || !/^[A-Z0-9]{4,8}$/.test(code))
+    return c.json({ error: 'invalid_code' }, 400);
+
+  const row = await c.env.DB.prepare(`
+    SELECT s.name, s.squad_id, u.nickname AS owner
+    FROM squads s
+    LEFT JOIN users u ON u.user_id = s.owner_user_id
+    WHERE s.invite_code = ?
+  `).bind(code).first();
+  if (!row) return c.json({ error: 'invalid_code' }, 404);
+
+  const count = await c.env.DB
+    .prepare('SELECT COUNT(*) AS n FROM squad_members WHERE squad_id = ?')
+    .bind(row.squad_id).first();
+
+  return c.json({
+    name:        row.name,
+    owner:       row.owner ?? 'Unknown',
+    memberCount: count?.n ?? 0,
+    max:         MAX_MEMBERS_PER_SQUAD,
+  });
+}
+
 // POST /squads/join  Bearer  { inviteCode } → { squadId, name }
 export async function handleSquadJoin(c) {
   const userId = c.get('userId');

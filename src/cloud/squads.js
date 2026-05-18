@@ -11,6 +11,14 @@ export async function joinSquad(inviteCode) {
   return apiPost('/squads/join', { inviteCode: String(inviteCode).trim().toUpperCase() });
 }
 
+// Public — does NOT require sign-in. Used by the deep-link landing flow
+// so we can show squad name + member count in a confirm popup before
+// asking the user to sign in / join.
+export async function previewSquad(inviteCode) {
+  const code = String(inviteCode).trim().toUpperCase();
+  return apiGet(`/squads/preview?code=${encodeURIComponent(code)}`, { auth: false });
+}
+
 export async function listMySquads() {
   const resp = await apiGet('/squads');
   return resp?.squads || [];

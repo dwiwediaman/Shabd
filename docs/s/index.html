@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A14" />
+  <meta name="robots" content="noindex" />
+
+  <!-- Social previews (WhatsApp, Telegram, etc.) -->
+  <meta property="og:title" content="Join my Shabd squad" />
+  <meta property="og:description" content="Tap to join my private leaderboard on Shabd, the daily Hindi + English Wordle." />
+  <meta property="og:image" content="https://dwiwediaman.github.io/Shabd/icon.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+
+  <title>Join my Shabd squad</title>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      background: #0A0A14;
+      color: #F1F0FF;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #12121F;
+      border: 1px solid #2A2A45;
+      border-radius: 20px;
+      padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 12px 48px rgba(0,0,0,.5);
+    }
+    .logo {
+      width: 64px; height: 64px;
+      margin: 0 auto 18px;
+      background: linear-gradient(135deg, #7C3AED, #F5A623);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 800;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(124,58,237,.4);
+    }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    p  { font-size: 15px; color: #8B8BA7; line-height: 1.5; margin-bottom: 22px; }
+    .code-chip {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(167,139,250,.15);
+      border: 1px solid rgba(167,139,250,.3);
+      border-radius: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #A78BFA;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #7C3AED, #A78BFA);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(124,58,237,.4);
+      margin-bottom: 12px;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,.06);
+      color: #F1F0FF;
+      border: 1px solid #2A2A45;
+    }
+    .footer-note {
+      margin-top: 22px;
+      font-size: 12px;
+      color: #6B6B86;
+    }
+    .footer-note a { color: #A78BFA; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="logo">श</div>
+    <h1>Join my Shabd squad</h1>
+    <p>You've been invited to a private leaderboard on <strong>Shabd</strong> — the daily Hindi + English word puzzle.</p>
+    <div id="codeChip" class="code-chip" hidden></div>
+
+    <a id="openAppBtn" href="#" class="btn btn-primary">Open in Shabd</a>
+    <a id="installBtn" class="btn btn-secondary"
+       href="https://play.google.com/store/apps/details?id=in.shabd.game">
+      Install from Google Play
+    </a>
+
+    <p class="footer-note">
+      Already installed? Tap <strong>Open in Shabd</strong>.<br>
+      New here? Install, sign in, and tap this link again.
+    </p>
+    <p class="footer-note">
+      Rāhi Studios · <a href="https://dwiwediaman.github.io/Shabd/privacy">Privacy</a>
+    </p>
+  </main>
+
+  <script>
+    (function () {
+      // Pull invite code from ?c=ABC123 (also accept ?code=)
+      var params = new URLSearchParams(window.location.search);
+      var code = (params.get('c') || params.get('code') || '').trim().toUpperCase();
+      // Sanity check — accept only A-Z 0-9, 4-8 chars
+      if (!/^[A-Z0-9]{4,8}$/.test(code)) code = '';
+
+      // Show the code chip if valid
+      if (code) {
+        var chip = document.getElementById('codeChip');
+        chip.textContent = code;
+        chip.hidden = false;
+      }
+
+      // Wire the "Open in Shabd" button → custom scheme. The Android app
+      // registers an intent-filter for shabd://; if installed, it opens
+      // and routes to the Squads screen with the join-confirm popup.
+      // If not installed, the click is a no-op — the user can use the
+      // Install button below.
+      var openBtn = document.getElementById('openAppBtn');
+      var deepLink = code ? ('shabd://squad/' + code) : 'shabd://open';
+      openBtn.setAttribute('href', deepLink);
+
+      // Auto-attempt the deep link on page load (best-effort).
+      // Some browsers / messenger in-app-webviews block this; the button
+      // is the reliable fallback so users always have a tap to make.
+      var attempted = false;
+      function tryDeepLink() {
+        if (attempted) return;
+        attempted = true;
+        try { window.location.href = deepLink; } catch (e) { /* ignore */ }
+      }
+      // Slight delay so the page paints first
+      setTimeout(tryDeepLink, 350);
+
+      // Tag the install link with referrer so Play attribution works
+      var installBtn = document.getElementById('installBtn');
+      if (code) {
+        var refParams = new URLSearchParams({
+          id: 'in.shabd.game',
+          referrer: 'squad_invite_' + code,
+        });
+        installBtn.href = 'https://play.google.com/store/apps/details?' + refParams.toString();
+      }
+    })();
+  </script>
+</body>
+</html>

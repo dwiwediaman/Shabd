@@ -159,7 +159,7 @@ const translations = {
     squadsJoin:         'Join',
     squadsCancel:       'Cancel',
     squadsInviteShare:  'Invite friends',
-    squadsInviteMsg:    (name, code) => `Join my Shabd squad "${name}"! Open the app → Squads → Join with code → enter ${code}\n\nGet Shabd: https://play.google.com/store/apps/details?id=in.shabd.game`,
+    squadsInviteMsg:    (name, code) => `Join my Shabd squad "${name}":\nhttps://dwiwediaman.github.io/Shabd/s/?c=${code}\n\nNot installed yet? The link will take you to Google Play.`,
     squadsCopyCode:     'Copy code',
     squadsCodeCopied:   'Code copied!',
     squadsToday:        'Today',
@@ -180,6 +180,11 @@ const translations = {
     squadsErrorAlready: 'You\'re already in this squad',
     squadsErrorLimit:   (max) => `You can be in up to ${max} squads`,
     squadsSignInPrompt: 'Sign in with Google to play squads',
+    squadsDeepLinkTitle:        'Squad invite',
+    squadsDeepLinkMembers:      (n, cap) => `${n}/${cap} members`,
+    squadsDeepLinkOwner:        (name) => `Created by ${name}`,
+    squadsDeepLinkJoin:         'Join squad',
+    squadsDeepLinkSignInAndJoin:'Sign in & join',
   },
 
   hi: {
@@ -342,7 +347,7 @@ const translations = {
     squadsJoin:         'जुड़ें',
     squadsCancel:       'रद्द',
     squadsInviteShare:  'दोस्तों को बुलाएं',
-    squadsInviteMsg:    (name, code) => `मेरे Shabd स्क्वाड "${name}" में जुड़ें! ऐप खोलें → Squads → Join with code → ${code} डालें\n\nShabd पाएं: https://play.google.com/store/apps/details?id=in.shabd.game`,
+    squadsInviteMsg:    (name, code) => `मेरे Shabd स्क्वाड "${name}" में जुड़ें:\nhttps://dwiwediaman.github.io/Shabd/s/?c=${code}\n\nऐप इंस्टॉल नहीं है? लिंक से Google Play खुलेगा।`,
     squadsCopyCode:     'कोड कॉपी करें',
     squadsCodeCopied:   'कोड कॉपी हो गया!',
     squadsToday:        'आज',
@@ -363,6 +368,11 @@ const translations = {
     squadsErrorAlready: 'आप पहले से इस स्क्वाड में हैं',
     squadsErrorLimit:   (max) => `आप अधिकतम ${max} स्क्वाड में हो सकते हैं`,
     squadsSignInPrompt: 'स्क्वाड्स खेलने के लिए Google से साइन इन करें',
+    squadsDeepLinkTitle:        'स्क्वाड आमंत्रण',
+    squadsDeepLinkMembers:      (n, cap) => `${n}/${cap} सदस्य`,
+    squadsDeepLinkOwner:        (name) => `${name} द्वारा बनाया गया`,
+    squadsDeepLinkJoin:         'स्क्वाड में जुड़ें',
+    squadsDeepLinkSignInAndJoin:'साइन इन करें और जुड़ें',
   },
 };
 
