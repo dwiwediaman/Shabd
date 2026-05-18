@@ -12,8 +12,7 @@ const translations = {
     badgeActive:   'In Progress',
     badgeDone:     '✓ Solved',
     badgeFailed:   '✕ Try tomorrow',
-    practiceMode:  'Practice Mode',
-    practiceSub:   'Unlimited words · no streak',
+    // practiceMode/practiceSub removed in vc77 — see Practice Mode notes
     stats:         'Stats',
     settings:      'Settings',
     rules:         'How to Play',
@@ -23,7 +22,6 @@ const translations = {
 
     // Puzzle
     dayLabel:      (n) => `Shabd · Day ${n}`,
-    practice:      'Practice',
     notEnoughLetters: 'Not enough letters',
     notInWordList: 'Not in word list',
     brilliant:     'Brilliant! 🎉',
@@ -186,6 +184,10 @@ const translations = {
     squadsDeepLinkJoin:         'Join squad',
     squadsDeepLinkSignInAndJoin:'Sign in & join',
     squadsPts:                  'pts',
+    squadsThisWeek:             'This Week',
+    squadsAllTime:              'All Time',
+    squadsWeekStats:            (played, won) => `${played}/7 played${played ? `, ${won} won` : ''}`,
+    squadsAllStats:             (played, won) => `${played} game${played === 1 ? '' : 's'}${played ? `, ${won} won` : ''}`,
   },
 
   hi: {
@@ -201,8 +203,7 @@ const translations = {
     badgeActive:   'जारी है',
     badgeDone:     '✓ हल कर लिया',
     badgeFailed:   '✕ कल फिर कोशिश',
-    practiceMode:  'अभ्यास करें',
-    practiceSub:   'असीमित शब्द · स्ट्रीक नहीं',
+    // practiceMode/practiceSub removed in vc77
     stats:         'आँकड़े',
     settings:      'सेटिंग्स',
     rules:         'कैसे खेलें',
@@ -212,7 +213,6 @@ const translations = {
 
     // Puzzle
     dayLabel:      (n) => `शब्द · दिन ${n}`,
-    practice:      'अभ्यास',
     notEnoughLetters: 'पर्याप्त अक्षर नहीं',
     notInWordList: 'शब्द सूची में नहीं',
     brilliant:     'शानदार! 🎉',
@@ -375,6 +375,10 @@ const translations = {
     squadsDeepLinkJoin:         'स्क्वाड में जुड़ें',
     squadsDeepLinkSignInAndJoin:'साइन इन करें और जुड़ें',
     squadsPts:                  'अंक',
+    squadsThisWeek:             'इस हफ़्ते',
+    squadsAllTime:              'सर्वकालिक',
+    squadsWeekStats:            (played, won) => `${played}/7 खेले${played ? `, ${won} जीते` : ''}`,
+    squadsAllStats:             (played, won) => `${played} खेल${played ? `, ${won} जीते` : ''}`,
   },
 };
 

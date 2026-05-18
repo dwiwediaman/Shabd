@@ -923,6 +923,36 @@ input:checked + .slider::before { transform: translateX(20px); }
 .squad-row.is-me { background: rgba(124,58,237,.10); border-color: rgba(167,139,250,.35); }
 .squad-row-rank { font-size: 16px; font-weight: 700; color: var(--text); min-width: 28px; text-align: center; }
 .squad-row-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Timeframe tabs on squad detail (Today / This Week / All Time) — vc77 */
+.squad-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 18px 0 14px;
+  padding: 4px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.squad-tab {
+  flex: 1;
+  padding: 9px 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.squad-tab:active { background: rgba(255,255,255,.04); }
+.squad-tab.is-active {
+  background: rgba(124,58,237,.22);
+  color: var(--text);
+  box-shadow: 0 0 8px rgba(124,58,237,.2);
+}
+
 .squad-row-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
 .squad-row-score {
   font-size: 14px; font-weight: 800;

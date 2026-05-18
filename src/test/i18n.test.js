@@ -6,11 +6,11 @@ const REQUIRED_KEYS = [
   'tagline', 'streak', 'played', 'winRate', 'playToday',
   'badgeNew', 'badgeActive', 'badgeDone', 'badgeFailed',
   'playContinue', 'playDone',
-  'practiceMode', 'practiceSub',
+  // practiceMode / practiceSub removed in vc77 (Practice Mode removed)
   'stats', 'settings', 'rules', 'footer',
   'freezeTapHint', 'timeTravelSubMenu',
   // Puzzle
-  'dayLabel', 'practice', 'notEnoughLetters', 'notInWordList',
+  'dayLabel', 'notEnoughLetters', 'notInWordList',
   'brilliant', 'answer', 'copied',
   // Stats
   'yourStats', 'bestStreak', 'guessDist', 'nextPuzzle', 'hoursLeft', 'shareResult',
@@ -72,6 +72,8 @@ const REQUIRED_KEYS = [
   'squadsDeepLinkJoin', 'squadsDeepLinkSignInAndJoin',
   // Squads — leaderboard score chip (vc76)
   'squadsPts',
+  // Squads — timeframe tabs (vc77)
+  'squadsThisWeek', 'squadsAllTime', 'squadsWeekStats', 'squadsAllStats',
 ];
 
 const FUNCTION_KEYS = [
@@ -84,6 +86,8 @@ const FUNCTION_KEYS = [
   'squadsInviteMsg', 'squadsMembers', 'squadsMembersCap',
   'squadsMyRank', 'squadsRankWon', 'squadsErrorLimit',
   'squadsDeepLinkMembers', 'squadsDeepLinkOwner',
+  // Squads — timeframe-tab aggregate captions (vc77)
+  'squadsWeekStats', 'squadsAllStats',
 ];
 
 describe('i18n — English', () => {

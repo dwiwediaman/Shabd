@@ -16,14 +16,17 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   const lang  = state.settings.lang;
   const tx    = t(lang);
 
+  // Practice Mode was removed in vc76 (card hidden) / vc77 (route fully
+  // collapsed here). Any lingering navigate('puzzle', { mode: 'practice' })
+  // — e.g. an old share intent — is silently coerced to a daily play.
+  if (mode === 'practice') mode = 'daily';
+
   // Generate puzzle
   const puzzleInfo = mode === 'archive'
     ? await forDate(archiveDate, lang)
     : await today(lang);
   const puzzle = generate(puzzleInfo.seed, lang, puzzleInfo.date);
-  const sessionKey = mode === 'practice'
-    ? `practice|${Date.now()}`
-    : `${puzzleInfo.date}|${lang}`;
+  const sessionKey = `${puzzleInfo.date}|${lang}`;
 
   // State
   let history = (mode === 'daily' ? getSession(sessionKey) : null) ?? [];
@@ -37,7 +40,6 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
 
   const MAX_HINTS = 3;
   // Restore hints used from prior session (e.g. user backgrounded mid-game).
-  // Only daily/archive games persist hint state — practice is ephemeral.
   const persistedMeta = mode === 'daily' ? getSessionMeta(sessionKey) : { hintsUsed: 0 };
   let hintsUsedSoFar = persistedMeta.hintsUsed ?? 0;
   let hintsLeft = Math.max(0, MAX_HINTS - hintsUsedSoFar);
@@ -52,7 +54,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     <div class="puzzle-screen">
       <div class="puzzle-header">
         <button class="hdr-btn" id="backBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <div class="hdr-title">${mode === 'daily' ? tx.dayLabel(puzzle.puzzleIndex) : mode === 'archive' ? tx.archiveDay(puzzle.puzzleIndex) : tx.practice}${state.settings.hardMode ? ' <span class="hard-badge">HARD</span>' : ''}</div>
+        <div class="hdr-title">${mode === 'archive' ? tx.archiveDay(puzzle.puzzleIndex) : tx.dayLabel(puzzle.puzzleIndex)}${state.settings.hardMode ? ' <span class="hard-badge">HARD</span>' : ''}</div>
         <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint">
           💡<span class="hint-count" id="hintCount">${MAX_HINTS}</span>
         </button>
@@ -121,7 +123,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     hintsLeft--;
     hintsUsedSoFar++;
     // Persist immediately so a mid-game close/reopen preserves the cost
-    // (only for daily; practice & archive don't go to cloud anyway)
+    // (only for daily — archive plays are one-shot and don't sync)
     if (mode === 'daily') setSessionMeta(sessionKey, { hintsUsed: hintsUsedSoFar });
 
     // Show in grid and pre-fill current input

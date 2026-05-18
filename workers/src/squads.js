@@ -155,20 +155,27 @@ export async function handleSquadsList(c) {
   });
 }
 
-// GET /squads/:id/board?date=YYYY-MM-DD&lang=en → { members: [...], myRank }
+// GET /squads/:id/board?date=YYYY-MM-DD&lang=en&window=day|week|all
 //
-// The leaderboard for a given (squad, date, lang). Players who haven't
-// played show as `played: false`. Players who lost show won=false with
-// attempts=6. Sorted: winners first (fewer attempts is better), then losses,
-// then unplayed.
+// Three views over the same squad:
+//   - window=day  (default): single-puzzle leaderboard for `date`
+//   - window=week:           sum of scores for the 7 IST days ending at `date`
+//   - window=all:            lifetime sum of scores per member, all dates
+//
+// Day view rows carry per-puzzle fields (attempts, hardMode, won).
+// Week/all rows carry aggregate fields (gamesPlayed, gamesWon).
+// The `score` field is the comparable number in all three modes.
 export async function handleSquadBoard(c) {
   const userId  = c.get('userId');
   const squadId = c.req.param('id');
-  const date    = c.req.query('date') || todayIstDateString();
-  const lang    = c.req.query('lang') || 'en';
+  const date    = c.req.query('date')   || todayIstDateString();
+  const lang    = c.req.query('lang')   || 'en';
+  const window  = c.req.query('window') || 'day';
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return c.json({ error: 'invalid_date' }, 400);
   if (lang !== 'en' && lang !== 'hi')   return c.json({ error: 'invalid_lang' }, 400);
+  if (!['day', 'week', 'all'].includes(window))
+    return c.json({ error: 'invalid_window' }, 400);
 
   // Auth: must be a member of this squad
   const member = await c.env.DB
@@ -182,8 +189,35 @@ export async function handleSquadBoard(c) {
     .bind(squadId).first();
   if (!squad) return c.json({ error: 'squad_not_found' }, 404);
 
-  // Join members ⊕ their session for this puzzle (LEFT JOIN to include non-players)
-  const rows = await c.env.DB.prepare(`
+  let members, windowStart, windowEnd;
+
+  if (window === 'day') {
+    members = await dayBoard(c.env.DB, squadId, date, lang, userId);
+  } else {
+    ({ members, windowStart, windowEnd } = await aggregateBoard(
+      c.env.DB, squadId, date, lang, userId, window
+    ));
+  }
+
+  const myRank = members.findIndex(m => m.userId === userId) + 1; // 1-indexed
+
+  return c.json({
+    squadId,
+    name:        squad.name,
+    inviteCode:  squad.invite_code,
+    date,
+    lang,
+    window,
+    ...(windowStart ? { windowStart, windowEnd } : {}),
+    members,
+    myRank,
+    memberCount: members.length,
+  });
+}
+
+// ── Day view: one puzzle, per-row attempts/hardMode/won ────────────────────
+async function dayBoard(db, squadId, date, lang, viewerId) {
+  const rows = await db.prepare(`
     SELECT u.user_id, u.nickname,
            s.won, s.attempts, s.hard_mode, s.duration_ms, s.submitted_at, s.hints_used
     FROM squad_members m
@@ -194,9 +228,6 @@ export async function handleSquadBoard(c) {
     WHERE m.squad_id = ?
   `).bind(date, lang, squadId).all();
 
-  // Build rows, computing each player's score from the same formula the
-  // client uses. We deliberately DO NOT include hintsUsed in the response
-  // — it's a private input to the score; opponents see only the result.
   const members = (rows.results || []).map(r => {
     const score = puzzleScore({
       won:       !!r.won,
@@ -213,26 +244,97 @@ export async function handleSquadBoard(c) {
       hardMode:    !!r.hard_mode,
       score,
       submittedAt: r.submitted_at,
-      isMe:        r.user_id === userId,
+      isMe:        r.user_id === viewerId,
     };
   });
-
-  // Sort: higher score → fewer attempts → hard mode → nickname.
-  // Players who haven't played sink to the bottom inside the comparator.
   members.sort(compareForLeaderboard);
+  return members;
+}
 
-  const myRank = members.findIndex(m => m.userId === userId) + 1; // 1-indexed
+// ── Aggregate view (week / all-time) ───────────────────────────────────────
+// Pulls every member's relevant sessions in one LEFT JOIN, then sums scores
+// in JS using the same puzzleScore formula the day view uses. Per-row shape
+// is { score, gamesPlayed, gamesWon } — no per-puzzle hardMode/attempts
+// because they don't make sense over multiple games.
+async function aggregateBoard(db, squadId, endDate, lang, viewerId, window) {
+  let startDate = null;
+  if (window === 'week') {
+    // 7-day window ending at endDate (inclusive). i.e. endDate-6 .. endDate
+    const end = new Date(endDate + 'T00:00:00Z').getTime();
+    startDate = new Date(end - 6 * 86400000).toISOString().slice(0, 10);
+  }
 
-  return c.json({
-    squadId,
-    name:     squad.name,
-    inviteCode: squad.invite_code,
-    date,
-    lang,
-    members,
-    myRank,
-    memberCount: members.length,
+  const sql = window === 'week'
+    ? `
+        SELECT u.user_id, u.nickname,
+               s.puzzle_date, s.won, s.attempts, s.hard_mode, s.hints_used
+        FROM squad_members m
+        JOIN users u ON u.user_id = m.user_id
+        LEFT JOIN sessions s ON s.user_id = m.user_id
+                            AND s.lang = ?
+                            AND s.puzzle_date >= ?
+                            AND s.puzzle_date <= ?
+        WHERE m.squad_id = ?
+      `
+    : `
+        SELECT u.user_id, u.nickname,
+               s.puzzle_date, s.won, s.attempts, s.hard_mode, s.hints_used
+        FROM squad_members m
+        JOIN users u ON u.user_id = m.user_id
+        LEFT JOIN sessions s ON s.user_id = m.user_id
+                            AND s.lang = ?
+        WHERE m.squad_id = ?
+      `;
+  const bindings = window === 'week'
+    ? [lang, startDate, endDate, squadId]
+    : [lang, squadId];
+
+  const rows = await db.prepare(sql).bind(...bindings).all();
+
+  // Fold rows into a per-member aggregate. The LEFT JOIN produces one row
+  // per (member × session); members with zero sessions in the window still
+  // appear once with all session-fields null.
+  const byUser = new Map();
+  for (const r of (rows.results || [])) {
+    let agg = byUser.get(r.user_id);
+    if (!agg) {
+      agg = {
+        userId:      r.user_id,
+        nickname:    r.nickname,
+        score:       0,
+        gamesPlayed: 0,
+        gamesWon:    0,
+        isMe:        r.user_id === viewerId,
+      };
+      byUser.set(r.user_id, agg);
+    }
+    if (r.attempts != null) {  // an actual session row, not a null-fill from LEFT JOIN
+      agg.gamesPlayed++;
+      if (r.won) agg.gamesWon++;
+      agg.score += puzzleScore({
+        won:       !!r.won,
+        attempts:  r.attempts,
+        hardMode:  !!r.hard_mode,
+        hintsUsed: r.hints_used ?? 0,
+      });
+    }
+  }
+
+  const members = [...byUser.values()];
+  // Tiebreaker order for aggregates: score → gamesPlayed → gamesWon → nickname.
+  // gamesPlayed matters because consistency is the point of the aggregate view.
+  members.sort((a, b) => {
+    if (b.score !== a.score)             return b.score - a.score;
+    if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
+    if (b.gamesWon !== a.gamesWon)       return b.gamesWon - a.gamesWon;
+    return String(a.nickname || '').localeCompare(String(b.nickname || ''));
   });
+
+  return {
+    members,
+    windowStart: startDate,
+    windowEnd:   window === 'week' ? endDate : null,
+  };
 }
 
 // DELETE /squads/:id  Bearer

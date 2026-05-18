@@ -261,6 +261,9 @@ function squadCardHtml(s, tx) {
 async function renderSquadDetail(root, tx, squadId) {
   const lang = get().settings.lang;
   const date = getISTDate();
+  // Persist the user's last-selected timeframe across re-renders within
+  // this screen session. Reset to 'day' on each fresh navigation.
+  let currentWindow = 'day';
 
   root.innerHTML = baseChrome(tx, /*showBack*/true, `
     <div id="squadDetailBody">
@@ -269,101 +272,135 @@ async function renderSquadDetail(root, tx, squadId) {
   `);
   wireBack(root, () => navigate('squads'));
 
-  let board;
-  try { board = await getSquadBoard(squadId, date, lang); }
-  catch (e) {
-    document.getElementById('squadDetailBody').innerHTML =
-      `<div class="squads-error">${tx.cloudNetworkError}</div>`;
-    return;
+  async function refresh() {
+    const body = document.getElementById('squadDetailBody');
+    body.innerHTML = `<div class="squads-loading">${tx.cloudSyncing}</div>`;
+
+    let board;
+    try { board = await getSquadBoard(squadId, date, lang, currentWindow); }
+    catch (e) {
+      body.innerHTML = `<div class="squads-error">${tx.cloudNetworkError}</div>`;
+      return;
+    }
+
+    const subLine = currentWindow === 'day'
+      ? `${tx.squadsToday} · ${escapeHtml(date)} · ${board.lang.toUpperCase()}`
+      : currentWindow === 'week'
+        ? `${tx.squadsThisWeek} · ${escapeHtml(board.windowStart)} → ${escapeHtml(board.windowEnd)} · ${board.lang.toUpperCase()}`
+        : `${tx.squadsAllTime} · ${board.lang.toUpperCase()}`;
+
+    body.innerHTML = `
+      <div class="squad-detail-header">
+        <div class="squad-detail-title">${escapeHtml(board.name)}</div>
+        <div class="squad-detail-sub">${subLine}</div>
+      </div>
+
+      <div class="squad-invite-card">
+        <div class="squad-invite-label">${tx.squadsInviteCodeLabel}</div>
+        <div class="squad-invite-row">
+          <div class="squad-invite-code" id="squadCodeText">${escapeHtml(board.inviteCode)}</div>
+          <button class="btn-cloud" id="squadCopyBtn">${tx.squadsCopyCode}</button>
+          <button class="btn-cloud" id="squadShareBtn">${tx.squadsInviteShare}</button>
+        </div>
+      </div>
+
+      <div class="squad-tabs" role="tablist">
+        <button class="squad-tab ${currentWindow === 'day'  ? 'is-active' : ''}" data-window="day">${tx.squadsToday}</button>
+        <button class="squad-tab ${currentWindow === 'week' ? 'is-active' : ''}" data-window="week">${tx.squadsThisWeek}</button>
+        <button class="squad-tab ${currentWindow === 'all'  ? 'is-active' : ''}" data-window="all">${tx.squadsAllTime}</button>
+      </div>
+
+      <div class="squad-board">
+        <div class="squad-board-header">
+          <span>${tx.squadsMembersCap(board.memberCount, 50)}</span>
+          ${board.myRank > 0 ? `<span class="squad-my-rank">${tx.squadsMyRank(board.myRank, board.memberCount)}</span>` : ''}
+        </div>
+        <div class="squad-board-list">
+          ${board.members.map((m, i) => squadBoardRowHtml(m, i + 1, tx, currentWindow)).join('')}
+        </div>
+      </div>
+
+      <button class="btn-cloud btn-cloud-danger" id="squadLeaveBtn" style="margin-top:24px;width:100%;">
+        ${tx.squadsLeaveSquad}
+      </button>
+    `;
+
+    // Wire tab clicks
+    body.querySelectorAll('.squad-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const w = btn.dataset.window;
+        if (w === currentWindow) return;
+        currentWindow = w;
+        refresh();
+      });
+    });
+
+    document.getElementById('squadCopyBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(board.inviteCode);
+        toast(tx.squadsCodeCopied);
+      } catch { toast(tx.cloudNetworkError); }
+    });
+
+    document.getElementById('squadShareBtn').addEventListener('click', async () => {
+      const message = tx.squadsInviteMsg(board.name, board.inviteCode);
+      try {
+        if (Capacitor.isNativePlatform()) {
+          await Share.share({ title: 'Shabd Squad', text: message, dialogTitle: tx.squadsInviteShare });
+        } else if (navigator.share) {
+          await navigator.share({ text: message });
+        } else {
+          await navigator.clipboard.writeText(message);
+          toast(tx.squadsCodeCopied);
+        }
+      } catch (e) { /* user cancel — ignore */ }
+    });
+
+    document.getElementById('squadLeaveBtn').addEventListener('click', async () => {
+      if (!confirm(tx.squadsConfirmLeave)) return;
+      try {
+        await leaveOrDisbandSquad(squadId);
+        navigate('squads');
+      } catch { toast(tx.cloudNetworkError); }
+    });
   }
 
-  const isOwner = board.members.some(m => m.isMe && m.userId === m.userId); // placeholder
-  // Determine ownership via squad list call — cheaper to assume false; the leave/disband
-  // labels work either way (server picks the action).
-  document.getElementById('squadDetailBody').innerHTML = `
-    <div class="squad-detail-header">
-      <div class="squad-detail-title">${escapeHtml(board.name)}</div>
-      <div class="squad-detail-sub">${tx.squadsToday} · ${escapeHtml(date)} · ${board.lang.toUpperCase()}</div>
-    </div>
-
-    <div class="squad-invite-card">
-      <div class="squad-invite-label">${tx.squadsInviteCodeLabel}</div>
-      <div class="squad-invite-row">
-        <div class="squad-invite-code" id="squadCodeText">${escapeHtml(board.inviteCode)}</div>
-        <button class="btn-cloud" id="squadCopyBtn">${tx.squadsCopyCode}</button>
-        <button class="btn-cloud" id="squadShareBtn">${tx.squadsInviteShare}</button>
-      </div>
-    </div>
-
-    <div class="squad-board">
-      <div class="squad-board-header">
-        <span>${tx.squadsMembersCap(board.memberCount, 50)}</span>
-        ${board.myRank > 0 ? `<span class="squad-my-rank">${tx.squadsMyRank(board.myRank, board.memberCount)}</span>` : ''}
-      </div>
-      <div class="squad-board-list">
-        ${board.members.map((m, i) => squadBoardRowHtml(m, i + 1, tx)).join('')}
-      </div>
-    </div>
-
-    <button class="btn-cloud btn-cloud-danger" id="squadLeaveBtn" style="margin-top:24px;width:100%;">
-      ${tx.squadsLeaveSquad}
-    </button>
-  `;
-
-  document.getElementById('squadCopyBtn').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(board.inviteCode);
-      toast(tx.squadsCodeCopied);
-    } catch { toast(tx.cloudNetworkError); }
-  });
-
-  document.getElementById('squadShareBtn').addEventListener('click', async () => {
-    const message = tx.squadsInviteMsg(board.name, board.inviteCode);
-    try {
-      if (Capacitor.isNativePlatform()) {
-        await Share.share({ title: 'Shabd Squad', text: message, dialogTitle: tx.squadsInviteShare });
-      } else if (navigator.share) {
-        await navigator.share({ text: message });
-      } else {
-        await navigator.clipboard.writeText(message);
-        toast(tx.squadsCodeCopied);
-      }
-    } catch (e) { /* user cancel — ignore */ }
-  });
-
-  document.getElementById('squadLeaveBtn').addEventListener('click', async () => {
-    if (!confirm(tx.squadsConfirmLeave)) return;
-    try {
-      await leaveOrDisbandSquad(squadId);
-      navigate('squads');
-    } catch { toast(tx.cloudNetworkError); }
-  });
+  refresh();
 }
 
-function squadBoardRowHtml(m, position, tx) {
-  // Score chip is the primary ranking signal (vc76+). The attempt count
-  // remains visible as a secondary readout so users see WHY the score
-  // is what it is. Players who haven't played show "—" instead of "0 pts"
-  // so it's visually distinct from a played-and-lost row.
-  const scoreText = m.played
-    ? `${m.score ?? 0} ${tx.squadsPts}`
-    : '—';
-  let status;
-  if (m.won)         status = `<span class="rank-status won">${tx.squadsRankWon(m.attempts)}</span>`;
-  else if (m.played) status = `<span class="rank-status lost">${tx.squadsRankLost}</span>`;
-  else               status = `<span class="rank-status notyet">${tx.squadsRankNotPlayed}</span>`;
-
+function squadBoardRowHtml(m, position, tx, window = 'day') {
+  // The score chip is consistent across windows; what differs is what we
+  // show underneath:
+  //   - day:  per-puzzle status ("Won in 3" / "Did not solve" / "Not played")
+  //   - week: gamesPlayed/7 with wins
+  //   - all:  lifetime gamesPlayed + wins
   const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `#${position}`;
+
+  let scoreText, subLine, hardBadge = '';
+  if (window === 'day') {
+    scoreText = m.played ? `${m.score ?? 0} ${tx.squadsPts}` : '—';
+    if (m.won)         subLine = `<span class="rank-status won">${tx.squadsRankWon(m.attempts)}</span>`;
+    else if (m.played) subLine = `<span class="rank-status lost">${tx.squadsRankLost}</span>`;
+    else               subLine = `<span class="rank-status notyet">${tx.squadsRankNotPlayed}</span>`;
+    if (m.hardMode)    hardBadge = ` <span class="hard-badge">${tx.squadsHardModeBadge}</span>`;
+  } else {
+    scoreText = `${m.score ?? 0} ${tx.squadsPts}`;
+    const played = m.gamesPlayed ?? 0;
+    const won    = m.gamesWon    ?? 0;
+    subLine = window === 'week'
+      ? `<span class="rank-status ${played ? 'won' : 'notyet'}">${tx.squadsWeekStats(played, won)}</span>`
+      : `<span class="rank-status ${played ? 'won' : 'notyet'}">${tx.squadsAllStats(played, won)}</span>`;
+  }
+
   return `
     <div class="squad-row ${m.isMe ? 'is-me' : ''}">
       <div class="squad-row-rank">${medal}</div>
       <div class="squad-row-name">
-        ${escapeHtml(m.nickname)}
-        ${m.hardMode ? `<span class="hard-badge">${tx.squadsHardModeBadge}</span>` : ''}
+        ${escapeHtml(m.nickname)}${hardBadge}
       </div>
       <div class="squad-row-meta">
         <span class="squad-row-score">${scoreText}</span>
-        ${status}
+        ${subLine}
       </div>
     </div>
   `;

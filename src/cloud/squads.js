@@ -24,10 +24,12 @@ export async function listMySquads() {
   return resp?.squads || [];
 }
 
-export async function getSquadBoard(squadId, date, lang) {
+// window: 'day' (default) | 'week' | 'all'
+export async function getSquadBoard(squadId, date, lang, window = 'day') {
   const params = new URLSearchParams();
-  if (date) params.set('date', date);
-  if (lang) params.set('lang', lang);
+  if (date)   params.set('date', date);
+  if (lang)   params.set('lang', lang);
+  if (window) params.set('window', window);
   const path = `/squads/${encodeURIComponent(squadId)}/board?${params.toString()}`;
   return apiGet(path);
 }
