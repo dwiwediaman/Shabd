@@ -191,7 +191,14 @@ function computeTileStates(guessTiles, targetTiles) {
   return states;
 }
 
-// ── Public: replay a sequence of guesses → { won, attempts, perGuessStates } ─
+// ── Public: replay a sequence of guesses → { won, attempts, perGuessStates, hardModeValid }
+//
+// hardModeValid (vc78 / H2): true if the guess sequence obeys hard-mode
+// rules — every revealed GREEN letter is kept at the same position in
+// later guesses, and every revealed YELLOW letter appears somewhere in
+// every later guess. This lets the score endpoint grant the hard-mode
+// bonus only when the rule was actually enforced client-side; lying
+// clients still get credit for the win, just without the +1.
 export async function replayGuesses(istDate, lang, guesses) {
   if (!Array.isArray(guesses) || guesses.length === 0)
     throw new Error('no_guesses');
@@ -203,6 +210,7 @@ export async function replayGuesses(istDate, lang, guesses) {
   const tileCount   = TILES[lang];
 
   const perGuessStates = [];
+  const tilesPerGuess  = [];
   let won = false;
 
   for (const guess of guesses) {
@@ -213,6 +221,7 @@ export async function replayGuesses(istDate, lang, guesses) {
       throw new Error('wrong_tile_count');
     const states = computeTileStates(tiles, targetTiles);
     perGuessStates.push(states);
+    tilesPerGuess.push(tiles);
     if (states.every(s => s === 'correct')) { won = true; break; }
   }
 
@@ -221,5 +230,43 @@ export async function replayGuesses(istDate, lang, guesses) {
     attempts: perGuessStates.length,
     target,
     perGuessStates,
+    hardModeValid: verifyHardModeInvariant(tilesPerGuess, perGuessStates),
   };
+}
+
+// Verify a guess sequence obeys Wordle hard-mode:
+//  - Once a position is revealed CORRECT, every later guess keeps that letter there
+//  - Once a letter is revealed PRESENT, every later guess includes it somewhere
+// Sliding state of (fixed greens, required-anywhere letters) is built up
+// across guesses. Returns false on the first violation.
+// Exported for direct unit testing.
+export function verifyHardModeInvariant(tilesPerGuess, perGuessStates) {
+  if (tilesPerGuess.length <= 1) return true; // nothing to check
+  const fixed    = new Array(tilesPerGuess[0].length).fill(null);
+  const required = new Set();
+
+  for (let g = 0; g < tilesPerGuess.length; g++) {
+    const tiles  = tilesPerGuess[g];
+    const states = perGuessStates[g];
+
+    // Verify constraints from previous guesses still hold
+    for (let i = 0; i < fixed.length; i++) {
+      if (fixed[i] !== null && tiles[i] !== fixed[i]) return false;
+    }
+    for (const r of required) {
+      if (!tiles.includes(r)) return false;
+    }
+
+    // Update constraints from this guess's reveals
+    for (let i = 0; i < states.length; i++) {
+      if (states[i] === 'correct') {
+        fixed[i] = tiles[i];
+        // A green also satisfies any "required" entry for that letter
+        required.delete(tiles[i]);
+      } else if (states[i] === 'present') {
+        required.add(tiles[i]);
+      }
+    }
+  }
+  return true;
 }

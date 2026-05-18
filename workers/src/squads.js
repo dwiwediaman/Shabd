@@ -10,13 +10,21 @@ const MAX_MEMBERS_PER_SQUAD     = 50;
 const MAX_SQUADS_PER_USER       = 10;
 const MAX_NAME_LEN              = 32;
 const INVITE_CODE_ALPHABET      = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
-const INVITE_CODE_LEN           = 6;
+// 8 chars × 32 alphabet ≈ 40 bits of entropy (was 6 chars ≈ 30 bits in
+// vc77 and earlier). Existing 6-char codes still validate via the
+// /^[A-Z0-9]{4,8}$/ regex on lookup, so legacy share-links keep working.
+const INVITE_CODE_LEN           = 8;
 const INVITE_CODE_GEN_ATTEMPTS  = 10;
 
+// vc78: replaced Math.random() with crypto.getRandomValues to close C2.1.
+// The alphabet length (32) divides 256 evenly so the modulo step has zero
+// bias — every byte maps uniformly to one of the 32 chars.
 function generateInviteCode() {
+  const bytes = new Uint8Array(INVITE_CODE_LEN);
+  crypto.getRandomValues(bytes);
   let out = '';
   for (let i = 0; i < INVITE_CODE_LEN; i++) {
-    out += INVITE_CODE_ALPHABET[Math.floor(Math.random() * INVITE_CODE_ALPHABET.length)];
+    out += INVITE_CODE_ALPHABET[bytes[i] % INVITE_CODE_ALPHABET.length];
   }
   return out;
 }
@@ -71,7 +79,19 @@ export async function handleSquadCreate(c) {
 // Used by the deep-link landing flow: shows squad details in a confirm
 // modal before the user commits to joining. Returns just enough public
 // metadata for a decision; no PII beyond the owner's chosen nickname.
+//
+// vc78 / C2.2: rate-limited to 30 req/min/IP via the RL_PREVIEW binding to
+// kill the squad-enumeration attack. The check is wrapped in optional
+// chaining so local dev (no binding) still works.
 export async function handleSquadPreview(c) {
+  const ip = c.req.header('CF-Connecting-IP')
+          || c.req.header('X-Forwarded-For')
+          || 'unknown';
+  if (c.env.RL_PREVIEW?.limit) {
+    const { success } = await c.env.RL_PREVIEW.limit({ key: ip });
+    if (!success) return c.json({ error: 'rate_limited' }, 429);
+  }
+
   const code = (c.req.query('code') ?? '').trim().toUpperCase();
   if (!code || !/^[A-Z0-9]{4,8}$/.test(code))
     return c.json({ error: 'invalid_code' }, 400);

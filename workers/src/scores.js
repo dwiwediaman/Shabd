@@ -10,9 +10,19 @@
 // guesses that the server can replay into a winning state.
 
 import { replayGuesses } from './wordleReplay.js';
+import { withinSubmitWindow } from './sync.js';
 
-// POST /scores/submit  Bearer  { date, lang, guesses, hardMode?, durationMs? }
+// POST /scores/submit  Bearer  { date, lang, guesses, hardMode?, durationMs?, hintsUsed? }
 // → { won, attempts, target, perGuessStates }
+//
+// SECURITY (vc78):
+//  - L3: future dates rejected (was +1 day allowance, unnecessary since
+//        IST date is server-computed and clients don't submit in local TZ)
+//  - H3: dates older than SUBMIT_WINDOW_DAYS (7) rejected — blocks the
+//        attack where a user back-fills wins for every past puzzle to
+//        inflate their All-Time leaderboard score
+//  - H2: hardMode is only honoured if the replay confirms the guess
+//        sequence actually obeys hard-mode rules
 export async function handleScoreSubmit(c) {
   const userId = c.get('userId');
   let body;
@@ -27,11 +37,14 @@ export async function handleScoreSubmit(c) {
   if (!Array.isArray(guesses) || guesses.length === 0 || guesses.length > 6)
     return c.json({ error: 'invalid_guesses' }, 400);
 
-  // Optional: refuse submissions for future puzzles (clock-spoofing defense).
-  // We allow a 36h window so users in any IST-adjacent timezone can submit.
+  // L3: no future puzzles. (Clients always submit IST-date computed server-side.)
   const today = todayIstDateString();
-  if (date > nextDay(today))
+  if (date > today)
     return c.json({ error: 'future_date' }, 400);
+
+  // H3: no submissions for puzzles older than the 7-day window.
+  if (!withinSubmitWindow(date))
+    return c.json({ error: 'date_out_of_window', maxDays: 7 }, 400);
 
   // ── The replay step — this is the actual anti-cheat ──────────────────────
   let result;
@@ -49,7 +62,9 @@ export async function handleScoreSubmit(c) {
   //   3. Otherwise: only overwrite if new state is better/longer
   //      (more attempts attempted = more progress through the game)
   const now = Date.now();
-  const hintsSafe = Math.max(0, Math.min(6, Number(hintsUsed) | 0));
+  const hintsSafe = Math.max(0, Math.min(result.attempts, Number(hintsUsed) | 0));
+  // H2: hard-mode bonus only if the replay confirms the constraint was obeyed.
+  const hardModeEffective = (hardMode === true && result.hardModeValid !== false) ? 1 : 0;
   await c.env.DB.prepare(`
     INSERT INTO sessions (user_id, puzzle_date, lang, guesses_json, won, attempts,
                           hard_mode, duration_ms, submitted_at, hints_used)
@@ -67,7 +82,7 @@ export async function handleScoreSubmit(c) {
       AND (excluded.won = 1 OR excluded.attempts > sessions.attempts)
   `).bind(
     userId, date, lang, JSON.stringify(guesses),
-    result.won ? 1 : 0, result.attempts, hardMode ? 1 : 0,
+    result.won ? 1 : 0, result.attempts, hardModeEffective,
     durationMs, now, hintsSafe,
   ).run();
 
@@ -86,8 +101,6 @@ function todayIstDateString() {
   const istNow = new Date(Date.now() + 19800 * 1000);
   return istNow.toISOString().slice(0, 10);
 }
-
-function nextDay(yyyyMmDd) {
-  const t = new Date(yyyyMmDd + 'T00:00:00Z').getTime();
-  return new Date(t + 86400000).toISOString().slice(0, 10);
-}
+// `nextDay` helper removed in vc78 — the +1-day future-date allowance it
+// supported was unnecessary (IST date is computed server-side) and was the
+// L3 vulnerability that let users pre-submit tomorrow's puzzle.

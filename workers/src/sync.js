@@ -4,6 +4,16 @@
 //
 // Conflict resolution: per (user, puzzle_date, lang), last-write-wins on
 // submitted_at. The client only pushes sessions newer than its last sync.
+//
+// SECURITY (vc78): /sync/push REPLAYS every session's guesses against the
+// server-derived target before storing. The client's `won`, `attempts`, and
+// `hardMode` claims are ignored — the replay result is authoritative. This
+// blocks the trivial cheat where a hostile client posted { won: true,
+// attempts: 1 } with arbitrary guesses to inflate squad scores.
+
+import { replayGuesses } from './wordleReplay.js';
+
+const SUBMIT_WINDOW_DAYS = 7;
 
 // GET /sync/pull  Bearer  → { sessions, freezes, prefs, serverNow }
 export async function handlePull(c) {
@@ -63,15 +73,32 @@ export async function handlePush(c) {
 
   const counts = { sessions: 0, freezes: 0, prefs: 0 };
 
-  // ── Upsert sessions (last-write-wins by submitted_at) ───────────────────
+  // ── Upsert sessions (REPLAY-VALIDATED) ──────────────────────────────────
+  // The client cannot be trusted with `won` / `attempts` / `hardMode`.
+  // We replay every session server-side; only the replay result is stored.
+  // Sessions that fail validation (malformed, out-of-window, dictionary
+  // miss, future date) are silently dropped — the rest of the push still
+  // succeeds so the user's other sessions aren't blocked by one bad row.
   for (const s of sessions) {
     if (!isValidSession(s)) continue;
-    // Same regression guard as /scores/submit:
-    //   - Newer timestamp required
-    //   - Can't overwrite a win
-    //   - Otherwise only upgrade (to a win, or to more attempts)
-    const hintsSafe = Math.max(0, Math.min(6, Number(s.hintsUsed) | 0));
-    const result = await db.prepare(`
+    if (!withinSubmitWindow(s.date)) continue;   // H3: drop > 7-day-old sessions
+
+    let replayed;
+    try {
+      replayed = await replayGuesses(s.date, s.lang, s.guesses.map(g => g.input));
+    } catch {
+      continue;  // bad guesses / unknown date / pre-launch — skip silently
+    }
+
+    // H2: only honour hardMode if the guesses actually obey the constraint.
+    const hardModeValid = s.hardMode === true && replayed.hardModeValid !== false;
+
+    // hintsUsed can't be replay-verified, but bound it sensibly: a player
+    // can't have used more hints than they made guesses, and historical
+    // pre-vc76 sessions default to 0.
+    const hintsSafe = Math.max(0, Math.min(replayed.attempts, Number(s.hintsUsed) | 0));
+
+    await db.prepare(`
       INSERT INTO sessions (user_id, puzzle_date, lang, guesses_json, won, attempts,
                             hard_mode, duration_ms, submitted_at, hints_used)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -88,7 +115,7 @@ export async function handlePush(c) {
         AND (excluded.won = 1 OR excluded.attempts > sessions.attempts)
     `).bind(
       userId, s.date, s.lang, JSON.stringify(s.guesses),
-      s.won ? 1 : 0, s.attempts, s.hardMode ? 1 : 0,
+      replayed.won ? 1 : 0, replayed.attempts, hardModeValid ? 1 : 0,
       s.durationMs ?? null, s.submittedAt, hintsSafe,
     ).run();
     counts.sessions++;
@@ -132,6 +159,24 @@ export async function handlePush(c) {
     .bind(Date.now(), userId).run();
 
   return c.json({ ok: true, accepted: counts, serverNow: Date.now() });
+}
+
+// H3: reject score submissions for puzzles more than SUBMIT_WINDOW_DAYS old.
+// Closes the "fake-submit 365 past dates" leaderboard-inflation attack.
+// Anything older is still preserved locally and pullable from cloud if it
+// landed there before vc78, but newly-submitted old sessions are ignored.
+export function withinSubmitWindow(dateStr) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const today = todayIstDateString();
+  const t = new Date(today   + 'T00:00:00Z').getTime();
+  const d = new Date(dateStr + 'T00:00:00Z').getTime();
+  if (d > t) return false;                  // future dates rejected upstream too
+  return (t - d) / 86400000 <= SUBMIT_WINDOW_DAYS;
+}
+
+function todayIstDateString() {
+  const istNow = new Date(Date.now() + 19800 * 1000);
+  return istNow.toISOString().slice(0, 10);
 }
 
 // Defensive validation — server is the trust boundary

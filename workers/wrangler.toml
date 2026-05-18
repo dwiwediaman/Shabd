@@ -17,3 +17,12 @@ APP_ENV          = "production"
 GOOGLE_CLIENT_ID = "345143844571-bc5hflbdgue0qphais119t4fob9ounik.apps.googleusercontent.com"
 # Secrets to set later with wrangler secret put:
 #   SESSION_JWT_SECRET   (random 32+ char string)
+
+# Rate limit for the public /squads/preview endpoint (vc78 / C2.2).
+# 30 req/min/IP — generous for legit landing-page traffic, kills brute-force
+# enumeration of invite codes from a single IP.
+[[unsafe.bindings]]
+name          = "RL_PREVIEW"
+type          = "ratelimit"
+namespace_id  = "1001"
+simple        = { limit = 30, period = 60 }
