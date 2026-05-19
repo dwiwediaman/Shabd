@@ -104,13 +104,35 @@ export async function pushAll() {
 // Submit a single game result via the anti-cheat path (server replays guesses).
 // Returns { won, attempts, target?, submittedAt } from the server.
 // Use this on game end. Falls back to local-only if not signed in / offline.
+//
+// Reliability (vc80): on failure, log loudly, retry once with a short backoff,
+// and on the final failure set the pendingPush flag so the next boot's
+// ensureBackfilled run will push the session even if it's within the 24h
+// throttle window. The session itself is already saved to local state by
+// the puzzle screen before submit fires, so no data is lost.
 export async function submitScore({ date, lang, guesses, hardMode = false, durationMs = null, hintsUsed = 0 }) {
   if (!isSignedIn()) return { skipped: 'not_signed_in' };
+  const payload = { date, lang, guesses, hardMode, durationMs, hintsUsed };
+
+  const attempt = async () => apiPost('/scores/submit', payload);
+
   try {
-    return await apiPost('/scores/submit', { date, lang, guesses, hardMode, durationMs, hintsUsed });
-  } catch (e) {
-    if (e instanceof ApiError && e.status === 401) { clearLocalSession(); return { error: 'session_expired' }; }
-    return { error: e.code || 'submit_failed' };
+    return await attempt();
+  } catch (firstErr) {
+    if (firstErr instanceof ApiError && firstErr.status === 401) {
+      clearLocalSession();
+      return { error: 'session_expired' };
+    }
+    console.warn('[submitScore] first attempt failed, retrying in 1.5s', firstErr);
+    await new Promise(r => setTimeout(r, 1500));
+    try {
+      return await attempt();
+    } catch (secondErr) {
+      // Final failure — log + flag so the next backfill cycle picks it up.
+      console.warn('[submitScore] retry also failed; queuing for next push', secondErr);
+      try { localStorage.setItem(LS_KEYS.pendingPush, '1'); } catch {}
+      return { error: secondErr.code || 'submit_failed' };
+    }
   }
 }
 
@@ -137,15 +159,23 @@ export async function syncAfterSignIn() {
 // Called from boot: push any local-only sessions to the server, then pull.
 // Throttled so we don't hammer the server on every warm start — only does the
 // full push once per 24h (or if no successful backfill is on record yet).
+// EXCEPTION: if a previous submitScore failed and set pendingPush, we bypass
+// the throttle so the missed session catches up promptly.
 const BACKFILL_THROTTLE_MS = 24 * 60 * 60 * 1000;
 export async function ensureBackfilled() {
   if (!isSignedIn()) return { skipped: 'not_signed_in' };
-  const last = Number(localStorage.getItem(LS_KEYS.lastBackfillAt) || 0);
-  if (last && Date.now() - last < BACKFILL_THROTTLE_MS) {
+  const pendingPush = localStorage.getItem(LS_KEYS.pendingPush) === '1';
+  const last        = Number(localStorage.getItem(LS_KEYS.lastBackfillAt) || 0);
+  if (!pendingPush && last && Date.now() - last < BACKFILL_THROTTLE_MS) {
     // Still pull — server may have newer sessions from other devices
     return await pullAndMerge();
   }
-  return await syncAfterSignIn();
+  const result = await syncAfterSignIn();
+  // syncAfterSignIn sets lastBackfillAt on success; only then clear the flag
+  if (!result.error) {
+    try { localStorage.removeItem(LS_KEYS.pendingPush); } catch {}
+  }
+  return result;
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────

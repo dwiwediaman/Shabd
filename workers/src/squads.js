@@ -325,6 +325,14 @@ async function aggregateBoard(db, squadId, endDate, lang, viewerId, window) {
   // Fold rows into a per-member aggregate. The LEFT JOIN produces one row
   // per (member × session); members with zero sessions in the window still
   // appear once with all session-fields null.
+  //
+  // gamesPlayed only counts COMPLETED sessions (a win, or a full 6-attempt
+  // loss). In-progress sessions where the user tapped a few guesses and
+  // bailed are deliberately ignored — otherwise "5/7 played, 2 won" mixes
+  // intent-to-play with actual play and confuses everyone.
+  const isCompleted = (r) =>
+    r.attempts != null && (r.won === 1 || r.attempts >= 6);
+
   const byUser = new Map();
   for (const r of (rows.results || [])) {
     let agg = byUser.get(r.user_id);
@@ -339,7 +347,7 @@ async function aggregateBoard(db, squadId, endDate, lang, viewerId, window) {
       };
       byUser.set(r.user_id, agg);
     }
-    if (r.attempts != null) {  // an actual session row, not a null-fill from LEFT JOIN
+    if (isCompleted(r)) {
       agg.gamesPlayed++;
       if (r.won) agg.gamesWon++;
       agg.score += puzzleScore({

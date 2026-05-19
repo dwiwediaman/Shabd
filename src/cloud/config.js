@@ -14,5 +14,6 @@ export const LS_KEYS = {
   nickname:        'shabd_cloud_nickname',
   lastSyncAt:      'shabd_cloud_lastSyncAt',
   lastBackfillAt:  'shabd_cloud_lastBackfillAt',// last successful full push (cold-start throttle)
+  pendingPush:     'shabd_cloud_pendingPush',   // '1' when a submitScore failed → bypass 24h throttle on next ensureBackfilled
   signedIn:        'shabd_cloud_signedIn',      // boolean string flag
 };

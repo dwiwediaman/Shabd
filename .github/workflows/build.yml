@@ -48,6 +48,22 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run test:ci
 
+      # MUST run before "Build web app" — Vite reads versionCode out of
+      # build.gradle at bundle time and bakes it into __VERSION_CODE__.
+      # If we bump after the web build, the JS bundle keeps the stale
+      # committed value (e.g. 17) while the AAB manifest correctly gets
+      # the new value (e.g. 77), producing an in-app footer that lies
+      # about which build the user is running.
+      - name: Bump versionCode
+        run: |
+          GRADLE=android/app/build.gradle
+          # Use total git commit count — unique per commit, always increases, no write-back needed
+          NEW=$(git rev-list --count HEAD)
+          CURRENT=$(grep -oP 'versionCode \K[0-9]+' "$GRADLE")
+          sed -i "s/versionCode $CURRENT/versionCode $NEW/" "$GRADLE"
+          echo "versionCode: $CURRENT → $NEW (commit count)"
+          echo "NEW_VERSION_CODE=$NEW" >> "$GITHUB_ENV"
+
       - name: Build web app
         run: npm run build
 
@@ -65,16 +81,6 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > "$HOME/upload.keystore"
           echo "KEYSTORE_PATH=$HOME/upload.keystore" >> "$GITHUB_ENV"
           echo "Keystore decoded: $(stat -c %s $HOME/upload.keystore) bytes"
-
-      - name: Bump versionCode
-        run: |
-          GRADLE=android/app/build.gradle
-          # Use total git commit count — unique per commit, always increases, no write-back needed
-          NEW=$(git rev-list --count HEAD)
-          CURRENT=$(grep -oP 'versionCode \K[0-9]+' "$GRADLE")
-          sed -i "s/versionCode $CURRENT/versionCode $NEW/" "$GRADLE"
-          echo "versionCode: $CURRENT → $NEW (commit count)"
-          echo "NEW_VERSION_CODE=$NEW" >> "$GITHUB_ENV"
 
       - name: Build signed AAB
         env:
