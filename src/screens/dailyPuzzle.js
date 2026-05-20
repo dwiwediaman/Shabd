@@ -29,7 +29,12 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   const sessionKey = `${puzzleInfo.date}|${lang}`;
 
   // State
-  let history = (mode === 'daily' ? getSession(sessionKey) : null) ?? [];
+  // Archive sessions are persisted (see saveSession below), so restore them
+  // on entry too — otherwise tapping a played calendar cell opens an empty
+  // grid even though the cell is coloured won/lost.
+  const persistedHistory = (mode === 'daily' || mode === 'archive')
+    ? getSession(sessionKey) : null;
+  let history = persistedHistory ?? [];
   let currentRow = history.length;
   let currentInput = new Array(puzzle.tileCount).fill('');
   let _dismissSheet = null;
@@ -40,7 +45,8 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
 
   const MAX_HINTS = 3;
   // Restore hints used from prior session (e.g. user backgrounded mid-game).
-  const persistedMeta = mode === 'daily' ? getSessionMeta(sessionKey) : { hintsUsed: 0 };
+  const persistedMeta = (mode === 'daily' || mode === 'archive')
+    ? getSessionMeta(sessionKey) : { hintsUsed: 0 };
   let hintsUsedSoFar = persistedMeta.hintsUsed ?? 0;
   let hintsLeft = Math.max(0, MAX_HINTS - hintsUsedSoFar);
   const hintedPositions = new Set();
