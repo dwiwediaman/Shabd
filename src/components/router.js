@@ -21,6 +21,15 @@ export async function navigate(name, params = {}) {
   if (!screen) { console.error('Unknown screen:', name); return; }
   const root = document.getElementById('app');
   root.innerHTML = '';
+  // Defensive: purge any body-level overlays from the previous screen.
+  // Without this, a modal-bg or result-backdrop left behind (e.g. user
+  // Android-backs out of a squad-invite modal, or the screen's onLeave
+  // didn't run) stays at z-index 100–200 with pointer-events:auto and
+  // silently blocks every tap on the new screen — including the puzzle
+  // keyboard, back button, and hint. See vc81 squad-invite bug for the
+  // original trigger.
+  document.querySelectorAll('body > .modal-bg, body > .result-backdrop, body > .result-sheet')
+    .forEach(el => el.remove());
   _current = await screen(root, params);
   _current?.onEnter?.();
 }
