@@ -104,10 +104,10 @@ function showDeepLinkConfirmModal(tx, code, preview) {
     </div>
   `);
 
-  document.getElementById('modalCancel').addEventListener('click', m.close);
-  document.getElementById('modalSubmit').addEventListener('click', async () => {
-    const btn = document.getElementById('modalSubmit');
-    btn.disabled = true;
+  m.card.querySelector('#modalCancel').addEventListener('click', m.close);
+  const submitBtn = m.card.querySelector('#modalSubmit');
+  submitBtn.addEventListener('click', async () => {
+    submitBtn.disabled = true;
     try {
       if (!isSignedIn()) {
         // Sign-in deferred until the user actually wanted to commit.
@@ -122,14 +122,14 @@ function showDeepLinkConfirmModal(tx, code, preview) {
     } catch (e) {
       console.warn('[squads] deep-link join failed:', e);
       const reason = e?.message || '';
-      if (reason === 'cancelled') { btn.disabled = false; return; }
+      if (reason === 'cancelled') { submitBtn.disabled = false; return; }
       const msg = e?.code === 'invalid_code' ? tx.squadsErrorInvalidCode
                 : e?.code === 'squad_full'   ? tx.squadsErrorFull
                 : reason.startsWith('google:') || reason.startsWith('init:') || reason.startsWith('server')
                   ? tx.cloudSignInError + ' (' + reason + ')'
                   : tx.cloudNetworkError;
       toast(msg);
-      btn.disabled = false;
+      submitBtn.disabled = false;
     }
   });
 }
@@ -417,12 +417,14 @@ function showCreateModal(tx) {
       <button class="btn-primary" id="modalSubmit">${tx.squadsCreate}</button>
     </div>
   `);
-  setTimeout(() => document.getElementById('modalNameInput')?.focus(), 50);
-  document.getElementById('modalCancel').addEventListener('click', m.close);
-  document.getElementById('modalSubmit').addEventListener('click', async () => {
-    const name = document.getElementById('modalNameInput').value.trim();
+  const nameInput = m.card.querySelector('#modalNameInput');
+  const submitBtn = m.card.querySelector('#modalSubmit');
+  setTimeout(() => nameInput?.focus(), 50);
+  m.card.querySelector('#modalCancel').addEventListener('click', m.close);
+  submitBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim();
     if (!name) return;
-    document.getElementById('modalSubmit').disabled = true;
+    submitBtn.disabled = true;
     try {
       const resp = await createSquad(name);
       m.close();
@@ -430,7 +432,7 @@ function showCreateModal(tx) {
     } catch (e) {
       console.warn('[squads] create failed:', e);
       toast(tx.cloudNetworkError);
-      document.getElementById('modalSubmit').disabled = false;
+      submitBtn.disabled = false;
     }
   });
 }
@@ -445,12 +447,14 @@ function showJoinModal(tx) {
       <button class="btn-primary" id="modalSubmit">${tx.squadsJoin}</button>
     </div>
   `);
-  setTimeout(() => document.getElementById('modalCodeInput')?.focus(), 50);
-  document.getElementById('modalCancel').addEventListener('click', m.close);
-  document.getElementById('modalSubmit').addEventListener('click', async () => {
-    const code = document.getElementById('modalCodeInput').value.trim().toUpperCase();
+  const codeInput = m.card.querySelector('#modalCodeInput');
+  const submitBtn = m.card.querySelector('#modalSubmit');
+  setTimeout(() => codeInput?.focus(), 50);
+  m.card.querySelector('#modalCancel').addEventListener('click', m.close);
+  submitBtn.addEventListener('click', async () => {
+    const code = codeInput.value.trim().toUpperCase();
     if (!code) return;
-    document.getElementById('modalSubmit').disabled = true;
+    submitBtn.disabled = true;
     try {
       const resp = await joinSquad(code);
       m.close();
@@ -460,7 +464,7 @@ function showJoinModal(tx) {
                 : e.code === 'squad_full'   ? tx.squadsErrorFull
                 : tx.cloudNetworkError;
       toast(msg);
-      document.getElementById('modalSubmit').disabled = false;
+      submitBtn.disabled = false;
     }
   });
 }
@@ -520,7 +524,12 @@ function openModal(innerHtml) {
     setTimeout(() => bg.remove(), 200);
   };
   bg.addEventListener('click', e => { if (e.target === bg) close(); });
-  return { close };
+  // Return `card` so callers scope queries with card.querySelector instead of
+  // document.getElementById — important when two modals briefly coexist
+  // (e.g. loading → confirm transition, or a duplicated deep-link event)
+  // because getElementById returns the FIRST match across the whole document
+  // and would silently bind handlers to a hidden/older modal's buttons.
+  return { close, card };
 }
 
 function toast(msg) {

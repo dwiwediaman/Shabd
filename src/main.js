@@ -27,20 +27,43 @@ register('squads',    squadsScreen);
 
 // ── Deep-link listener (registered BEFORE boot so cold-start URLs aren't
 //    lost between the launch intent and screen registration) ───────────
+// Dedupe deep-link events. On Android, getLaunchUrl() AND the appUrlOpen
+// listener both fire for the SAME cold-start URL — without dedupe we'd call
+// navigate('squads', ...) twice and stack two confirm modals on top of each
+// other. The user sees the top one but its buttons appear dead, because the
+// click handlers (bound via document.getElementById) attach to the FIRST
+// modal's buttons (now hidden underneath). Track the last-seen URL + a short
+// time window to swallow the duplicate.
+let lastDeepLinkKey = null;
+let lastDeepLinkAt  = 0;
+function handleIncomingDeepLink(url) {
+  if (!url) return;
+  const parsed = parseShabdDeepLink(url);
+  if (!parsed) return;
+  const key = `${parsed.kind}:${parsed.code}`;
+  const now = Date.now();
+  // Swallow duplicates within 3s — covers the cold-start case where
+  // getLaunchUrl() and appUrlOpen both fire for the same URL.
+  if (key === lastDeepLinkKey && now - lastDeepLinkAt < 3000) return;
+  lastDeepLinkKey = key;
+  lastDeepLinkAt  = now;
+  if (parsed.kind === 'squad') {
+    // If boot hasn't routed yet, stash for the boot consumer; otherwise
+    // navigate immediately.
+    setPendingDeepLink(parsed);
+    if (document.getElementById('app')?.classList.contains('visible')) {
+      navigate('squads', { joinCode: parsed.code });
+    }
+  }
+}
+
 try {
   // Capture any deep link the OS handed us at launch
   CapApp.getLaunchUrl?.()
-    .then(res => {
-      const parsed = parseShabdDeepLink(res?.url);
-      if (parsed) setPendingDeepLink(parsed);
-    })
+    .then(res => handleIncomingDeepLink(res?.url))
     .catch(() => {});
   // Warm-start: app already running, OS delivers a new URL
-  CapApp.addListener?.('appUrlOpen', (event) => {
-    const parsed = parseShabdDeepLink(event?.url);
-    if (!parsed) return;
-    if (parsed.kind === 'squad') navigate('squads', { joinCode: parsed.code });
-  });
+  CapApp.addListener?.('appUrlOpen', (event) => handleIncomingDeepLink(event?.url));
 } catch (e) {
   // Capacitor not available (running in browser/dev) — silently ignore
 }
