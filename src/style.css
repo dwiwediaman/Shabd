@@ -797,10 +797,15 @@ input:checked + .slider::before { transform: translateX(20px); }
 
 /* ── Hard mode badge ─────────────────────────────────────────────────── */
 .hard-badge {
-  display: inline-block; font-size: 9px; font-weight: 800;
+  display: inline-block; font-size: 10px; font-weight: 800;
   background: linear-gradient(135deg, #DC2626, #B91C1C);
-  color: #fff; padding: 2px 6px; border-radius: 4px;
+  color: #fff; padding: 2px 7px; border-radius: 4px;
   vertical-align: middle; margin-left: 6px; letter-spacing: 0.5px;
+  /* The badge lives inside .hdr-title, which uses background-clip:text +
+     text-fill-color:transparent for its gradient. That property inherits
+     into children and beats `color`, leaving the "HARD" text invisible
+     (just a red pill). Explicitly opt back into solid white fill. */
+  -webkit-text-fill-color: #fff;
 }
 
 /* ── Onboarding welcome badge ────────────────────────────────────────── */
