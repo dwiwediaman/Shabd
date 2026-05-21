@@ -1,4 +1,4 @@
-import { navigate } from '../components/router.js';
+import { navigate, goBack } from '../components/router.js';
 import { createTileGrid } from '../components/tileGrid.js';
 import { createKeyboard, DEVANAGARI_MODIFIERS } from '../components/keyboard.js';
 import { get, recordCompletion, saveSession, getSession, getSessionMeta, setSessionMeta, refreshFreezes } from '../game/gameState.js';
@@ -118,7 +118,10 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   if (gameOver) showShareBtn();
 
   // Back / share
-  document.getElementById('backBtn').addEventListener('click', () => navigate('menu'));
+  // Honour the navigation stack so back from an archive puzzle returns to
+  // the calendar (not menu), while back from a daily puzzle still lands on
+  // menu since that's the only path in.
+  document.getElementById('backBtn').addEventListener('click', () => goBack());
   document.getElementById('shareBtn').addEventListener('click', share);
 
   // Hint

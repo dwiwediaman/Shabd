@@ -34,7 +34,7 @@ export async function navigate(name, params = {}) {
   _current?.onEnter?.();
 }
 
-async function goBack() {
+export async function goBack() {
   _stack.pop(); // remove current screen
   if (_stack.length === 0) {
     // Nothing to go back to — minimize instead of exit
