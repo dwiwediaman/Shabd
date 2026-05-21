@@ -50,6 +50,13 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   let hintsUsedSoFar = persistedMeta.hintsUsed ?? 0;
   let hintsLeft = Math.max(0, MAX_HINTS - hintsUsedSoFar);
   const hintedPositions = new Set();
+  // Pending hints belong to the CURRENT (unsubmitted) row. Persisted so the
+  // user sees the hinted letter after leaving + re-entering — otherwise the
+  // counter ticks down but the pre-filled tile is gone, looking like the
+  // hint was silently swallowed. Cleared whenever a row is submitted.
+  const persistedPending = (persistedMeta.pendingHints?.row === history.length)
+    ? (persistedMeta.pendingHints.items || [])
+    : [];
   // Game-start timestamp for durationMs measurement.
   const gameStartedAt = Date.now();
 
@@ -61,8 +68,8 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       <div class="puzzle-header">
         <button class="hdr-btn" id="backBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div class="hdr-title">${mode === 'archive' ? tx.archiveDay(puzzle.puzzleIndex) : tx.dayLabel(puzzle.puzzleIndex)}${state.settings.hardMode ? ' <span class="hard-badge">HARD</span>' : ''}</div>
-        <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint">
-          💡<span class="hint-count" id="hintCount">${MAX_HINTS}</span>
+        <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint"${hintsLeft === 0 ? ' style="opacity:0.35"' : ''}>
+          💡<span class="hint-count" id="hintCount">${hintsLeft}</span>
         </button>
         <button class="hdr-btn" id="shareBtn" style="display:none" title="Share">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -93,6 +100,15 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       const tiles = splitTiles(guess.input, lang);
       grid.revealRow(r, guess.perTileState, tiles);
       keyboard.updateKeys(guess.perTileState, tiles);
+    });
+  }
+
+  // Re-apply persisted pending hints for the current (unsubmitted) row.
+  if (persistedPending.length && !gameOver) {
+    persistedPending.forEach(({ pos, letter }) => {
+      hintedPositions.add(pos);
+      currentInput[pos] = letter;
+      grid.setHintLetter(currentRow, pos, letter);
     });
   }
 
@@ -129,8 +145,17 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     hintsLeft--;
     hintsUsedSoFar++;
     // Persist immediately so a mid-game close/reopen preserves the cost
-    // (only for daily — archive plays are one-shot and don't sync)
-    if (mode === 'daily') setSessionMeta(sessionKey, { hintsUsed: hintsUsedSoFar });
+    // AND the visible pre-fill — without the pendingHints persistence the
+    // user would re-enter to a blank row with no letter and assume the
+    // hint click did nothing, then click again and burn another hint.
+    // (daily and archive both persist; only daily syncs to cloud later.)
+    if (mode === 'daily' || mode === 'archive') {
+      const items = [...hintedPositions].map(p => ({ pos: p, letter: currentInput[p] }));
+      setSessionMeta(sessionKey, {
+        hintsUsed: hintsUsedSoFar,
+        pendingHints: { row: currentRow, items },
+      });
+    }
 
     // Show in grid and pre-fill current input
     grid.setHintLetter(currentRow, pos, letter);
@@ -252,7 +277,12 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     keyboard.updateKeys(result.perTileState, tiles);
 
     history.push(result);
-    if (mode === 'daily' || mode === 'archive') saveSession(sessionKey, history);
+    if (mode === 'daily' || mode === 'archive') {
+      saveSession(sessionKey, history);
+      // Submitted row consumes any pending hints — clear so the next row
+      // starts fresh and a re-entry doesn't try to re-apply stale hints.
+      setSessionMeta(sessionKey, { pendingHints: null });
+    }
 
     currentRow++;
     currentInput = new Array(puzzle.tileCount).fill('');
