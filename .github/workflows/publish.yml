@@ -26,11 +26,11 @@ on:
       track:
         description: "Play Console track"
         required: true
-        default: "internal"
+        default: "alpha"  # closed testing (where the 11 testers live)
         type: choice
         options:
-          - internal
-          - alpha       # legacy name for closed testing
+          - alpha       # closed testing
+          - internal    # internal testing (you've closed this lane)
           - beta        # open testing
           - production
       status:
