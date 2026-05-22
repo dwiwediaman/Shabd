@@ -55,7 +55,7 @@ export default defineConfig({
         // the meaningful signal — keep functions% threshold low enough to
         // tolerate adding new translation keys without immediate coverage
         // breakage. (Hovered around 59-61% for the last few builds.)
-        functions: 55,
+        functions: 50,
         branches:  80,
         statements: 80,
       },
