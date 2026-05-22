@@ -228,6 +228,66 @@ describe('generate — permutation algorithm has no duplicates', () => {
   // Use a real-sized mock pool to exercise the K-counting and shuffle logic
   const mockPool = Array.from({ length: 500 }, (_, i) => ({ word: `w${i}`, frequency_rank: i }));
 
+  it('vc88: legacy era (days 1..131) is dedup\'d under the new path', async () => {
+    vi.resetModules();
+    vi.doMock('../game/wordDb.js', () => ({
+      getDailyPool: (lang, tier) =>
+        tier === 'common'
+          ? Array.from({ length: 200 }, (_, i) => ({ word: `leg${i}`, frequency_rank: i }))
+          : [],
+      isValidGuess: () => true,
+    }));
+    const { generate, _resetShuffleCacheForTests } = await import('../game/wordleMechanic.js');
+    _resetShuffleCacheForTests();
+
+    const seen = new Map();
+    for (let day = 1; day < 132; day++) {
+      const date = new Date(Date.UTC(2026, 0, 1) + (day - 1) * 86400000)
+        .toISOString().slice(0, 10);
+      const puzzle = generate(0, 'en', date);
+      if (seen.has(puzzle.target)) {
+        throw new Error(`Duplicate '${puzzle.target}' on day ${day} (first seen day ${seen.get(puzzle.target)})`);
+      }
+      seen.set(puzzle.target, day);
+    }
+    expect(seen.size).toBe(131);
+  });
+
+  it('vc88: legacy and algo eras use independent shuffles (different word at day 1 vs 132)', async () => {
+    vi.resetModules();
+    vi.doMock('../game/wordDb.js', () => ({
+      getDailyPool: (lang, tier) =>
+        tier === 'common'
+          ? Array.from({ length: 500 }, (_, i) => ({ word: `w${i}`, frequency_rank: i }))
+          : [],
+      isValidGuess: () => true,
+    }));
+    const { generate, _resetShuffleCacheForTests } = await import('../game/wordleMechanic.js');
+    _resetShuffleCacheForTests();
+
+    const day1   = generate(0, 'en', '2026-01-01').target;
+    const day132 = generate(0, 'en', new Date(Date.UTC(2026, 0, 1) + 131 * 86400000)
+      .toISOString().slice(0, 10)).target;
+    // Different shuffle seeds → first words of each sequence should differ.
+    expect(day1).not.toBe(day132);
+  });
+
+  it('vc88: _legacyTarget returns the OLD seed%pool word (used by migration)', async () => {
+    vi.resetModules();
+    vi.doMock('../game/wordDb.js', () => ({
+      getDailyPool: (lang, tier) =>
+        tier === 'common'
+          ? Array.from({ length: 10 }, (_, i) => ({ word: `old${i}`, frequency_rank: i }))
+          : [],
+      isValidGuess: () => true,
+    }));
+    const { _legacyTarget } = await import('../game/wordleMechanic.js');
+    // seed=0 → tier roll → common, index 0 % 10 = 0
+    expect(_legacyTarget(0, 'en')).toBe('old0');
+    // Different seed → different index
+    expect(_legacyTarget(7, 'en')).toBe('old7');
+  });
+
   it('produces unique words for 600+ consecutive days from day 132', async () => {
     // Re-mock with the larger pool
     vi.resetModules();

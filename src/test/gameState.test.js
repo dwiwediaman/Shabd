@@ -10,7 +10,7 @@ global.localStorage = {
 };
 
 // Dynamic import so the mock is in place first
-const { load, get, save, recordCompletion, saveSession, getSession, setSetting, setFlag, refreshFreezes } =
+const { load, get, save, recordCompletion, saveSession, getSession, getSessionMeta, setSessionMeta, setSetting, setFlag, refreshFreezes } =
   await import('../game/gameState.js');
 
 beforeEach(() => {
@@ -164,5 +164,63 @@ describe('load — deepMerge with existing state', () => {
     load();
     expect(get().settings.lang).toBe('en');
     expect(get().stats.en.played).toBe(0);
+  });
+});
+
+// ── Regression: vc86 hint persistence ─────────────────────────────────────
+// Hint clicks persist hintsUsed AND the pre-filled letters keyed to the
+// current row. On re-entry, the puzzle screen reapplies them only when
+// the stored row matches the current row.
+describe('sessionMeta — vc86 pendingHints persistence', () => {
+  it('round-trips hintsUsed via setSessionMeta', () => {
+    setSessionMeta('2026-05-21|en', { hintsUsed: 2 });
+    expect(getSessionMeta('2026-05-21|en').hintsUsed).toBe(2);
+  });
+
+  it('patch preserves unrelated fields (partial update)', () => {
+    setSessionMeta('2026-05-21|en', { hintsUsed: 1, durationMs: 12345 });
+    setSessionMeta('2026-05-21|en', { hintsUsed: 2 }); // patch only hintsUsed
+    expect(getSessionMeta('2026-05-21|en').durationMs).toBe(12345);
+    expect(getSessionMeta('2026-05-21|en').hintsUsed).toBe(2);
+  });
+
+  it('persists pendingHints with row + items[{pos, letter}]', () => {
+    const pending = { row: 1, items: [{ pos: 2, letter: 'A' }, { pos: 4, letter: 'E' }] };
+    setSessionMeta('2026-05-21|en', { hintsUsed: 2, pendingHints: pending });
+    load(); // simulate cold start
+    expect(getSessionMeta('2026-05-21|en').pendingHints).toEqual(pending);
+  });
+
+  it('clearing pendingHints via null patch keeps hintsUsed intact', () => {
+    setSessionMeta('2026-05-21|en', {
+      hintsUsed: 3,
+      pendingHints: { row: 0, items: [{ pos: 1, letter: 'X' }] },
+    });
+    setSessionMeta('2026-05-21|en', { pendingHints: null });
+    expect(getSessionMeta('2026-05-21|en').pendingHints).toBeNull();
+    expect(getSessionMeta('2026-05-21|en').hintsUsed).toBe(3);
+  });
+
+  it('returns safe defaults for an unseen session', () => {
+    expect(getSessionMeta('2026-12-31|en')).toEqual({ hintsUsed: 0, durationMs: null });
+  });
+});
+
+// ── Regression: vc81 archive sessions persist (so Time Travel restores) ───
+describe('saveSession — vc81 archive plays persist', () => {
+  it('saves and retrieves an archive session by date|lang key', () => {
+    const guesses = [
+      { input: 'crane', isCorrect: false, perTileState: ['absent','absent','absent','absent','absent'] },
+      { input: 'trace', isCorrect: true,  perTileState: ['correct','correct','correct','correct','correct'] },
+    ];
+    saveSession('2026-03-14|en', guesses);
+    expect(getSession('2026-03-14|en')).toEqual(guesses);
+  });
+
+  it('survives cold start via load()', () => {
+    const guesses = [{ input: 'bliss', isCorrect: false, perTileState: ['absent','absent','absent','absent','absent'] }];
+    saveSession('2026-03-15|en', guesses);
+    load();
+    expect(getSession('2026-03-15|en')).toEqual(guesses);
   });
 });

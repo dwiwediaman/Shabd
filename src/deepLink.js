@@ -33,3 +33,43 @@ export function consumePendingDeepLink() {
   pendingDeepLink = null;
   return x;
 }
+
+/**
+ * Build a deep-link handler that dedupes events seen within `windowMs`.
+ *
+ * On Android cold-start, both `CapApp.getLaunchUrl()` AND the `appUrlOpen`
+ * listener fire for the SAME URL — without dedupe we'd call navigate twice
+ * and stack two confirm modals (the buttons on the visible top modal end
+ * up dead). The factory shape keeps the dedupe state private and lets us
+ * drive it from a test with a controllable clock.
+ *
+ * Returns: `{ navigated: true }` | `{ stashed: true }` | `{ skipped: '...' }`
+ * | `undefined` for unrecognised URLs.
+ */
+export function createDeepLinkHandler({
+  navigate,
+  isAppReady,
+  now      = () => Date.now(),
+  windowMs = 3000,
+}) {
+  let lastKey = null;
+  let lastAt  = 0;
+  return function handleIncomingDeepLink(url) {
+    if (!url) return;
+    const parsed = parseShabdDeepLink(url);
+    if (!parsed) return;
+    const key = `${parsed.kind}:${parsed.code}`;
+    const t = now();
+    if (key === lastKey && t - lastAt < windowMs) return { skipped: 'duplicate' };
+    lastKey = key;
+    lastAt  = t;
+    if (parsed.kind === 'squad') {
+      setPendingDeepLink(parsed);
+      if (isAppReady()) {
+        navigate('squads', { joinCode: parsed.code });
+        return { navigated: true };
+      }
+      return { stashed: true };
+    }
+  };
+}

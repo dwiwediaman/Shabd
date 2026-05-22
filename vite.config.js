@@ -36,6 +36,8 @@ export default defineConfig({
         'game/wordleMechanic.js',
         'game/transliterator.js',
         'i18n.js',
+        'migrations.js',
+        'deepLink.js',
       ],
       exclude: [
         // Browser-only / canvas / screen code — not unit-testable
@@ -55,7 +57,7 @@ export default defineConfig({
         // the meaningful signal — keep functions% threshold low enough to
         // tolerate adding new translation keys without immediate coverage
         // breakage. (Hovered around 59-61% for the last few builds.)
-        functions: 50,
+        functions: 61,
         branches:  80,
         statements: 80,
       },
