@@ -91,6 +91,43 @@ function shuffledPoolFor(lang, tier, pool) {
   return _shuffledCache[key];
 }
 
+// Separate shuffle for days 1..131 (legacy era). Using a different seed lets
+// us retroactively dedupe within that range without touching the algo-era
+// sequence (132+), so today's puzzle and every tester's mid-game session
+// stay stable. Cross-era collisions between an era-1 day and an era-2 day
+// are possible but rare (~1/poolSize).
+function legacyShuffledPoolFor(lang, tier, pool) {
+  const key = `legacy|${lang}|${tier}`;
+  if (!_shuffledCache[key]) {
+    const shuffleSeed = cyrb53(`shabd-legacy-shuffle-v1|${lang}|${tier}`);
+    _shuffledCache[key] = seededShuffle(pool, shuffleSeed);
+  }
+  return _shuffledCache[key];
+}
+
+function legacyTierPositionAt(puzzleIndex, lang, tier) {
+  let k = 0;
+  for (let d = 1; d <= puzzleIndex; d++) {
+    if (effectiveTierForDay(d, lang) === tier) k++;
+  }
+  return k - 1;
+}
+
+// Preserved so the one-shot migration can compute the OLD legacy target and
+// only delete archive sessions whose target actually changed under the new
+// permutation path. Not used by generate() anymore.
+export function _legacyTarget(seed, lang) {
+  const tierRoll = Math.floor(seed / 2 ** 32) % 100;
+  let tier = 'common';
+  if (tierRoll >= TIER_WEIGHTS.common) tier = 'mid';
+  if (tierRoll >= TIER_WEIGHTS.mid)    tier = 'challenge';
+  let pool = getDailyPool(lang, tier);
+  if (!pool.length) pool = getDailyPool(lang, 'common');
+  if (!pool.length) return null;
+  const index = seed % pool.length;
+  return pool[index]?.word ?? null;
+}
+
 // Reset cache (test-only)
 export function _resetShuffleCacheForTests() { for (const k in _shuffledCache) delete _shuffledCache[k]; }
 
@@ -115,17 +152,16 @@ export function generate(seed, lang, istDate) {
     };
   }
 
-  // ── Legacy path (pre-cutoff) — keeps historical days unchanged ─────────
-  const tierRoll = Math.floor(seed / 2 ** 32) % 100;
-  let tier = 'common';
-  if (tierRoll >= TIER_WEIGHTS.common) tier = 'mid';
-  if (tierRoll >= TIER_WEIGHTS.mid)    tier = 'challenge';
-
-  let pool = getDailyPool(lang, tier);
-  if (!pool.length) pool = getDailyPool(lang, 'common');
-
-  const index = seed % pool.length;
-  const entry = pool[index];
+  // ── Legacy-era (1..131): retroactive permutation with a SEPARATE shuffle.
+  // The original seed%pool approach produced ~199 collisions in 365 days
+  // (e.g. 'donna' repeated). We dedupe within this range without affecting
+  // algo-era days. Archive sessions whose target shifted are wiped at boot
+  // by migrateLegacyArchiveSessions (see migrations.js).
+  const tier     = effectiveTierForDay(puzzleIndex, lang);
+  const basePool = getDailyPool(lang, tier);
+  const shuffled = legacyShuffledPoolFor(lang, tier, basePool);
+  const k        = legacyTierPositionAt(puzzleIndex, lang, tier);
+  const entry    = shuffled[((k % shuffled.length) + shuffled.length) % shuffled.length];
 
   return {
     target:     entry.word,

@@ -14,6 +14,7 @@ import { checkForUpdate } from './updateCheck.js';
 import { isSignedIn } from './cloud/auth.js';
 import { ensureBackfilled } from './cloud/sync.js';
 import { setPendingDeepLink, parseShabdDeepLink, consumePendingDeepLink } from './deepLink.js';
+import { migrateLegacyArchiveSessions } from './migrations.js';
 import { App as CapApp } from '@capacitor/app';
 
 // Register all screens
@@ -75,6 +76,11 @@ async function boot() {
     loadTransliterator(),
     new Promise(r => setTimeout(r, 1500)), // minimum splash time
   ]);
+
+  // Data migrations need wordDb loaded so target lookups work. Awaited
+  // before the UI shows so stale-target cells can't be tapped during the
+  // brief migration window.
+  await migrateLegacyArchiveSessions();
 
   const loader = document.getElementById('loader');
   loader.classList.add('hiding');
