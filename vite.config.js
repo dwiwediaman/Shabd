@@ -50,16 +50,14 @@ export default defineConfig({
         'notifications.js',
       ],
       thresholds: {
-        lines:     80,
-        // i18n.js exports many trivial template-string functions; we
-        // exercise the ones that take arguments via FUNCTION_KEYS, but the
-        // count drags the global functions% down. The other metrics are
-        // the meaningful signal — keep functions% threshold low enough to
-        // tolerate adding new translation keys without immediate coverage
-        // breakage. (Hovered around 59-61% for the last few builds.)
-        functions: 61,
-        branches:  80,
-        statements: 80,
+        // Real values land around: stmts 99.7 / branches 92 / funcs 99 /
+        // lines 99.7. Thresholds leave a small headroom (~5pp on stmts/
+        // funcs/lines, ~2pp on branches) so adding new code doesn't
+        // immediately break CI, but trending down DOES.
+        lines:      95,
+        functions:  95,
+        branches:   90,
+        statements: 95,
       },
     },
   },
