@@ -38,6 +38,7 @@ export default defineConfig({
         'i18n.js',
         'migrations.js',
         'deepLink.js',
+        'notifications.js',
       ],
       exclude: [
         // Browser-only / canvas / screen code — not unit-testable
@@ -47,7 +48,6 @@ export default defineConfig({
         'screens/**',
         'main.js',
         'feedback.js',
-        'notifications.js',
       ],
       thresholds: {
         // Real values land around: stmts 99.7 / branches 92 / funcs 99 /

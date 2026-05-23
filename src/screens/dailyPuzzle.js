@@ -10,6 +10,19 @@ import { submitScore } from '../cloud/sync.js';
 import { listMySquads, getSquadBoard } from '../cloud/squads.js';
 import { t } from '../i18n.js';
 import { feedbackKeyPress, feedbackBackspace, feedbackInvalid, feedbackTileReveal, feedbackWin, feedbackLoss, feedbackHint } from '../feedback.js';
+import { refreshDailyReminders } from '../notifications.js';
+
+// Tear down any of today's remaining reminders once the daily puzzle is
+// finished. Wrapped so it's safe to call from win/loss branches without
+// blocking the result-sheet animation timeline. No-op if the user has
+// notifications disabled in settings.
+function cancelTodayRemindersIfNotificationsOn() {
+  const s = get().settings;
+  if (!s?.notifications) return;
+  // refreshDailyReminders reads the just-saved session via getSession and
+  // therefore skips today entirely when its last guess is a win/loss.
+  refreshDailyReminders({ lang: s.lang }).catch(() => {});
+}
 
 export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDate } = {}) {
   const state = get();
@@ -301,6 +314,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
         const { freezeUsed } = recordCompletion(lang, true, history.length, puzzleInfo.date);
         if (freezeUsed) setTimeout(() => showToast(tx.freezeUsed, 3000), 2100);
         submitToCloudInBackground(true);
+        // Today's session is now finished — refresh reminders so any
+        // not-yet-fired notifications for today are cancelled.
+        cancelTodayRemindersIfNotificationsOn();
       }
       // Pre-render share image in background while animations play
       preRenderShare(puzzle, history);
@@ -313,6 +329,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       if (mode === 'daily') {
         recordCompletion(lang, false, history.length, puzzleInfo.date);
         submitToCloudInBackground(false);
+        cancelTodayRemindersIfNotificationsOn();
       }
       // Pre-render share image in background while animations play
       preRenderShare(puzzle, history);

@@ -17,13 +17,6 @@ export function settingsScreen(root) {
   const todaySession = getSession(`${todayStr}|${s.lang}`);
   const hardModeLocked = !!(todaySession && todaySession.length > 0);
 
-  // Build hour options 6am–11pm IST
-  const hourOptions = Array.from({ length: 18 }, (_, i) => {
-    const h = i + 6;
-    const label = h < 12 ? `${h}:00 AM` : h === 12 ? '12:00 PM' : `${h - 12}:00 PM`;
-    return `<option value="${h}" ${s.notifHour === h ? 'selected' : ''}>${label} IST</option>`;
-  }).join('');
-
   root.innerHTML = `
     <div class="stars" id="stgStars"></div>
     <div class="orb orb-1"></div>
@@ -99,11 +92,10 @@ export function settingsScreen(root) {
             <span class="slider"></span>
           </label>
         </div>
-        <div id="notifTimeRow" style="margin-top:12px;${s.notifications ? '' : 'display:none'}">
-          <div class="setting-label" style="font-size:12px;margin-bottom:6px;">${tx.notifTime}</div>
-          <select id="notifHour" style="width:100%;padding:10px;border-radius:10px;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:inherit;">
-            ${hourOptions}
-          </select>
+        <div id="notifTimeRow" style="margin-top:8px;${s.notifications ? '' : 'display:none'}">
+          <div class="setting-sub" style="font-size:11px;line-height:1.4;">
+            ${tx.notifFixedSlots}
+          </div>
         </div>
       </div>
 
@@ -154,7 +146,7 @@ export function settingsScreen(root) {
     if (enabled) {
       const granted = await setupNotifications();
       if (granted) {
-        await scheduleDailyReminder(get().settings.notifHour);
+        await scheduleDailyReminder();
       } else {
         e.target.checked = false;
         setSetting('notifications', false);
@@ -164,13 +156,8 @@ export function settingsScreen(root) {
     }
   });
 
-  document.getElementById('notifHour').addEventListener('change', async e => {
-    const hour = parseInt(e.target.value, 10);
-    setSetting('notifHour', hour);
-    if (get().settings.notifications) {
-      await scheduleDailyReminder(hour);
-    }
-  });
+  // notifHour picker removed in vc95 — three slots (9am / 2pm / 8pm IST)
+  // are now fixed. The legacy notifHour value in state is ignored.
 
   // ── Cloud backup wiring ────────────────────────────────────────────────
   wireCloudSection(tx);

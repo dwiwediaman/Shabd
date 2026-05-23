@@ -9,7 +9,7 @@ import { settingsScreen }    from './screens/settings.js';
 import { howToPlayScreen }   from './screens/howToPlay.js';
 import { archiveScreen }     from './screens/archive.js';
 import { squadsScreen }      from './screens/squads.js';
-import { setupNotifications, scheduleDailyReminder } from './notifications.js';
+import { setupNotifications, refreshDailyReminders } from './notifications.js';
 import { checkForUpdate } from './updateCheck.js';
 import { isSignedIn } from './cloud/auth.js';
 import { ensureBackfilled } from './cloud/sync.js';
@@ -86,11 +86,15 @@ async function boot() {
 }
 
 function scheduleBackgroundWork() {
-  // Re-schedule daily reminder on each launch (keeps it alive)
+  // Re-schedule daily reminders on each launch. refreshDailyReminders is
+  // idempotent: it cancels its own reserved IDs first, then re-schedules
+  // the next 7 days × 3 slots, skipping any day whose puzzle is already
+  // finished in local state. Re-runs every boot keep the 7-day window
+  // sliding forward.
   const s = get().settings;
   if (s.notifications) {
     setupNotifications().then(granted => {
-      if (granted) scheduleDailyReminder(s.notifHour);
+      if (granted) refreshDailyReminders({ lang: s.lang });
     });
   }
 

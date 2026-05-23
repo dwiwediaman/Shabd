@@ -90,6 +90,7 @@ const translations = {
     notifications:   'Daily Reminder',
     notifSub:        'Get notified when today\'s puzzle is ready',
     notifTime:       'Reminder Time',
+    notifFixedSlots: 'Three reminders per day at 9 AM, 2 PM, and 8 PM IST. We skip the day once you\'ve solved the puzzle.',
     imageSaved:      'Image saved!',
 
     // Hard mode
@@ -281,6 +282,7 @@ const translations = {
     notifications:   'दैनिक अनुस्मारक',
     notifSub:        'आज की पहेली तैयार होने पर सूचना पाएं',
     notifTime:       'अनुस्मारक समय',
+    notifFixedSlots: 'दिन में तीन बार अनुस्मारक: 9 AM, 2 PM और 8 PM IST. आज की पहेली हल कर लेने पर अनुस्मारक नहीं भेजे जाएंगे।',
     imageSaved:      'चित्र सेव हुआ!',
 
     // Hard mode
