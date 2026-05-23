@@ -12,10 +12,14 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Preserve line numbers so Play Console can de-obfuscate stack traces
+# using the uploaded mapping.txt. SourceFile is renamed to a placeholder
+# so the original .java path doesn't leak into release crash reports.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Capacitor 8 ships consumer ProGuard rules in capacitor-android.aar that
+# preserve plugin classes reflected from the JS bridge — no manual -keep
+# entries needed for first-party Capacitor plugins. Add app-specific
+# -keep rules below if you ever wire native code that's invoked via
+# reflection (e.g. a custom JavaScriptInterface).

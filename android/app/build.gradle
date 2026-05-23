@@ -18,7 +18,14 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            // R8 minify + resource shrink. Capacitor 8 ships consumer
+            // ProGuard rules in its AAR so reflection-based plugin lookups
+            // survive. mapping.txt lands at:
+            //   android/app/build/outputs/mapping/release/mapping.txt
+            // and is uploaded to Play Console by publish.yml so future
+            // native-crash stack traces are de-obfuscated.
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
