@@ -126,12 +126,28 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   }
 
   // Re-apply persisted pending hints for the current (unsubmitted) row.
+  // Rescue: a bug in vc86–vc99 persisted the most-recent hint as
+  // letter:'' (the click handler serialised BEFORE writing currentInput).
+  // Drop those empty items, repaint only the valid ones, refund the
+  // hintsUsed counter so the user gets back the hint they paid for.
   if (persistedPending.length && !gameOver) {
-    persistedPending.forEach(({ pos, letter }) => {
+    const valid   = persistedPending.filter(it => it && it.letter);
+    const refund  = persistedPending.length - valid.length;
+    valid.forEach(({ pos, letter }) => {
       hintedPositions.add(pos);
       currentInput[pos] = letter;
       grid.setHintLetter(currentRow, pos, letter);
     });
+    if (refund > 0) {
+      hintsUsedSoFar = Math.max(0, hintsUsedSoFar - refund);
+      hintsLeft      = Math.max(0, MAX_HINTS - hintsUsedSoFar);
+      if (mode === 'daily' || mode === 'archive') {
+        setSessionMeta(sessionKey, {
+          hintsUsed:    hintsUsedSoFar,
+          pendingHints: valid.length ? { row: currentRow, items: valid } : null,
+        });
+      }
+    }
   }
 
   // Re-show the topic-hint banner if the user previously tapped it. We
@@ -176,10 +192,16 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     hintedPositions.add(pos);
     hintsLeft--;
     hintsUsedSoFar++;
-    // Persist immediately so a mid-game close/reopen preserves the cost
-    // AND the visible pre-fill — without the pendingHints persistence the
-    // user would re-enter to a blank row with no letter and assume the
-    // hint click did nothing, then click again and burn another hint.
+
+    // Apply to the in-memory row FIRST so the persisted snapshot sees the
+    // new letter at currentInput[pos]. Earlier we persisted before this
+    // assignment, so the just-hinted position got serialised as letter:''
+    // — on re-entry that painted the yellow outline with a blank inside.
+    grid.setHintLetter(currentRow, pos, letter);
+    currentInput[pos] = letter;
+
+    // Persist after the in-memory write so a mid-game close/reopen
+    // preserves the cost AND the visible pre-fill.
     // (daily and archive both persist; only daily syncs to cloud later.)
     if (mode === 'daily' || mode === 'archive') {
       const items = [...hintedPositions].map(p => ({ pos: p, letter: currentInput[p] }));
@@ -188,10 +210,6 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
         pendingHints: { row: currentRow, items },
       });
     }
-
-    // Show in grid and pre-fill current input
-    grid.setHintLetter(currentRow, pos, letter);
-    currentInput[pos] = letter;
 
     // Update badge
     const badge = document.getElementById('hintCount');
