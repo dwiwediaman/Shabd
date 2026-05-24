@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   computeTileStates,
   splitTiles,
@@ -11,9 +11,11 @@ import {
 } from '../game/wordleMechanic.js';
 
 // ── Mock wordDb so validateGuess doesn't need actual word lists ────────────
+const MOCK_GUESS_SET = new Set(['crane', 'trace', 'brave', 'bliss', 'blitz', 'blink', 'cling']);
 vi.mock('../game/wordDb.js', () => ({
   getDailyPool: vi.fn(() => [{ word: 'crane', frequency_rank: 1 }]),
-  isValidGuess: vi.fn((word) => ['crane', 'trace', 'brave', 'bliss'].includes(word)),
+  isValidGuess: vi.fn((word) => MOCK_GUESS_SET.has(word)),
+  getGuessSet: vi.fn(() => MOCK_GUESS_SET),
 }));
 
 describe('computeTileStates', () => {
@@ -312,5 +314,74 @@ describe('generate — permutation algorithm has no duplicates', () => {
       seen.set(puzzle.target, day);
     }
     expect(seen.size).toBe(500);
+  });
+});
+
+// ── findClosestGuess (vc99 spell-suggest) ─────────────────────────────────
+// Guess pool: crane, trace, brave, bliss, blitz, blink, cling
+describe('findClosestGuess — spell-suggest helper', () => {
+  // Earlier tests above use vi.resetModules + vi.doMock to swap the
+  // wordDb mock (e.g. to test the permutation algo). Those replacement
+  // mocks don't include getGuessSet, so without resetting back to the
+  // top-of-file mock here we'd hit "No getGuessSet export" errors.
+  const POOL = new Set(['crane', 'trace', 'brave', 'bliss', 'blitz', 'blink', 'cling']);
+  beforeEach(() => {
+    vi.resetModules();
+    vi.doMock('../game/wordDb.js', () => ({
+      getDailyPool: () => [{ word: 'crane', frequency_rank: 1 }],
+      isValidGuess: (w) => POOL.has(w),
+      getGuessSet: () => POOL,
+    }));
+  });
+
+  it('returns null for inputs that are already valid', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    expect(findClosestGuess('bliss', 'en')).toBeNull();
+    expect(findClosestGuess('BLISS', 'en')).toBeNull(); // case-insensitive
+  });
+
+  it('returns null when nothing is within maxDist', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    // 'xxxxx' is at distance 5 from every candidate
+    expect(findClosestGuess('xxxxx', 'en', { maxDist: 2 })).toBeNull();
+  });
+
+  it('returns the 1-edit neighbour when it exists (typo at one position)', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    // 'blisp' → 'bliss' (last letter typo)
+    expect(findClosestGuess('blisp', 'en')).toBe('bliss');
+  });
+
+  it('returns null for completely garbage input even if length matches', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    // 'zzzzz' is dist 5 from everything in the pool
+    expect(findClosestGuess('zzzzz', 'en', { maxDist: 2 })).toBeNull();
+  });
+
+  it('prefers smaller distance when multiple candidates qualify', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    // 'blixs' → 'bliss' (d=1, swap one letter) is better than 'blitz' (d=2)
+    expect(findClosestGuess('blixs', 'en')).toBe('bliss');
+  });
+
+  it('respects the maxDist budget', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    // 'cyimg' vs 'cling' is d=2 (i↔y, c→c, l→i is wrong... let me pick clearer):
+    // 'cliny' vs 'cling' is d=1.
+    expect(findClosestGuess('cliny', 'en', { maxDist: 1 })).toBe('cling');
+    // With maxDist 0, nothing matches an invalid input.
+    expect(findClosestGuess('cliny', 'en', { maxDist: 0 })).toBeNull();
+  });
+
+  it('returns null if the guess set is missing for that lang', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    expect(findClosestGuess('hello', 'fr')).toBeNull();
+  });
+
+  it('returns null for empty / falsy input', async () => {
+    const { findClosestGuess } = await import('../game/wordleMechanic.js');
+    expect(findClosestGuess('', 'en')).toBeNull();
+    expect(findClosestGuess(null, 'en')).toBeNull();
+    expect(findClosestGuess(undefined, 'en')).toBeNull();
   });
 });

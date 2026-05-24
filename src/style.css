@@ -592,6 +592,27 @@ body::before {
 }
 .toast.show { opacity: 1; }
 
+/* Spell-suggest chip (vc99). Same look-and-feel as a toast, but lives at
+   the bottom (above the keyboard) so the inner button is thumb-reachable,
+   and accepts pointer events so the suggestion can be tapped. */
+.spell-suggest {
+  position: fixed; bottom: 280px; top: auto;
+  pointer-events: auto;
+  display: inline-flex; align-items: center; gap: 8px;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.spell-suggest-btn {
+  background: linear-gradient(135deg, var(--violet), #5B21B6);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  border: none; border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
+  cursor: pointer; font-family: inherit;
+}
+.spell-suggest-btn:active { transform: scale(.96); }
+
 /* ── Stats Screen ──────────────────────────────────────────────────── */
 .stats-screen  { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
 /* Header sticks to the top of the scroll container so the back-button

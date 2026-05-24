@@ -3,7 +3,7 @@ import { createTileGrid } from '../components/tileGrid.js';
 import { createKeyboard, DEVANAGARI_MODIFIERS } from '../components/keyboard.js';
 import { get, recordCompletion, saveSession, getSession, getSessionMeta, setSessionMeta, refreshFreezes } from '../game/gameState.js';
 import { today, forDate } from '../game/seedEngine.js';
-import { generate, validateGuess, renderShareGrid, splitTiles, normalize } from '../game/wordleMechanic.js';
+import { generate, validateGuess, renderShareGrid, splitTiles, normalize, findClosestGuess } from '../game/wordleMechanic.js';
 import { shareImage, preRenderShare, preloadShareFonts } from '../game/shareImage.js';
 import { isSignedIn } from '../cloud/auth.js';
 import { submitScore } from '../cloud/sync.js';
@@ -349,7 +349,21 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     if (!result.isValid) {
       feedbackInvalid();
       grid.shakeRow(currentRow);
-      showToast(result.rejectionReason === 'wrong_length' ? tx.notEnoughLetters : tx.notInWordList);
+      if (result.rejectionReason === 'wrong_length') {
+        showToast(tx.notEnoughLetters);
+      } else {
+        // Spell-suggest (vc99): probe the guess pool for the nearest
+        // valid same-length word. If found within 2 tile edits, offer it
+        // as a tappable suggestion instead of the bare "Not in word
+        // list" message. Cuts the friction of a typo in an otherwise
+        // sensible guess.
+        const suggestion = findClosestGuess(word, lang, { maxDist: 2 });
+        if (suggestion) {
+          showSpellSuggestion(suggestion);
+        } else {
+          showToast(tx.notInWordList);
+        }
+      }
       return;
     }
 
@@ -488,6 +502,35 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  // Spell-suggest toast (vc99) — like showToast but with a tappable button
+  // that loads the suggested word into the current row. Lives 5s so the
+  // user has time to read + decide; doesn't auto-submit so they can edit
+  // first. Hinted positions are preserved on apply.
+  function showSpellSuggestion(word) {
+    document.getElementById('spellSuggest')?.remove();
+    const el = document.createElement('div');
+    el.id = 'spellSuggest';
+    el.className = 'toast spell-suggest';
+    el.innerHTML = `${escapeHtml(tx.didYouMean)} <button type="button" class="spell-suggest-btn">${escapeHtml(word.toUpperCase())}</button>`;
+    el.querySelector('button').addEventListener('click', () => {
+      const tiles = splitTiles(word, lang);
+      for (let i = 0; i < currentInput.length; i++) {
+        if (hintedPositions.has(i)) continue; // don't clobber the hinted tile
+        currentInput[i] = lang === 'en' ? (tiles[i] || '').toUpperCase() : (tiles[i] || '');
+        grid.setLetter(currentRow, i, currentInput[i]);
+      }
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 250);
+    });
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    // 5s window: long enough to read + tap, short enough not to litter the screen.
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 250);
+    }, 5000);
   }
 
   function showShareBtn() {

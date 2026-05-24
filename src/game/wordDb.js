@@ -36,4 +36,11 @@ export function isValidGuess(word, lang) {
   return _guessSets[lang]?.has(word) ?? false;
 }
 
+// Internal accessor for the spell-suggest path. Returns the full guess
+// Set so findClosestGuess (in wordleMechanic.js) can iterate without
+// circularity. Returns null if the lang isn't loaded yet.
+export function getGuessSet(lang) {
+  return _guessSets[lang] ?? null;
+}
+
 export function isLoaded() { return _loaded; }

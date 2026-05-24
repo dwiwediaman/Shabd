@@ -99,6 +99,7 @@ const translations = {
     wordHintLabel:       'Topic',
     wordHintLoading:     'Looking up the topic…',
     wordHintUnavailable: 'No topic hint available for this word.',
+    didYouMean:          'Did you mean',
 
     // Hard mode
     hardMode:        'Hard Mode',
@@ -298,6 +299,7 @@ const translations = {
     wordHintLabel:       'विषय',
     wordHintLoading:     'संकेत खोज रहे हैं…',
     wordHintUnavailable: 'इस शब्द के लिए विषय संकेत उपलब्ध नहीं है।',
+    didYouMean:          'क्या आपका मतलब था',
 
     // Hard mode
     hardMode:        'कठिन मोड',

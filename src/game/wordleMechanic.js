@@ -1,5 +1,5 @@
 // WordleMechanic — mirrors wordle_mechanic.gd
-import { getDailyPool, isValidGuess } from './wordDb.js';
+import { getDailyPool, isValidGuess, getGuessSet } from './wordDb.js';
 import { getPuzzleIndex } from './seedEngine.js';
 
 export const TILE_CORRECT = 'correct';
@@ -290,4 +290,80 @@ export function computeTileStates(input, target) {
   }
 
   return states;
+}
+
+// ── Spell-suggest (vc99) ──────────────────────────────────────────────────
+// When the user submits a word that isn't in the guess pool, find the
+// closest valid same-length word so the puzzle screen can offer a "Did
+// you mean BLISS?" toast instead of just "Not in word list". Cuts the
+// frustration of typos in an otherwise-correct guess.
+//
+// Distance is computed on splitTiles arrays so Hindi works correctly
+// (a matra isn't a separate edit from its consonant — they're one tile).
+
+// Bounded Levenshtein on two arrays. Returns `max + 1` immediately if
+// the true distance can't be ≤ max — saves time when iterating ~8k
+// candidates and almost all are far away.
+function tileDistance(a, b, max) {
+  const m = a.length, n = b.length;
+  if (Math.abs(m - n) > max) return max + 1;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = new Array(n + 1);
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    let rowMin = dp[0];
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      dp[j] = a[i - 1] === b[j - 1]
+        ? prev
+        : Math.min(prev, dp[j], dp[j - 1]) + 1;
+      prev = tmp;
+      if (dp[j] < rowMin) rowMin = dp[j];
+    }
+    if (rowMin > max) return max + 1; // any further i row can only grow
+  }
+  return dp[n];
+}
+
+/**
+ * Find the closest valid guess to `input` within `maxDist` tile edits.
+ * Returns the candidate word string, or null if no candidate within
+ * distance OR the input is already valid (caller should check that first
+ * but we guard anyway).
+ *
+ * Same-length only: callers reach here AFTER validateGuess returned
+ * isValid=false with a NON-`wrong_length` reason, so the input already
+ * has the right tile count and any suggestion shorter or longer would
+ * just bounce back as wrong_length.
+ */
+export function findClosestGuess(input, lang, { maxDist = 2 } = {}) {
+  const set = getGuessSet(lang);
+  if (!set || !input) return null;
+
+  const normalized = String(input).toLowerCase();
+  if (set.has(normalized)) return null;
+
+  const inputTiles = splitTiles(normalized, lang);
+  const targetLen  = inputTiles.length;
+  if (!targetLen) return null;
+
+  let best = null;
+  let bestDist = maxDist + 1;
+
+  for (const candidate of set) {
+    // Cheap pre-filter: skip wildly different lengths before we splitTiles.
+    if (Math.abs(candidate.length - normalized.length) > maxDist) continue;
+    const candTiles = splitTiles(candidate, lang);
+    if (candTiles.length !== targetLen) continue; // same tile count only
+    const d = tileDistance(inputTiles, candTiles, bestDist - 1);
+    if (d < bestDist) {
+      best = candidate;
+      bestDist = d;
+      if (d === 1) break; // can't do better than 1
+    }
+  }
+  return best;
 }
