@@ -372,6 +372,39 @@ body::before {
   transition: width .4s ease;
 }
 
+/* Word/topic hint banner (vc98) — slides in once the user taps 💭 and
+   stays for the rest of the game. Target word inside the definition is
+   masked to ___ so the hint never spoils the literal answer. */
+.word-hint-banner {
+  margin: 4px 16px 8px;
+  padding: 10px 14px;
+  background: rgba(124,58,237,.10);
+  border: 1px solid rgba(167,139,250,.30);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  animation: word-hint-in .35s ease;
+}
+.word-hint-label {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 8px;
+  background: linear-gradient(135deg, var(--violet), #5B21B6);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+@keyframes word-hint-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .attempt-row { display: flex; justify-content: center; gap: 6px; padding: 10px 16px; }
 .attempt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
 .attempt-dot.used { background: var(--violet2); box-shadow: 0 0 6px rgba(167,139,250,.6); }

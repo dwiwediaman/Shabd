@@ -2,28 +2,31 @@
 // puzzle attempt worth in points?". Must stay in sync with
 // workers/src/score.js (server runs the same formula for ranking).
 //
-// Formula (vc76+):
-//   score = 0                                              if lost or didn't play
-//         = max(1, (7 - attempts) + hardBonus - hintsUsed)   if won
-//   where  hardBonus = 1 if hardMode else 0
+// Formula (vc98+):
+//   score = 0                                                                   if lost or didn't play
+//         = max(1, (7 - attempts) + hardBonus - hintsUsed - wordHintCost)         if won
+//   where  hardBonus    = 1 if hardMode else 0
+//          wordHintCost = 2 if wordHintUsed else 0
 //
 // In one sentence for users: "Each guess saved earns a point. Hard mode
-// adds one. Each hint costs one. A win is always worth at least 1."
+// adds one. Each letter hint costs one. A topic hint costs two. A win
+// is always worth at least 1."
 
 export const MAX_SCORE_PER_PUZZLE = 7;  // 1 attempt + hard mode + 0 hints
 
 // Compute a single puzzle's score. Accepts a partial session object so it
 // works for both the client (gameState session) and server (sessions row).
 //
-//   puzzleScore({ won, attempts, hardMode, hintsUsed })
+//   puzzleScore({ won, attempts, hardMode, hintsUsed, wordHintUsed })
 //
 // Behaviour:
 //   - won === false       → 0
-//   - won === true        → max(1, (7 - attempts) + (hardMode ? 1 : 0) - hintsUsed)
+//   - won === true        → max(1, (7 - attempts) + hardBonus - hintsUsed - wordHintCost)
 //   - missing/invalid won → 0  (treat as "didn't play")
 //   - hintsUsed defaults to 0 (historical sessions pre-hints-tracking)
+//   - wordHintUsed defaults to false (historical sessions pre-vc98)
 //   - attempts is clamped to 1..6 defensively (shouldn't happen but safe)
-export function puzzleScore({ won, attempts, hardMode, hintsUsed } = {}) {
+export function puzzleScore({ won, attempts, hardMode, hintsUsed, wordHintUsed } = {}) {
   if (!won) return 0;
   // Clamp attempts to 1..6 explicitly. `|| 6` would treat attempts=0 as
   // missing-input and default to 6 — wrong; 0 should clamp UP to 1.
@@ -32,7 +35,8 @@ export function puzzleScore({ won, attempts, hardMode, hintsUsed } = {}) {
   const hRaw = Number(hintsUsed);
   const h = Number.isFinite(hRaw) ? Math.max(0, hRaw) : 0;
   const bonus = hardMode ? 1 : 0;
-  return Math.max(1, (7 - a) + bonus - h);
+  const wordHintCost = wordHintUsed ? 2 : 0;
+  return Math.max(1, (7 - a) + bonus - h - wordHintCost);
 }
 
 // Sort comparator for leaderboard rows. Higher score wins. Within equal

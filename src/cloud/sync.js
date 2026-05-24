@@ -110,9 +110,11 @@ export async function pushAll() {
 // ensureBackfilled run will push the session even if it's within the 24h
 // throttle window. The session itself is already saved to local state by
 // the puzzle screen before submit fires, so no data is lost.
-export async function submitScore({ date, lang, guesses, hardMode = false, durationMs = null, hintsUsed = 0 }) {
+export async function submitScore({ date, lang, guesses, hardMode = false, durationMs = null, hintsUsed = 0, wordHintUsed = false }) {
   if (!isSignedIn()) return { skipped: 'not_signed_in' };
-  const payload = { date, lang, guesses, hardMode, durationMs, hintsUsed };
+  // wordHintUsed (vc98+): the server tolerates unknown fields, so this is
+  // forward-safe even before the D1 schema migration lands.
+  const payload = { date, lang, guesses, hardMode, durationMs, hintsUsed, wordHintUsed };
 
   const attempt = async () => apiPost('/scores/submit', payload);
 

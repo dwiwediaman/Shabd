@@ -63,6 +63,11 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   let hintsUsedSoFar = persistedMeta.hintsUsed ?? 0;
   let hintsLeft = Math.max(0, MAX_HINTS - hintsUsedSoFar);
   const hintedPositions = new Set();
+  // Word/topic hint (vc98): 1 per game, separate budget from letter hints.
+  // Reveals a masked dictionary definition so the user can narrow the
+  // concept without seeing letters. Persisted + replayed across re-entry.
+  let wordHintUsed = !!persistedMeta.wordHintUsed;
+  let wordHintText = persistedMeta.wordHintText ?? null;
   // Pending hints belong to the CURRENT (unsubmitted) row. Persisted so the
   // user sees the hinted letter after leaving + re-entering — otherwise the
   // counter ticks down but the pre-filled tile is gone, looking like the
@@ -81,7 +86,10 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       <div class="puzzle-header">
         <button class="hdr-btn" id="backBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div class="hdr-title">${mode === 'archive' ? tx.archiveDay(puzzle.puzzleIndex) : tx.dayLabel(puzzle.puzzleIndex)}${state.settings.hardMode ? ' <span class="hard-badge">HARD</span>' : ''}</div>
-        <button class="hdr-btn hdr-hint" id="hintBtn" title="Hint"${hintsLeft === 0 ? ' style="opacity:0.35"' : ''}>
+        <button class="hdr-btn hdr-hint" id="wordHintBtn" title="${tx.wordHintTitle}"${wordHintUsed ? ' style="opacity:0.35"' : ''}>
+          💭<span class="hint-count" id="wordHintCount">${wordHintUsed ? 0 : 1}</span>
+        </button>
+        <button class="hdr-btn hdr-hint" id="hintBtn" title="${tx.letterHintTitle}"${hintsLeft === 0 ? ' style="opacity:0.35"' : ''}>
           💡<span class="hint-count" id="hintCount">${hintsLeft}</span>
         </button>
         <button class="hdr-btn" id="shareBtn" style="display:none" title="Share">
@@ -90,6 +98,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       </div>
       <div class="puzzle-progress"><div class="puzzle-progress-fill" id="progressFill"></div></div>
       <div class="attempt-row" id="attemptDots"></div>
+      <div class="word-hint-banner" id="wordHintBanner" style="display:none"></div>
       <div id="gridWrap"></div>
       <div id="kbWrap"></div>
       <div class="toast" id="toast"></div>
@@ -123,6 +132,13 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       currentInput[pos] = letter;
       grid.setHintLetter(currentRow, pos, letter);
     });
+  }
+
+  // Re-show the topic-hint banner if the user previously tapped it. We
+  // cached the text in sessionMeta so a re-entry doesn't require another
+  // network fetch (the dictionary API is slow on flaky connections).
+  if (wordHintUsed && wordHintText) {
+    renderWordHintBanner(wordHintText);
   }
 
   updateProgress();
@@ -188,6 +204,66 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     feedbackHint();
     showToast(tx.hintRevealed(pos + 1));
   });
+
+  // Word/topic hint (vc98). One-shot per game. Tap → fetch the
+  // dictionary definition → mask the target word out of it → render as a
+  // banner under the header. Cached locally so re-entry doesn't refetch.
+  document.getElementById('wordHintBtn').addEventListener('click', async () => {
+    if (gameOver) return;
+    if (wordHintUsed) {
+      // Already used — just re-show the banner in case the user scrolled
+      // it off-screen or dismissed it accidentally.
+      if (wordHintText) renderWordHintBanner(wordHintText);
+      return;
+    }
+
+    const btn = document.getElementById('wordHintBtn');
+    btn.disabled = true;
+    showToast(tx.wordHintLoading);
+
+    const def = await fetchDefinition(puzzle.target, lang);
+    btn.disabled = false;
+
+    if (!def?.meaning) {
+      showToast(tx.wordHintUnavailable);
+      return;
+    }
+
+    // Mask the target word (case-insensitive, whole-word) so the hint
+    // never spoils the answer literally.
+    const masked = def.meaning.replace(
+      new RegExp(`\\b${escapeRegex(puzzle.target)}\\b`, 'gi'),
+      '___'
+    );
+    wordHintText = masked;
+    wordHintUsed = true;
+    if (mode === 'daily' || mode === 'archive') {
+      setSessionMeta(sessionKey, {
+        wordHintUsed: true,
+        wordHintText: masked,
+      });
+    }
+
+    renderWordHintBanner(masked);
+    btn.style.opacity = '0.35';
+    const badge = document.getElementById('wordHintCount');
+    if (badge) badge.textContent = '0';
+    feedbackHint();
+  });
+
+  function renderWordHintBanner(text) {
+    const el = document.getElementById('wordHintBanner');
+    if (!el) return;
+    el.innerHTML = `<span class="word-hint-label">${tx.wordHintLabel}</span> ${escapeHtml(text)}`;
+    el.style.display = 'block';
+  }
+
+  function escapeRegex(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
+  }
 
   // Physical keyboard
   const onKeydown = e => {
@@ -346,13 +422,18 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     const guesses = history.map(h => h.input);
     const durationMs = Date.now() - gameStartedAt;
     // Persist final meta so cold-start backfill picks it up if cloud submit fails
-    setSessionMeta(sessionKey, { hintsUsed: hintsUsedSoFar, durationMs });
+    setSessionMeta(sessionKey, {
+      hintsUsed: hintsUsedSoFar,
+      wordHintUsed,
+      durationMs,
+    });
     submitScore({
-      date:     puzzleInfo.date,
+      date:         puzzleInfo.date,
       lang,
       guesses,
-      hardMode:  !!get().settings.hardMode,
-      hintsUsed: hintsUsedSoFar,
+      hardMode:     !!get().settings.hardMode,
+      hintsUsed:    hintsUsedSoFar,
+      wordHintUsed,
       durationMs,
     }).then(refreshResultSheetRank, () => {});
   }

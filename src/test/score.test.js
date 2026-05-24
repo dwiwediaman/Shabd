@@ -29,6 +29,28 @@ describe('puzzleScore — the documented formula', () => {
     expect(puzzleScore()).toBe(0);
   });
 
+  // ── vc98 word/topic hint ─────────────────────────────────────────────
+  it('word hint costs 2 points', () => {
+    // Easy-mode 3-attempt win = 4. With wordHint = 4 - 2 = 2.
+    expect(puzzleScore({ won: true, attempts: 3, hardMode: false, hintsUsed: 0, wordHintUsed: true })).toBe(2);
+  });
+
+  it('word hint stacks with letter hints', () => {
+    // 3 attempts, 1 letter hint (-1), word hint (-2) → 4 - 1 - 2 = 1
+    expect(puzzleScore({ won: true, attempts: 3, hardMode: false, hintsUsed: 1, wordHintUsed: true })).toBe(1);
+  });
+
+  it('word hint plus hard mode stays at min-1 floor on worst case', () => {
+    // 6 attempts, hard mode (+1), 3 letter hints (-3), word hint (-2)
+    // = (7-6) + 1 - 3 - 2 = -3, floored to 1 for a win
+    expect(puzzleScore({ won: true, attempts: 6, hardMode: true, hintsUsed: 3, wordHintUsed: true })).toBe(1);
+  });
+
+  it('wordHintUsed defaults to false (back-compat with historical sessions)', () => {
+    expect(puzzleScore({ won: true, attempts: 2, hardMode: false, hintsUsed: 0 }))
+      .toBe(puzzleScore({ won: true, attempts: 2, hardMode: false, hintsUsed: 0, wordHintUsed: false }));
+  });
+
   it('treats missing hintsUsed as 0 (historical pre-vc76 sessions)', () => {
     expect(puzzleScore({ won: true, attempts: 4, hardMode: false })).toBe(3);
     expect(puzzleScore({ won: true, attempts: 4, hardMode: true })).toBe(4);

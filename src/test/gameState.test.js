@@ -204,6 +204,20 @@ describe('sessionMeta — vc86 pendingHints persistence', () => {
   it('returns safe defaults for an unseen session', () => {
     expect(getSessionMeta('2026-12-31|en')).toEqual({ hintsUsed: 0, durationMs: null });
   });
+
+  // ── vc98 word/topic hint persistence ────────────────────────────────────
+  it('round-trips wordHintUsed + wordHintText across cold start', () => {
+    setSessionMeta('2026-05-24|en', {
+      hintsUsed: 1,
+      wordHintUsed: true,
+      wordHintText: 'A small ___ used in baking.',
+    });
+    load(); // simulate cold start
+    const meta = getSessionMeta('2026-05-24|en');
+    expect(meta.wordHintUsed).toBe(true);
+    expect(meta.wordHintText).toBe('A small ___ used in baking.');
+    expect(meta.hintsUsed).toBe(1); // sibling fields preserved
+  });
 });
 
 // ── Regression: vc81 archive sessions persist (so Time Travel restores) ───

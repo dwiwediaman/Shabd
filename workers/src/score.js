@@ -1,10 +1,15 @@
 // Squad leaderboard scoring — server-side mirror of src/game/score.js.
 // MUST stay in sync with the client. If the formula changes, change both.
 
-// Per-puzzle score:
+// Per-puzzle score (vc98+):
 //   won === false → 0
-//   won === true  → max(1, (7 - attempts) + (hardMode ? 1 : 0) - hintsUsed)
-export function puzzleScore({ won, attempts, hardMode, hintsUsed } = {}) {
+//   won === true  → max(1, (7 - attempts) + hardBonus - hintsUsed - wordHintCost)
+//   where wordHintCost = 2 if wordHintUsed else 0
+//
+// wordHintUsed is tracked starting vc98; older sessions without it scored
+// identically (defaults to false). The server stores it on the sessions
+// row alongside hints_used.
+export function puzzleScore({ won, attempts, hardMode, hintsUsed, wordHintUsed } = {}) {
   if (!won) return 0;
   // attempts=0 should clamp UP to 1 (a defensive cap), not be treated
   // as missing input that defaults to the worst-case attempts=6.
@@ -13,7 +18,8 @@ export function puzzleScore({ won, attempts, hardMode, hintsUsed } = {}) {
   const hRaw = Number(hintsUsed);
   const h = Number.isFinite(hRaw) ? Math.max(0, hRaw) : 0;
   const bonus = hardMode ? 1 : 0;
-  return Math.max(1, (7 - a) + bonus - h);
+  const wordHintCost = wordHintUsed ? 2 : 0;
+  return Math.max(1, (7 - a) + bonus - h - wordHintCost);
 }
 
 // Server-side comparator for leaderboard rows. Same rules as client.

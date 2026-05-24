@@ -93,6 +93,13 @@ const translations = {
     notifFixedSlots: 'Three reminders per day at 9 AM, 2 PM, and 8 PM IST. We skip the day once you\'ve solved the puzzle.',
     imageSaved:      'Image saved!',
 
+    // Word / topic hint (vc98)
+    letterHintTitle:     'Reveal a letter (−1 point each)',
+    wordHintTitle:       'Show a topic hint (−2 points, once per game)',
+    wordHintLabel:       'Topic',
+    wordHintLoading:     'Looking up the topic…',
+    wordHintUnavailable: 'No topic hint available for this word.',
+
     // Hard mode
     hardMode:        'Hard Mode',
     hardModeSub:     'Revealed hints must be used in next guesses',
@@ -284,6 +291,13 @@ const translations = {
     notifTime:       'अनुस्मारक समय',
     notifFixedSlots: 'दिन में तीन बार अनुस्मारक: 9 AM, 2 PM और 8 PM IST. आज की पहेली हल कर लेने पर अनुस्मारक नहीं भेजे जाएंगे।',
     imageSaved:      'चित्र सेव हुआ!',
+
+    // Word / topic hint (vc98)
+    letterHintTitle:     'एक अक्षर दिखाएं (हर बार −1 अंक)',
+    wordHintTitle:       'शब्द का संकेत दिखाएं (−2 अंक, खेल में एक बार)',
+    wordHintLabel:       'विषय',
+    wordHintLoading:     'संकेत खोज रहे हैं…',
+    wordHintUnavailable: 'इस शब्द के लिए विषय संकेत उपलब्ध नहीं है।',
 
     // Hard mode
     hardMode:        'कठिन मोड',
