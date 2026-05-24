@@ -614,7 +614,7 @@ body::before {
 .spell-suggest-btn:active { transform: scale(.96); }
 
 /* ── Stats Screen ──────────────────────────────────────────────────── */
-.stats-screen  { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
+.stats-screen  { padding: 0 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
 /* Header sticks to the top of the scroll container so the back-button
    stays reachable while the user scrolls long pages (settings, htp,
    stats). Extended horizontally via negative margins so the solid
@@ -626,13 +626,15 @@ body::before {
   z-index: 15;
   background: var(--bg);
   display: flex; align-items: center; gap: 12px;
-  /* Pull the header's box UP to cover the screen's safe-area padding so
-     scrolled content can't peek through above the back button. The
-     padding-top adds the same amount back inside so the back button +
-     title still sit at the previous visual position. Bottom margin
-     unchanged. Horizontal negative margin extends the solid background
-     edge-to-edge over the screen's 24px side padding. */
-  margin: calc(-1 * max(env(safe-area-inset-top, 0px), 28px)) -24px 16px;
+  /* Scroll containers (.htp-screen / .stats-screen / .settings-screen /
+     .tt-screen) have padding-top: 0 so this sticky header is the FIRST
+     thing in the scrollport. sticky offset is measured from the
+     padding-box edge of the scrolling ancestor, so top:0 + zero padding
+     puts the border-box at the very top — its solid background covers
+     all the way up to the status bar / safe-area inset. The header's
+     own padding-top includes the safe-area so the back-button still
+     sits clear of the notch. */
+  margin: 0 -24px 16px;
   padding: calc(max(env(safe-area-inset-top, 0px), 28px) + 8px) 24px 12px;
   border-bottom: 1px solid rgba(255,255,255,.04);
 }
@@ -675,7 +677,7 @@ body::before {
 }
 
 /* ── Settings Screen ───────────────────────────────────────────────── */
-.settings-screen { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
+.settings-screen { padding: 0 24px max(env(safe-area-inset-bottom, 0px), 32px); gap: 0; overflow-y: auto; }
 
 .setting-group { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
 .setting-label { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
@@ -702,7 +704,7 @@ input:checked + .slider::before { transform: translateX(20px); }
 /* ── How To Play ───────────────────────────────────────────────────── */
 .htp-screen {
   padding:
-    max(env(safe-area-inset-top, 0px), 28px)
+    0
     20px
     max(env(safe-area-inset-bottom, 0px), 40px);
   overflow-y: auto;
@@ -1235,7 +1237,7 @@ input:checked + .slider::before { transform: translateX(20px); }
   display: flex; flex-direction: column;
   height: 100%; overflow-y: auto;
   padding:
-    max(env(safe-area-inset-top, 0px), 28px)
+    0
     16px
     max(env(safe-area-inset-bottom, 0px), 32px);
   box-sizing: border-box;
