@@ -626,8 +626,14 @@ body::before {
   z-index: 15;
   background: var(--bg);
   display: flex; align-items: center; gap: 12px;
-  margin: 0 -24px 16px;
-  padding: 8px 24px 12px;
+  /* Pull the header's box UP to cover the screen's safe-area padding so
+     scrolled content can't peek through above the back button. The
+     padding-top adds the same amount back inside so the back button +
+     title still sit at the previous visual position. Bottom margin
+     unchanged. Horizontal negative margin extends the solid background
+     edge-to-edge over the screen's 24px side padding. */
+  margin: calc(-1 * max(env(safe-area-inset-top, 0px), 28px)) -24px 16px;
+  padding: calc(max(env(safe-area-inset-top, 0px), 28px) + 8px) 24px 12px;
   border-bottom: 1px solid rgba(255,255,255,.04);
 }
 .stats-title   { font-size: 22px; font-weight: 700; }
