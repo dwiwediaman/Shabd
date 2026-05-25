@@ -71,6 +71,7 @@ describe('sticky-header CSS structure (vc102 regression guard)', () => {
     '.stats-screen',
     '.settings-screen',
     '.tt-screen',
+    '.squads-screen',
   ];
 
   it.each(SCROLL_CONTAINERS)(
