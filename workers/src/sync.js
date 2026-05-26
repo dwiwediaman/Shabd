@@ -88,7 +88,14 @@ export async function handlePush(c) {
   // succeeds so the user's other sessions aren't blocked by one bad row.
   for (const s of sessions) {
     if (!isValidSession(s)) continue;
-    if (!withinSubmitWindow(s.date)) continue;   // H3: drop > 7-day-old sessions
+    // NOTE (vc105): the 7-day submit-window check was originally here as
+    // anti-cheat H3, but it silently dropped legitimate backfills — a new
+    // sign-in or a Time-Travel session for an older day. Replay validation
+    // already requires the user to know the actual target word and
+    // produce a valid guess sequence, so fabricating an old win isn't
+    // cheaper than just playing the day via Time Travel and pushing.
+    // /scores/submit (the live daily-game endpoint) still enforces the
+    // window for defence in depth; /sync/push deliberately doesn't.
 
     let replayed;
     try {
