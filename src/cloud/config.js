@@ -13,7 +13,14 @@ export const LS_KEYS = {
   userId:          'shabd_cloud_userId',        // our internal user_id
   nickname:        'shabd_cloud_nickname',
   lastSyncAt:      'shabd_cloud_lastSyncAt',
-  lastBackfillAt:  'shabd_cloud_lastBackfillAt',// last successful full push (cold-start throttle)
+  // Bumped to v2 on vc105 so every client re-runs a full pushAll on next
+  // launch — needed because the previous worker silently dropped sessions
+  // older than 7 days during /sync/push (anti-cheat H3, removed in vc105),
+  // and the 24-hour ensureBackfilled throttle otherwise prevents the
+  // re-push from happening. Reading the old key returns null → throttle
+  // sees "never backfilled" → full push runs once. After that, the new
+  // key carries the throttle as usual.
+  lastBackfillAt:  'shabd_cloud_lastBackfillAt_v2',// last successful full push (cold-start throttle)
   pendingPush:     'shabd_cloud_pendingPush',   // '1' when a submitScore failed → bypass 24h throttle on next ensureBackfilled
   signedIn:        'shabd_cloud_signedIn',      // boolean string flag
 };
