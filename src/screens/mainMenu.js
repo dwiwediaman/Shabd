@@ -39,9 +39,47 @@ export function mainMenuScreen(root) {
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
+    <!-- ── Burger drawer overlay ──────────────────────────────────────────── -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="drawer" id="burgerDrawer" role="dialog" aria-label="Menu">
+      <div class="drawer-header">
+        <div class="drawer-brand">Shabd</div>
+        <button class="drawer-close" id="drawerClose" aria-label="Close menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <nav class="drawer-nav">
+        <button class="drawer-item" id="drawerStats">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          <span>${tx.stats}</span>
+        </button>
+        <button class="drawer-item" id="drawerSettings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+          <span>${tx.settings}</span>
+        </button>
+        <button class="drawer-item" id="drawerRules">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <span>${tx.rules}</span>
+        </button>
+        <div class="drawer-divider"></div>
+        <button class="drawer-item" id="drawerInvite">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <span>${tx.inviteBtn}</span>
+        </button>
+      </nav>
+      <div class="drawer-footer">${tx.footer(__APP_VERSION__, __VERSION_CODE__)}</div>
+    </div>
+
     <div class="menu-screen">
-      <!-- ── Top bar: prominent language toggle ─────────────────────────── -->
+      <!-- ── Top bar: burger left · lang toggle right ───────────────────── -->
       <div class="menu-topbar">
+        <button class="burger-btn" id="btnBurger" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6"  x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
         <div class="lang-toggle" id="langToggle" role="tablist" aria-label="Language">
           <button class="lang-opt ${lang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
           <button class="lang-opt ${lang === 'hi' ? 'active' : ''}" data-lang="hi">हि</button>
@@ -53,7 +91,7 @@ export function mainMenuScreen(root) {
         <div class="menu-title">Shabd</div>
         <div class="menu-tagline">${tx.tagline}</div>
 
-        <div class="streak-card">
+        <button class="streak-card" id="btnStats" aria-label="${tx.stats}">
           <div class="streak-item">
             <div class="streak-num">${streak.current}🔥</div>
             <div class="streak-lbl">${tx.streak}</div>
@@ -68,7 +106,7 @@ export function mainMenuScreen(root) {
             <div class="streak-num">${winPct}%</div>
             <div class="streak-lbl">${tx.winRate}</div>
           </div>
-        </div>
+        </button>
         ${freeze.count > 0
           ? `<button class="freeze-chip" id="freezeChip" aria-label="streak freeze info">${tx.streakFreezeAvail} <span class="freeze-info-icon">ⓘ</span></button>`
           : ''}
@@ -106,29 +144,9 @@ export function mainMenuScreen(root) {
           </div>
         </button>
 
-        <div class="btn-row">
-          <button class="btn-secondary btn-icon-stack" id="btnStats">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-            <span>${tx.stats}</span>
-          </button>
-          <button class="btn-secondary btn-icon-stack" id="btnSettings">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
-            <span>${tx.settings}</span>
-          </button>
-          <button class="btn-secondary btn-icon-stack" id="btnRules">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            <span>${tx.rules}</span>
-          </button>
-        </div>
-
-        <!-- Invite — restyled to match app theme -->
-        <button class="btn-invite-themed" id="btnInvite">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-          ${tx.inviteBtn}
-        </button>
       </div>
 
-      <div class="menu-footer">${tx.footer(__APP_VERSION__, __VERSION_CODE__)}</div>
+      <!-- footer moved to drawer -->
     </div>
   `;
 
@@ -148,12 +166,10 @@ export function mainMenuScreen(root) {
 
   // ─── Primary actions ─────────────────────────────────────────────────────
   root.querySelector('#btnPlay').addEventListener('click', () => navigate('puzzle', { mode: 'daily' }));
-  // btnPractice removed in vc76 — Practice Mode card pulled from the menu.
   root.querySelector('#btnArchive').addEventListener('click', () => navigate('archive'));
   root.querySelector('#btnSquads').addEventListener('click', () => navigate('squads'));
+  // Streak card is tappable — opens Stats (agents flagged Stats-in-drawer as too buried)
   root.querySelector('#btnStats').addEventListener('click', () => navigate('stats'));
-  root.querySelector('#btnSettings').addEventListener('click', () => navigate('settings'));
-  root.querySelector('#btnRules').addEventListener('click', () => navigate('howToPlay'));
 
   // ─── Streak freeze tap → show explanation toast ──────────────────────────
   const freezeChip = root.querySelector('#freezeChip');
@@ -161,15 +177,35 @@ export function mainMenuScreen(root) {
     freezeChip.addEventListener('click', () => showFreezeToast(tx.freezeTapHint));
   }
 
-  // ─── Invite ─────────────────────────────────────────────────────────────
-  root.querySelector('#btnInvite').addEventListener('click', async () => {
+  // ─── Burger drawer ───────────────────────────────────────────────────────
+  const drawer   = document.getElementById('burgerDrawer');
+  const backdrop = document.getElementById('drawerBackdrop');
+
+  function openDrawer() {
+    drawer.classList.add('drawer-open');
+    backdrop.classList.add('drawer-backdrop-open');
+  }
+  function closeDrawer() {
+    drawer.classList.remove('drawer-open');
+    backdrop.classList.remove('drawer-backdrop-open');
+  }
+
+  root.querySelector('#btnBurger').addEventListener('click', openDrawer);
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+
+  // Drawer nav items — close then navigate
+  document.getElementById('drawerStats').addEventListener('click', () => { closeDrawer(); navigate('stats'); });
+  document.getElementById('drawerSettings').addEventListener('click', () => { closeDrawer(); navigate('settings'); });
+  document.getElementById('drawerRules').addEventListener('click', () => { closeDrawer(); navigate('howToPlay'); });
+  document.getElementById('drawerInvite').addEventListener('click', async () => {
+    closeDrawer();
     const text = tx.inviteText;
     if (navigator.share) {
       try { await navigator.share({ text }); return; }
       catch (_) { /* cancelled or unsupported — fall through */ }
     }
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   });
 }
 

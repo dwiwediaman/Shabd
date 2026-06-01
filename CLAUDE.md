@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Shabd — Claude operating notes
 
 > Short, project-specific rules. Read this before doing anything substantive.
@@ -39,23 +43,71 @@ Chrome extension blocks JS-driven AAB upload. Workflow:
 
 ## Test before push, always
 ```bash
-npm run test:ci
+npm run test:ci          # Vitest unit tests (required — same as CI)
+npm run test:e2e         # Playwright E2E tests against Vite dev server
+npm run test:e2e:ui      # Playwright interactive UI mode (local dev only)
 ```
-CI runs the same — failing tests block AAB build. Save the 2-min cycle.
+CI runs `test:ci` — failing Vitest tests block the AAB build. Playwright tests run locally only (not wired to CI yet).
+
+**Single test file:**
+```bash
+npx vitest run src/test/gameState.test.js          # one Vitest file
+npx playwright test e2e/settings.spec.js           # one Playwright file
+npx playwright test --grep "Hard Mode"             # filter by name
+```
+
+**E2E layout:**
+```
+e2e/helpers.js           ← bootApp(), typeWord(), pressKey(), todayIST()
+e2e/navigation.spec.js   ← menu → screen → back for every screen
+e2e/settings.spec.js     ← toggles, language switch, hard-mode lock, header gap
+e2e/puzzle.spec.js       ← keyboard input, tile coloring, EN + HI modes
+playwright.config.js     ← Pixel 5 viewport, Vite dev server
+```
+
+Playwright mocks nothing — Capacitor APIs gracefully no-op in browser (`isNativePlatform()` → false), so the full app boots as-is.
 
 ## File map
 ```
 src/main.js                   ← entry, splash, first-launch tutorial routing
-src/screens/                  ← mainMenu, dailyPuzzle, stats, settings, howToPlay, archive
+src/screens/                  ← mainMenu, dailyPuzzle, stats, settings, howToPlay, archive, squads
 src/components/               ← keyboard, router, tileGrid
-src/game/                     ← gameState, seedEngine, wordleMechanic, transliterator, wordDb, shareImage
+src/game/                     ← gameState, seedEngine, wordleMechanic, transliterator, wordDb, shareImage, score
+src/cloud/                    ← api.js, auth.js, config.js (LS_KEYS), squads.js, sync.js
+src/migrations.js             ← runs at boot (after wordDb loaded); migrates legacy archive sessions
+src/deepLink.js               ← shabd:// deep-link handler factory (testable; registered pre-boot)
+src/notifications.js          ← daily reminder scheduling via Capacitor LocalNotifications
+src/feedback.js               ← in-app feedback flow
+src/updateCheck.js            ← @capawesome/capacitor-app-update check on boot
 src/i18n.js                   ← EN + HI strings
 src/style.css                 ← single sectioned stylesheet
 src/test/                     ← only game logic + i18n tested. screens/components 0% covered.
 android/app/build.gradle      ← versionCode/versionName (CI overwrites versionCode)
-.github/workflows/build.yml   ← CI definition
+.github/workflows/build.yml   ← Android AAB build CI
+.github/workflows/deploy-worker.yml ← Cloudflare Worker auto-deploy on push
 releases/                     ← all AABs go here, named vcXX-vY.Z.aab
+workers/                      ← Cloudflare Worker backend (see below)
 ```
+
+## Cloud backend (workers/)
+Hono-based Cloudflare Worker backed by D1 (SQLite). Deployed automatically when `workers/` changes are pushed to `main` or `capacitor-app`.
+
+Key endpoints: `POST /auth/google`, `POST /sync/push`, `GET /sync/pull`, `POST /scores/submit`, `GET|POST /squads/*`.
+
+Local dev:
+```bash
+cd workers && npm run dev      # wrangler dev at localhost:8787
+npm run db:migrate:local       # apply new SQL migrations locally
+npm run db:migrate:remote      # apply to production D1
+npm run db:console:remote -- "SELECT count(*) FROM users"
+npm run tail                   # live log tail
+```
+
+`regen-pools` runs automatically as `predeploy` — don't skip it manually.
+
+**LS_KEYS** in `src/cloud/config.js` is the single registry of everything we write to localStorage for cloud state. Always add new keys there. The `lastBackfillAt` key is intentionally versioned (`_v2`) — bump the suffix to force a one-time full re-push on all clients.
+
+**Anti-cheat**: `/sync/push` validates sessions server-side. Archive plays must never touch leaderboard scores — check `mode === 'daily'` before calling `submitScore()`.
 
 ## Test coverage is misleading
 The 96%+ stat covers only files that have tests. **Screens & components are 0%.** Real codebase coverage ~30%. Bugs that hurt users live in screen code (dense input arrays, share gestures, stale UI state). When user asks about quality/coverage, surface this honestly.
@@ -98,9 +150,9 @@ Archive plays should NOT affect streak/stats (competitive integrity). When addin
 **❌ Actually missing:**
 - Tablet screenshots (non-blocking for closed testing)
 - 1+ more phone screenshot for "promotion eligible" (have 3, need 4)
-- Integration tests for screens (0% coverage on src/screens, src/components)
-- Crash reporting — no Sentry/Crashlytics
 - 6 more testers for production unlock
 
 **Tech debt:**
-- Node.js 20 actions deprecated June 2nd, 2026 (CI uses checkout@v4, setup-node@v4, etc.)
+- **URGENT — Node.js 20 actions deprecated June 2, 2026** (6 days away). CI uses `checkout@v4`, `setup-node@v4` etc. — these will break. Upgrade to `@v5` equivalents before that date.
+- Integration tests for screens (0% coverage on src/screens, src/components)
+- Crash reporting — no Sentry/Crashlytics

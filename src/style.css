@@ -161,7 +161,99 @@ body::before {
    was getting clipped because the shared wrapper sets overflow:hidden. */
 .menu-screen { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; overflow-y: auto; }
 
-.menu-topbar { display: flex; justify-content: flex-end; margin-bottom: 0; }
+.menu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
+
+/* ── Burger button ─────────────────────────────────────────────────────── */
+.burger-btn {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.07);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.burger-btn:active { background: rgba(255,255,255,.18); }
+
+/* ── Drawer backdrop ───────────────────────────────────────────────────── */
+.drawer-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0);
+  z-index: 50;
+  pointer-events: none;
+  transition: background .28s ease;
+}
+.drawer-backdrop.drawer-backdrop-open {
+  background: rgba(0,0,0,.55);
+  pointer-events: auto;
+}
+
+/* ── Drawer panel ──────────────────────────────────────────────────────── */
+.drawer {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: min(80vw, 300px);
+  background: #12112A;
+  border-right: 1px solid rgba(255,255,255,.08);
+  z-index: 51;
+  display: flex; flex-direction: column;
+  padding: max(env(safe-area-inset-top, 0px), 24px) 0 max(env(safe-area-inset-bottom, 0px), 24px);
+  transform: translateX(-100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  box-shadow: 4px 0 32px rgba(0,0,0,.4);
+}
+.drawer.drawer-open { transform: translateX(0); }
+
+.drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.drawer-brand {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff 0%, var(--violet2) 50%, var(--gold) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.drawer-close {
+  width: 44px; height: 44px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.7);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .15s;
+}
+.drawer-close:active { background: rgba(255,255,255,.18); }
+
+.drawer-nav {
+  flex: 1;
+  display: flex; flex-direction: column;
+  padding: 12px 0;
+  overflow-y: auto;
+}
+.drawer-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 22px;
+  background: none; border: none;
+  color: rgba(255,255,255,.85);
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; text-align: left;
+  transition: background .15s, color .15s;
+  border-radius: 0;
+}
+.drawer-item svg { flex-shrink: 0; opacity: .75; }
+.drawer-item:active { background: rgba(124,58,237,.18); color: #fff; }
+.drawer-item:active svg { opacity: 1; }
+.drawer-divider {
+  height: 1px; background: rgba(255,255,255,.07);
+  margin: 6px 20px;
+}
+.drawer-footer {
+  padding: 12px 22px 0;
+  font-size: 11px; color: rgba(255,255,255,.25);
+  text-align: left;
+}
 
 /* Prominent dual-button language toggle */
 .lang-toggle {
@@ -234,6 +326,14 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 16px; padding: 14px 24px; margin-top: 20px;
   backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  font-family: inherit;
+  width: 100%;
+}
+.streak-card:active {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(167,139,250,.4);
 }
 .streak-item { text-align: center; }
 .streak-num {
@@ -403,6 +503,47 @@ body::before {
 @keyframes word-hint-in {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Answer reveal (shown below the grid after a loss) ───────────────────── */
+.answer-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 16px 10px;
+}
+.answer-reveal.answer-reveal-show {
+  animation: answer-reveal-in .35s ease forwards;
+}
+@keyframes answer-reveal-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.answer-reveal-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+}
+.answer-reveal-tiles {
+  display: flex;
+  gap: 6px;
+}
+.answer-reveal-tile {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1E1E2E, #2A1A4A);
+  border: 2px solid rgba(167,139,250,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0;
 }
 
 .attempt-row { display: flex; justify-content: center; gap: 6px; padding: 10px 16px; }
@@ -832,14 +973,15 @@ input:checked + .slider::before { transform: translateX(20px); }
 .freeze-chip {
   display: inline-flex; align-items: center; gap: 6px;
   margin-top: 12px;
-  padding: 6px 12px;
-  background: rgba(147,197,253,.10);
-  border: 1px solid rgba(147,197,253,.28);
+  padding: 7px 14px;
+  background: rgba(147,197,253,.15);
+  border: 1px solid rgba(147,197,253,.55);
   border-radius: 14px;
-  color: #BFDBFE;
-  font-size: 12px; font-weight: 600; font-family: inherit;
+  color: #E0F2FE;
+  font-size: 12px; font-weight: 700; font-family: inherit;
   cursor: pointer; letter-spacing: 0.2px;
-  transition: background .15s;
+  transition: background .15s, border-color .15s;
+  box-shadow: 0 0 10px rgba(147,197,253,.12);
 }
 .freeze-chip:active { background: rgba(147,197,253,.20); }
 .freeze-info-icon {

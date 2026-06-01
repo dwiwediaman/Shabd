@@ -100,6 +100,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       <div class="attempt-row" id="attemptDots"></div>
       <div class="word-hint-banner" id="wordHintBanner" style="display:none"></div>
       <div id="gridWrap"></div>
+      <div class="answer-reveal" id="answerReveal" style="display:none"></div>
       <div id="kbWrap"></div>
       <div class="toast" id="toast"></div>
     </div>
@@ -161,6 +162,12 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   updateDots();
 
   if (gameOver) showShareBtn();
+
+  // On re-entry after a loss, show the answer banner immediately (the
+  // in-game toast has long expired and the result sheet won't re-open).
+  if (gameOver && !history[history.length - 1]?.isCorrect) {
+    showAnswerReveal();
+  }
 
   // Back / share
   // Honour the navigation stack so back from an archive puzzle returns to
@@ -443,6 +450,10 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       preRenderShare(puzzle, history);
       setTimeout(showShareBtn, 2000);
       setTimeout(() => showResultSheet(false), 3000);
+      // Permanently show the answer below the grid — the toast lasts
+      // only 2.5 s and the result sheet can be dismissed, leaving the
+      // user with no way to see the word.
+      setTimeout(showAnswerReveal, tiles.length * 120 + 200);
     }
   }
 
@@ -554,6 +565,23 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   function showShareBtn() {
     document.getElementById('hintBtn').style.display = 'none';
     document.getElementById('shareBtn').style.display = 'flex';
+  }
+
+  /** Show the correct word below the grid after a loss.
+   *  Stays visible for the rest of the session so the user always knows
+   *  the answer even after dismissing the result sheet. */
+  function showAnswerReveal() {
+    const el = document.getElementById('answerReveal');
+    if (!el) return;
+    const letters = puzzle.target.toUpperCase().split('');
+    el.innerHTML = `
+      <div class="answer-reveal-label">${tx.answer('')}</div>
+      <div class="answer-reveal-tiles">
+        ${letters.map(l => `<div class="answer-reveal-tile">${l}</div>`).join('')}
+      </div>
+    `;
+    el.style.display = '';
+    requestAnimationFrame(() => el.classList.add('answer-reveal-show'));
   }
 
   let _sharing = false;
