@@ -2,7 +2,7 @@ name: Deploy Shabd API (Cloudflare Worker)
 
 on:
   push:
-    branches: [main, capacitor-app]
+    branches: [main]
     paths:
       - 'workers/**'
       - '.github/workflows/deploy-worker.yml'

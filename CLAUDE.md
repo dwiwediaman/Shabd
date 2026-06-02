@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 Daily Hindi+English word puzzle (Wordle-style). Vite + vanilla JS + Capacitor → Android.
-Repo: `dwiwediaman/Shabd`, branch `capacitor-app`. Package `in.shabd.game`.
+Repo: `dwiwediaman/Shabd`, branch `main`. Package `in.shabd.game`.
 
 ## Build = GitHub Actions only
 No local Java/Android Studio. To ship a build:
@@ -19,7 +19,7 @@ git commit -am "..."                                               # commit
 git remote set-url origin https://$(gh auth token)@github.com/dwiwediaman/Shabd.git
 git push
 git remote set-url origin https://github.com/dwiwediaman/Shabd.git
-gh workflow run build.yml --ref capacitor-app
+gh workflow run build.yml --ref main
 gh run watch <run-id> --exit-status
 gh run download <run-id> --dir /tmp/aab
 ```
@@ -90,7 +90,7 @@ workers/                      ← Cloudflare Worker backend (see below)
 ```
 
 ## Cloud backend (workers/)
-Hono-based Cloudflare Worker backed by D1 (SQLite). Deployed automatically when `workers/` changes are pushed to `main` or `capacitor-app`.
+Hono-based Cloudflare Worker backed by D1 (SQLite). Deployed automatically when `workers/` changes are pushed to `main`.
 
 Key endpoints: `POST /auth/google`, `POST /sync/push`, `GET /sync/pull`, `POST /scores/submit`, `GET|POST /squads/*`.
 

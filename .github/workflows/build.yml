@@ -2,11 +2,11 @@ name: Build Android AAB
 
 on:
   push:
-    branches: [main, capacitor-app]
+    branches: [main]
     paths-ignore:
       - '*.md'
   pull_request:
-    branches: [main, capacitor-app]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
