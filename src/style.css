@@ -161,14 +161,14 @@ body::before {
    was getting clipped because the shared wrapper sets overflow:hidden. */
 .menu-screen { padding: 0 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; overflow-y: auto; }
 
-/* Status bar color matches --bg in styles.xml so the system bar and
-   WebView are visually seamless. WebView starts below the status bar,
-   so no safe-area padding needed here — just a small top gap. */
+/* edge-to-edge is forced in MainActivity via WindowCompat, so
+   env(safe-area-inset-top) is always the real status-bar height.
+   Add 4px breathing room on top of that. */
 .menu-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 12px;
+  padding-top: calc(max(env(safe-area-inset-top, 0px), 24px) + 4px);
 }
 
 /* ── Burger button ─────────────────────────────────────────────────────── */

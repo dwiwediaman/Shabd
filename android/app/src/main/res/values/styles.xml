@@ -13,17 +13,19 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
-        <!-- Status + nav bar colors match the app background (#0A0A14) exactly.
-             This eliminates the visible dark band at the top — no color mismatch
-             between the system bar and the WebView content. The app draws the
-             system bar backgrounds so we control the color. -->
+        <!-- Edge-to-edge: transparent system bars so the WebView renders
+             behind them. MainActivity.onCreate calls
+             WindowCompat.setDecorFitsSystemWindows(false) which makes this
+             work on ALL Android versions — env(safe-area-inset-top) then
+             returns the real status-bar height everywhere and CSS handles
+             the spacing consistently. -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">#0A0A14</item>
-        <item name="android:navigationBarColor">#0A0A14</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
-
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
     </style>
+
 </resources>
