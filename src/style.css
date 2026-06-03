@@ -159,9 +159,11 @@ body::before {
 /* Allow scrolling — on shorter phones (small viewports + gesture/nav
    bar eating safe-area-bottom) the version + "Made in India" footer
    was getting clipped because the shared wrapper sets overflow:hidden. */
-.menu-screen { padding: max(env(safe-area-inset-top, 0px), 28px) 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; overflow-y: auto; }
+.menu-screen { padding: 0 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; overflow-y: auto; }
 
-.menu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
+/* Topbar absorbs the safe-area-inset-top so there's no blank black band
+   between the status bar and the burger/lang-toggle row. */
+.menu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; padding-top: max(env(safe-area-inset-top, 0px), 28px); }
 
 /* ── Burger button ─────────────────────────────────────────────────────── */
 .burger-btn {
