@@ -161,20 +161,14 @@ body::before {
    was getting clipped because the shared wrapper sets overflow:hidden. */
 .menu-screen { padding: 0 24px max(env(safe-area-inset-bottom, 0px), 32px); max-width: 480px; margin: 0 auto; width: 100%; overflow-y: auto; }
 
-/* Topbar is sticky so its background covers the safe-area region —
-   same pattern as .stats-header. Without sticky + background the area
-   above the burger icon is visually empty (dark gap) on edge-to-edge
-   devices. margin: 0 -24px compensates for the screen's side padding. */
+/* Status bar color matches --bg in styles.xml so the system bar and
+   WebView are visually seamless. WebView starts below the status bar,
+   so no safe-area padding needed here — just a small top gap. */
 .menu-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 15;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg);
-  margin: 0 -24px;
-  padding: calc(max(env(safe-area-inset-top, 0px), 20px) + 6px) 24px 10px;
+  padding-top: 12px;
 }
 
 /* ── Burger button ─────────────────────────────────────────────────────── */

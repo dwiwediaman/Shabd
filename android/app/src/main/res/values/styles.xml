@@ -13,13 +13,13 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
-        <!-- Edge-to-edge: let the WebView extend behind the status bar and
-             nav bar on Android 14 and below (Android 15+ enforces this
-             automatically for targetSdkVersion >= 35). Without this,
-             env(safe-area-inset-top) returns 0 on older devices and the
-             CSS safe-area padding adds a blank gap above the header. -->
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
+        <!-- Status + nav bar colors match the app background (#0A0A14) exactly.
+             This eliminates the visible dark band at the top — no color mismatch
+             between the system bar and the WebView content. The app draws the
+             system bar backgrounds so we control the color. -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">#0A0A14</item>
+        <item name="android:navigationBarColor">#0A0A14</item>
     </style>
 
 
