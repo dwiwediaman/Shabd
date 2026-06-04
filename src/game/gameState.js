@@ -21,9 +21,9 @@ let _state = null;
 export function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    _state = raw ? deepMerge(structuredClone(DEFAULTS), JSON.parse(raw)) : structuredClone(DEFAULTS);
+    _state = raw ? deepMerge(JSON.parse(JSON.stringify(DEFAULTS)), JSON.parse(raw)) : JSON.parse(JSON.stringify(DEFAULTS));
   } catch {
-    _state = structuredClone(DEFAULTS);
+    _state = JSON.parse(JSON.stringify(DEFAULTS));
   }
   return _state;
 }
