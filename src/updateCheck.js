@@ -102,7 +102,15 @@ function showBanner({ icon, title, sub, btn, onBtn, progress }) {
   `;
   document.body.appendChild(el);
   // Trigger slide-in
-  requestAnimationFrame(() => el.classList.add('show'));
+  requestAnimationFrame(() => {
+    el.classList.add('show');
+    // Push the keyboard (and any sticky bottom UI) up so the banner
+    // doesn't cover the last keyboard row. Measure after layout settles.
+    requestAnimationFrame(() => {
+      const kbWrap = document.getElementById('kbWrap');
+      if (kbWrap) kbWrap.style.paddingBottom = `${el.offsetHeight + 8}px`;
+    });
+  });
 
   if (btn && onBtn) {
     el.querySelector('#updBtn').addEventListener('click', onBtn);
@@ -123,5 +131,8 @@ function hideBanner() {
     const el = _bannerEl;
     setTimeout(() => el.remove(), 300);
     _bannerEl = null;
+    // Restore keyboard position
+    const kbWrap = document.getElementById('kbWrap');
+    if (kbWrap) kbWrap.style.paddingBottom = '';
   }
 }
