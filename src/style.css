@@ -566,7 +566,12 @@ body::before {
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
 
 /* Tile grid */
-#gridWrap { display: flex; justify-content: center; padding: 8px 0 4px; flex: 1; }
+/* flex: 1 takes remaining vertical space; min-height: 0 allows it to actually
+   shrink when the word-hint banner is visible (without it the tile grid's
+   intrinsic height prevents shrinking and pushes the keyboard off-screen). */
+#gridWrap { display: flex; justify-content: center; align-items: center; padding: 8px 0 4px; flex: 1; min-height: 0; overflow: hidden; }
+/* Keyboard must never be squeezed — keep it fully visible at all times. */
+#kbWrap { flex-shrink: 0; }
 
 .tile-grid { display: flex; flex-direction: column; align-items: center; gap: 6px; justify-content: center; }
 .tile-row   { display: flex; gap: 6px; }

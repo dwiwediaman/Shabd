@@ -156,6 +156,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   // network fetch (the dictionary API is slow on flaky connections).
   if (wordHintUsed && wordHintText) {
     renderWordHintBanner(wordHintText);
+  } else {
+    // No banner — still run once in case viewport is unusually short
+    requestAnimationFrame(fitGrid);
   }
 
   updateProgress();
@@ -281,6 +284,26 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     if (!el) return;
     el.innerHTML = `<span class="word-hint-label">${tx.wordHintLabel}</span> ${escapeHtml(text)}`;
     el.style.display = 'block';
+    // After banner renders, scale the tile grid so it fits the remaining space
+    // and the keyboard is never pushed off-screen.
+    requestAnimationFrame(fitGrid);
+  }
+
+  // Scale the tile grid down to fit inside #gridWrap when the banner
+  // reduces available vertical space. Uses transform:scale so tile
+  // positions / touch targets stay visually accurate.
+  function fitGrid() {
+    const wrap = document.getElementById('gridWrap');
+    const tileGrid = wrap?.querySelector('.tile-grid');
+    if (!wrap || !tileGrid) return;
+    tileGrid.style.transform = ''; // reset before measuring natural size
+    const availH = wrap.clientHeight;
+    const naturalH = tileGrid.scrollHeight;
+    if (availH > 0 && naturalH > availH) {
+      const scale = availH / naturalH;
+      tileGrid.style.transform = `scale(${scale})`;
+      tileGrid.style.transformOrigin = 'top center';
+    }
   }
 
   function escapeRegex(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
