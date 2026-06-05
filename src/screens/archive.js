@@ -108,6 +108,34 @@ export function archiveScreen(root) {
     navigate('puzzle', { mode: 'archive', date: cell.dataset.date });
   });
 
+  // Swipe left/right to change month
+  const ttScreen = root.querySelector('.tt-screen');
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  ttScreen.addEventListener('touchstart', e => {
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+  }, { passive: true });
+  ttScreen.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    // Only act on clearly horizontal swipes (|dx| > |dy| and > 50px threshold)
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) {
+      // swipe left → next month
+      const canNext = !(viewYear === todayY && viewMonth === todayM - 1);
+      if (!canNext) return;
+      if (viewMonth === 11) { viewMonth = 0; viewYear++; } else viewMonth++;
+      refresh();
+    } else {
+      // swipe right → prev month
+      const canPrev = !(viewYear === 2026 && viewMonth === 0);
+      if (!canPrev) return;
+      if (viewMonth === 0) { viewMonth = 11; viewYear--; } else viewMonth--;
+      refresh();
+    }
+  }, { passive: true });
+
   document.getElementById('backBtn').addEventListener('click', () => navigate('menu'));
 
   spawnStars('ttStars');
