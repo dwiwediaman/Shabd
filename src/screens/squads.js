@@ -297,8 +297,8 @@ async function renderSquadDetail(root, tx, squadId) {
 
       <div class="squad-invite-card">
         <div class="squad-invite-label">${tx.squadsInviteCodeLabel}</div>
+        <div class="squad-invite-code" id="squadCodeText">${escapeHtml(board.inviteCode)}</div>
         <div class="squad-invite-row">
-          <div class="squad-invite-code" id="squadCodeText">${escapeHtml(board.inviteCode)}</div>
           <button class="btn-cloud" id="squadCopyBtn">${tx.squadsCopyCode}</button>
           <button class="btn-cloud" id="squadShareBtn">${tx.squadsInviteShare}</button>
         </div>

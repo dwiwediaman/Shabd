@@ -1146,14 +1146,15 @@ input:checked + .slider::before { transform: translateX(20px); }
   margin-bottom: 20px;
 }
 .squad-invite-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
-.squad-invite-row { display: flex; gap: 8px; align-items: center; }
 .squad-invite-code {
-  flex: 1; min-width: 0;
-  font-size: 20px; font-weight: 800; letter-spacing: 4px;
+  font-size: 22px; font-weight: 800; letter-spacing: 6px;
   color: #fff; background: rgba(0,0,0,.25);
-  padding: 8px 12px; border-radius: 10px;
+  padding: 10px 12px; border-radius: 10px;
   font-family: 'Space Grotesk', monospace; text-align: center;
+  margin-bottom: 10px;
 }
+.squad-invite-row { display: flex; gap: 8px; }
+.squad-invite-row .btn-cloud { flex: 1; text-align: center; }
 
 .squad-board { display: flex; flex-direction: column; gap: 10px; }
 .squad-board-header {
