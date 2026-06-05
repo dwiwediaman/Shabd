@@ -1,4 +1,3 @@
-import { splitTiles } from './wordleMechanic.js';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -92,13 +91,8 @@ export async function renderShareImage(puzzle, history) {
   ctx.fillText(pillText, W / 2, pillY + pillH / 2);
 
   // Tiles
-  const tileFont = isHi
-    ? 'bold 17px "Noto Sans Devanagari", sans-serif'
-    : 'bold 20px "Space Grotesk", system-ui, sans-serif';
-
   for (let r = 0; r < rows; r++) {
     const guess = history[r];
-    const tiles = guess ? splitTiles(guess.input, puzzle.lang) : [];
     const gy    = HDR + PAD + r * (TILE + GAP);
 
     for (let c = 0; c < cols; c++) {
@@ -117,14 +111,7 @@ export async function renderShareImage(puzzle, history) {
         shine.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = shine;
         rRect(ctx, gx, gy, TILE, TILE, RADIUS); ctx.fill();
-
-        if (tiles[c]) {
-          ctx.fillStyle    = C.white;
-          ctx.font         = tileFont;
-          ctx.textAlign    = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(isHi ? tiles[c] : tiles[c].toUpperCase(), gx + TILE / 2, gy + TILE / 2 + (isHi ? 1 : 0));
-        }
+        // Letters intentionally omitted — sharing colour pattern only, not the word
       } else {
         ctx.strokeStyle = C.border; ctx.lineWidth = 1.5;
         rRect(ctx, gx, gy, TILE, TILE, RADIUS); ctx.stroke();
