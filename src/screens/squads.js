@@ -295,15 +295,6 @@ async function renderSquadDetail(root, tx, squadId) {
         <div class="squad-detail-sub">${subLine}</div>
       </div>
 
-      <div class="squad-invite-card">
-        <div class="squad-invite-label">${tx.squadsInviteCodeLabel}</div>
-        <div class="squad-invite-code" id="squadCodeText">${escapeHtml(board.inviteCode)}</div>
-        <div class="squad-invite-row">
-          <button class="btn-cloud" id="squadCopyBtn">${tx.squadsCopyCode}</button>
-          <button class="btn-cloud" id="squadShareBtn">${tx.squadsInviteShare}</button>
-        </div>
-      </div>
-
       <div class="squad-tabs" role="tablist">
         <button class="squad-tab ${currentWindow === 'day'  ? 'is-active' : ''}" data-window="day">${tx.squadsToday}</button>
         <button class="squad-tab ${currentWindow === 'week' ? 'is-active' : ''}" data-window="week">${tx.squadsThisWeek}</button>
@@ -320,9 +311,25 @@ async function renderSquadDetail(root, tx, squadId) {
         </div>
       </div>
 
-      <button class="btn-cloud btn-cloud-danger" id="squadLeaveBtn" style="margin-top:24px;width:100%;">
-        ${tx.squadsLeaveSquad}
-      </button>
+      <div class="squad-footer">
+        <div class="squad-invite-strip">
+          <div class="squad-invite-strip-left">
+            <div class="squad-invite-label">${tx.squadsInviteCodeLabel}</div>
+            <div class="squad-invite-code" id="squadCodeText">${escapeHtml(board.inviteCode)}</div>
+          </div>
+          <div class="squad-invite-actions">
+            <button class="squad-icon-btn" id="squadCopyBtn" title="${tx.squadsCopyCode}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+            <button class="squad-icon-btn" id="squadShareBtn" title="${tx.squadsInviteShare}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="btn-leave-squad" id="squadLeaveBtn">
+          ${tx.squadsLeaveSquad}
+        </button>
+      </div>
     `;
 
     // Wire tab clicks
