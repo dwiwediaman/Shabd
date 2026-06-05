@@ -119,7 +119,8 @@ describe('sticky-header CSS structure (vc102 regression guard)', () => {
 
   it('.stats-header has a solid background so scrolled content does not show through', () => {
     const body = ruleBodyDeclaring('.stats-header', 'background');
-    // Either a literal colour or a var() — both fine.
-    expect(body).toMatch(/background\s*:\s*(?:var\(|#|rgb)/);
+    // Solid colour, CSS var, rgb(), or an opaque gradient — all prevent
+    // scrolled content from showing through the sticky header.
+    expect(body).toMatch(/background\s*:\s*(?:var\(|#|rgb|linear-gradient)/);
   });
 });

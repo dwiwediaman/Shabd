@@ -22,6 +22,12 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Prevent Android 10+ from adding its own contrast-enforcement
+             scrim over the status bar and nav bar. Without this the system
+             independently darkens those zones, making them look a different
+             shade from the app background. API < 29 ignores these safely. -->
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">

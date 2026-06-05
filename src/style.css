@@ -49,7 +49,12 @@ body::before {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top, 0px);
-  background: var(--bg);
+  /* Gradient anchored to the viewport top so this strip and the sticky
+     screen headers below it form one continuous surface — the purple-
+     ambient colour (#130E25) at the very top fades into the app bg over
+     120 px, matching what the orb-1 light would cast at this position. */
+  background: linear-gradient(180deg, #130E25 0px, var(--bg) 120px);
+  background-attachment: fixed;
   z-index: 20;
   pointer-events: none;
 }
@@ -773,7 +778,13 @@ body::before {
   position: sticky;
   top: 0;
   z-index: 15;
-  background: var(--bg);
+  /* Same viewport-fixed gradient as body::before so the notch zone and
+     this back-button row are one unbroken surface. The gradient starts
+     at the top of the viewport (#130E25 = app-bg + ~8 % orb-purple) and
+     fades to --bg over 120 px, which spans both the status-bar strip and
+     this header — eliminating the flat-vs-orb colour break. */
+  background: linear-gradient(180deg, #130E25 0px, var(--bg) 120px);
+  background-attachment: fixed;
   display: flex; align-items: center; gap: 12px;
   /* Scroll containers (.htp-screen / .stats-screen / .settings-screen /
      .tt-screen) have padding-top: 0 so this sticky header is the FIRST
