@@ -4,6 +4,8 @@ import { get, getSession, refreshFreezes, save } from '../game/gameState.js';
 import { getISTDate } from '../game/seedEngine.js';
 import { MAX_GUESSES } from '../game/wordleMechanic.js';
 import { t } from '../i18n.js';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 
 export function mainMenuScreen(root) {
   const state = get();
@@ -203,11 +205,30 @@ export function mainMenuScreen(root) {
   document.getElementById('drawerInvite').addEventListener('click', async () => {
     closeDrawer();
     const text = tx.inviteText;
+
+    // Native Android/iOS: use Capacitor Share plugin — opens the full system
+    // share sheet with every installed messaging app (WhatsApp, Telegram,
+    // Messages, Gmail, etc.).
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await Share.share({ title: 'Shabd', text, dialogTitle: tx.inviteBtn });
+      } catch (_) { /* user cancelled — no-op */ }
+      return;
+    }
+
+    // Browser: Web Share API (Chrome on Android, Safari on iOS).
     if (navigator.share) {
-      try { await navigator.share({ text }); return; }
+      try { await navigator.share({ title: 'Shabd', text }); return; }
       catch (_) { /* cancelled or unsupported — fall through */ }
     }
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+
+    // Last resort (desktop browsers without Web Share): copy to clipboard.
+    try {
+      await navigator.clipboard.writeText(text);
+      showFreezeToast(tx.copied);
+    } catch (_) {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
   });
 }
 
