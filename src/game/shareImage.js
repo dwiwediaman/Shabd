@@ -179,11 +179,17 @@ export async function shareImage(puzzle, history, fallbackText) {
         data:      base64,
         directory: Directory.Cache,
       });
-      // writeResult.uri is a file:// URI Android can attach to Intent.ACTION_SEND
+      // writeResult.uri is a file:// URI Android attaches to Intent.ACTION_SEND.
+      // IMPORTANT: do NOT pass `text` here alongside the image url.
+      // Android Direct Share targets (the recent-chat chips at the top of the
+      // share sheet) are registered for a single MIME type (image/png).  When
+      // the Intent carries both EXTRA_STREAM *and* EXTRA_TEXT, the Direct Share
+      // target receives it but silently drops the text, causing WhatsApp to
+      // treat the share as malformed and swallow it.  Passing only the image
+      // URL fixes Direct Share while the full-app-icon path still works fine.
       await Share.share({
-        title:  'Shabd',
-        text:   fallbackText,
-        url:    writeResult.uri,
+        title:       'Shabd',
+        url:         writeResult.uri,
         dialogTitle: 'Share your Shabd result',
       });
       return 'shared';
@@ -313,7 +319,8 @@ function showShareSheet(canvas, blob, text) {
           data:      base64,
           directory: Directory.Cache,
         });
-        await Share.share({ title: 'Shabd', text, url: writeResult.uri, dialogTitle: 'Share your Shabd result' });
+        // text omitted — see note in shareImage() above about Direct Share MIME type conflict
+        await Share.share({ title: 'Shabd', url: writeResult.uri, dialogTitle: 'Share your Shabd result' });
         return true;
       } catch (e) { /* fall through */ }
     }
