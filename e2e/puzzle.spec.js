@@ -129,6 +129,26 @@ test.describe('Daily puzzle — English', () => {
     await expect(coloredKey.first()).toBeVisible();
   });
 
+  // ── Encouragement toast ────────────────────────────────────────────────
+
+  test('Encouragement toast appears after an intermediate (non-winning) guess', async ({ page }) => {
+    // Submit a valid word. If it happens to be today's answer the "Brilliant!"
+    // toast fires instead — that's fine, we just assert a toast shows up with text.
+    await typeWord(page, 'CRANE');
+    await pressEnter(page);
+
+    // Wait for the toast to get the .show class (set by showToast right after
+    // the tile-flip animation at ~720 ms). .show adds opacity:1 — the element
+    // lives in the DOM at opacity:0 the whole time, so toBeVisible() alone is
+    // not enough; we must check for the class.
+    const toast = page.locator('#toast.show');
+    await expect(toast).toBeVisible({ timeout: 3_000 });
+
+    // Must have non-empty text (encourage message or "Brilliant!" on a win).
+    const text = await toast.textContent();
+    expect(text?.trim().length).toBeGreaterThan(0);
+  });
+
   // ── Back navigation from puzzle ─────────────────────────────────────────
 
   test('Back button from puzzle returns to menu', async ({ page }) => {
