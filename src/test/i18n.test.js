@@ -219,6 +219,7 @@ const FUNCTION_ARGS = {
   squadsDeepLinkOwner:   ['Aman'],
   squadsWeekStats:       [3, 2],
   squadsAllStats:        [10, 8],
+  encourage:             [3, false],
 };
 
 describe.each(['en', 'hi'])('i18n — every template function for %s', (lang) => {
@@ -239,5 +240,21 @@ describe.each(['en', 'hi'])('i18n — every template function for %s', (lang) =>
     expect(tx.squadsWeekStats(0, 0)).toMatch(/.+/);
     expect(tx.squadsAllStats(0, 0)).toMatch(/.+/);
     expect(tx.squadsAllStats(1, 1)).toMatch(/.+/); // singular "game" branch in EN
+  });
+
+  it('encourage covers all remaining-guess and hot/cold branches', () => {
+    // last guess
+    expect(tx.encourage(1, false)).toMatch(/.+/);
+    expect(tx.encourage(1, true)).toMatch(/.+/);
+    // hot branches (remaining 5, 4, 3, 2)
+    expect(tx.encourage(5, true)).toMatch(/.+/);
+    expect(tx.encourage(4, true)).toMatch(/.+/);
+    expect(tx.encourage(3, true)).toMatch(/.+/);
+    expect(tx.encourage(2, true)).toMatch(/.+/);
+    // cold branches (remaining 5, 4, 3, 2)
+    expect(tx.encourage(5, false)).toMatch(/.+/);
+    expect(tx.encourage(4, false)).toMatch(/.+/);
+    expect(tx.encourage(3, false)).toMatch(/.+/);
+    expect(tx.encourage(2, false)).toMatch(/.+/);
   });
 });
