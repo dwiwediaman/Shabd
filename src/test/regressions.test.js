@@ -85,8 +85,11 @@ describe('vc118 — Time Travel swipe gesture', () => {
   });
 
   it('swipe cannot go before the launch month (2026-01)', () => {
-    // The canPrev guard must reference year 2026 and month 0.
-    expect(archiveJs).toMatch(/viewYear\s*===\s*2026.*viewMonth\s*===\s*0|viewMonth\s*===\s*0.*viewYear\s*===\s*2026/);
+    // The canPrev guard must reference the launch year/month constants derived
+    // from LAUNCH_DATE — not a hardcoded literal, which was the vc118 bug.
+    expect(archiveJs).toMatch(/LAUNCH_DATE\s*=\s*['"]2026-01-01['"]/);
+    expect(archiveJs).toMatch(/LAUNCH_Y\b/);
+    expect(archiveJs).toMatch(/LAUNCH_M_1\b/);
   });
 });
 

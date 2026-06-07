@@ -6,6 +6,9 @@ import { t } from '../i18n.js';
 
 const LAUNCH_DATE = '2026-01-01';
 const DAY_HDRS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+// Floor for the prev-month button — derived from LAUNCH_DATE so there's one
+// place to update if we ever need to show earlier puzzles.
+const [LAUNCH_Y, LAUNCH_M_1] = LAUNCH_DATE.split('-').map(Number); // LAUNCH_M_1 is 1-indexed
 
 export function archiveScreen(root) {
   const state   = get();
@@ -34,7 +37,7 @@ export function archiveScreen(root) {
   function buildCal() {
     const firstDow    = new Date(Date.UTC(viewYear, viewMonth, 1)).getUTCDay();
     const daysInMonth = new Date(Date.UTC(viewYear, viewMonth + 1, 0)).getUTCDate();
-    const canPrev = !(viewYear === 2026 && viewMonth === 0);
+    const canPrev = !(viewYear === LAUNCH_Y && viewMonth === LAUNCH_M_1 - 1);
     const canNext = !(viewYear === todayY && viewMonth === todayM - 1);
 
     const hdrs   = DAY_HDRS.map(h => `<div class="cal-hdr">${h}</div>`).join('');
@@ -128,7 +131,7 @@ export function archiveScreen(root) {
       refresh();
     } else {
       // swipe right → prev month
-      const canPrev = !(viewYear === 2026 && viewMonth === 0);
+      const canPrev = !(viewYear === LAUNCH_Y && viewMonth === LAUNCH_M_1 - 1);
       if (!canPrev) return;
       if (viewMonth === 0) { viewMonth = 11; viewYear--; } else viewMonth--;
       refresh();

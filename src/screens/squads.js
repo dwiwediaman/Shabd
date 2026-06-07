@@ -49,6 +49,10 @@ export function squadsScreen(root, params = {}) {
   } else {
     renderSquadsList(root, tx);
   }
+
+  // No timers or listeners to tear down right now, but returning onLeave keeps
+  // squads consistent with other screens and ready for future cleanup needs.
+  return { onLeave() {} };
 }
 
 // ── Deep-link join flow ────────────────────────────────────────────────────
