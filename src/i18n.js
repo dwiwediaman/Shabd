@@ -114,17 +114,63 @@ const translations = {
     // Mid-game encouragement — shown after each intermediate guess.
     // remaining = guesses still available; hot = 2+ correct tiles in last guess.
     encourage: (remaining, hot) => {
-      if (remaining === 1) return 'Last guess — make it count.';
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      if (remaining === 1) return pick([
+        'Last guess — make it count.',
+        'One shot left. Trust your instinct.',
+        'Final guess. You have come too far to give up.',
+        'Everything is on this one. Go.',
+      ]);
       if (hot) {
-        if (remaining >= 5) return 'Hot start — you are on to something!';
-        if (remaining === 4) return 'Getting warm — keep narrowing it down.';
-        if (remaining === 3) return 'So close — you can almost taste it.';
-        return 'Almost there — one smart guess and you have got it.';
+        if (remaining >= 5) return pick([
+          'Hot start — you are on to something!',
+          'Strong opening. Build on it.',
+          'Good letters. Now zero in.',
+          'You are reading this word right.',
+        ]);
+        if (remaining === 4) return pick([
+          'Getting warm — keep narrowing it down.',
+          'The word is within reach.',
+          'You are closing in. Stay sharp.',
+          'Solid progress. Keep chipping away.',
+        ]);
+        if (remaining === 3) return pick([
+          'So close — you can almost taste it.',
+          'The pattern is clear. Finish it.',
+          'Three guesses and so much figured out.',
+          'You are right there. Push through.',
+        ]);
+        return pick([
+          'Almost there — one smart guess and you have got it.',
+          'Two left and you are this close. Do not rush.',
+          'The answer is staring at you. Focus.',
+          'You know enough. Trust the letters.',
+        ]);
       }
-      if (remaining >= 5) return 'Nice first guess. Keep hunting.';
-      if (remaining === 4) return 'You have got this — stay focused.';
-      if (remaining === 3) return 'Halfway there — think it through.';
-      return 'Two shots left — dig deep.';
+      if (remaining >= 5) return pick([
+        'Nice first guess. Keep hunting.',
+        'Good start. The word is waiting.',
+        'First move done. Now think it through.',
+        'One guess in. Plenty of room to work with.',
+      ]);
+      if (remaining === 4) return pick([
+        'You have got this — stay focused.',
+        'Keep the pressure on.',
+        'Second guess down. You are warming up.',
+        'Stay in it. The word is close.',
+      ]);
+      if (remaining === 3) return pick([
+        'Halfway there — think it through.',
+        'Three guesses to go. Make each one count.',
+        'You are in the thick of it. Stay calm.',
+        'Half the guesses gone — time to get sharp.',
+      ]);
+      return pick([
+        'Two shots left — dig deep.',
+        'Two chances. Pick your letters carefully.',
+        'Do not panic. Think clearly and go.',
+        'You still have this. Two smart guesses left.',
+      ]);
     },
 
     // Feedback
@@ -329,17 +375,63 @@ const translations = {
 
     // Mid-game encouragement
     encourage: (remaining, hot) => {
-      if (remaining === 1) return 'आखिरी मौका — दम लगाओ।';
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      if (remaining === 1) return pick([
+        'आखिरी मौका — दम लगाओ।',
+        'एक ही गोली बची है — सोच के चलाओ।',
+        'इतना आए हो, अब हार मत मानो।',
+        'सब कुछ इसी एक पर टिका है। जाओ।',
+      ]);
       if (hot) {
-        if (remaining >= 5) return 'वाह — कुछ सूझ रहा है!';
-        if (remaining === 4) return 'गर्म हो रहे हो — आगे बढ़ो।';
-        if (remaining === 3) return 'बहुत करीब — बस एक कदम!';
-        return 'लगभग हो गया — एक और सोचो।';
+        if (remaining >= 5) return pick([
+          'वाह — कुछ सूझ रहा है!',
+          'अच्छे अक्षर मिले। अब और सटीक हो।',
+          'तुम सही राह पर हो।',
+          'दमदार शुरुआत। इसे आगे बढ़ाओ।',
+        ]);
+        if (remaining === 4) return pick([
+          'गर्म हो रहे हो — आगे बढ़ो।',
+          'शब्द पास है। तेज़ रहो।',
+          'अच्छी पकड़ बन रही है।',
+          'सही दिशा में हो। जारी रखो।',
+        ]);
+        if (remaining === 3) return pick([
+          'बहुत करीब — बस एक कदम!',
+          'पैटर्न साफ हो रहा है। पूरा करो।',
+          'तीन में इतना समझ लिया — कमाल है।',
+          'एकदम सामने हो। बस धक्का दो।',
+        ]);
+        return pick([
+          'लगभग हो गया — एक और सोचो।',
+          'दो मौके और इतने करीब। जल्दबाज़ी मत करो।',
+          'जवाब सामने है। ध्यान लगाओ।',
+          'काफी कुछ पता चल गया। अक्षरों पर भरोसा करो।',
+        ]);
       }
-      if (remaining >= 5) return 'अच्छी शुरुआत। सोचते रहो।';
-      if (remaining === 4) return 'जारी रखो — ध्यान लगाओ।';
-      if (remaining === 3) return 'आधा हो गया — सोचकर चलो।';
-      return 'दो मौके बचे — दिमाग लगाओ।';
+      if (remaining >= 5) return pick([
+        'अच्छी शुरुआत। सोचते रहो।',
+        'पहला कदम उठ गया। अब ध्यान से चलो।',
+        'एक हो गया। आगे काफी जगह है।',
+        'शब्द इंतज़ार कर रहा है। ढूंढो।',
+      ]);
+      if (remaining === 4) return pick([
+        'जारी रखो — ध्यान लगाओ।',
+        'दबाव बनाए रखो।',
+        'दूसरा हो गया। गर्म हो रहे हो।',
+        'टिके रहो। शब्द पास है।',
+      ]);
+      if (remaining === 3) return pick([
+        'आधा हो गया — सोचकर चलो।',
+        'तीन और बचे। हर एक काम का हो।',
+        'बीच में हो — शांत रहो।',
+        'आधे गए — अब तेज़ हो जाओ।',
+      ]);
+      return pick([
+        'दो मौके बचे — दिमाग लगाओ।',
+        'दो मौके। अक्षर सोच-समझकर चुनो।',
+        'घबराओ मत। साफ सोचो।',
+        'अभी भी हो सकता है। दो होशियार कदम बचे।',
+      ]);
     },
 
     // Feedback
