@@ -1,6 +1,7 @@
 import { navigate } from '../components/router.js';
 import { get, getSession, refreshFreezes, save } from '../game/gameState.js';
 import { getISTDate } from '../game/seedEngine.js';
+import { MAX_GUESSES } from '../game/wordleMechanic.js';
 import { t } from '../i18n.js';
 
 export function mainMenuScreen(root) {
@@ -19,7 +20,7 @@ export function mainMenuScreen(root) {
   const todaySession = getSession(`${todayIST}|${lang}`) || [];
   const lastGuess = todaySession[todaySession.length - 1];
   const todayWon  = !!(lastGuess && lastGuess.isCorrect);
-  const todayLost = !todayWon && todaySession.length >= 6;
+  const todayLost = !todayWon && todaySession.length >= MAX_GUESSES;
   const todayDone = todayWon || todayLost;
   const todayInProgress = todaySession.length > 0 && !todayDone;
 

@@ -363,12 +363,13 @@ async function renderSquadDetail(root, tx, squadId) {
       } catch (e) { /* user cancel — ignore */ }
     });
 
-    document.getElementById('squadLeaveBtn').addEventListener('click', async () => {
-      if (!confirm(tx.squadsConfirmLeave)) return;
-      try {
-        await leaveOrDisbandSquad(squadId);
-        navigate('squads');
-      } catch { toast(tx.cloudNetworkError); }
+    document.getElementById('squadLeaveBtn').addEventListener('click', () => {
+      showConfirmModal(tx.squadsConfirmLeave, tx.squadsLeaveSquad, tx, async () => {
+        try {
+          await leaveOrDisbandSquad(squadId);
+          navigate('squads');
+        } catch { toast(tx.cloudNetworkError); }
+      });
     });
   }
 
@@ -414,6 +415,24 @@ function squadBoardRowHtml(m, position, tx, window = 'day') {
 }
 
 // ── Modals ─────────────────────────────────────────────────────────────────
+
+/** Generic two-button confirm modal. Calls onConfirm() if the user presses the
+ *  action button. Uses openModal so it matches the rest of the squads UI. */
+function showConfirmModal(message, confirmLabel, tx, onConfirm) {
+  const m = openModal(`
+    <div class="modal-title">${message}</div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="modalCancel">${tx.squadsCancel}</button>
+      <button class="btn-primary"   id="modalConfirm">${confirmLabel}</button>
+    </div>
+  `);
+  m.card.querySelector('#modalCancel').addEventListener('click', m.close);
+  m.card.querySelector('#modalConfirm').addEventListener('click', async () => {
+    m.close();
+    await onConfirm();
+  });
+}
+
 function showCreateModal(tx) {
   const m = openModal(`
     <div class="modal-title">${tx.squadsCreateTitle}</div>

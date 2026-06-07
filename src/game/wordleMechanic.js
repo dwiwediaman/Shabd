@@ -6,7 +6,7 @@ export const TILE_CORRECT = 'correct';
 export const TILE_PRESENT = 'present';
 export const TILE_ABSENT  = 'absent';
 
-const MAX_GUESSES = 6;
+export const MAX_GUESSES = 6;
 const TILES = { hi: 4, en: 5 };
 const TIER_WEIGHTS = { common: 70, mid: 90 }; // cumulative: 0-69=common, 70-89=mid, 90-99=challenge
 

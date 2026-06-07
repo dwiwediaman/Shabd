@@ -5,6 +5,15 @@ import { shareImage } from '../game/shareImage.js';
 import { renderShareGrid } from '../game/wordleMechanic.js';
 import { t } from '../i18n.js';
 
+// UTC+5:30 in milliseconds — single source of truth for IST offset in this file
+const IST_OFFSET_MS = 19800000;
+
+/** Seconds remaining until the next midnight IST. */
+function secsUntilMidnightIST() {
+  const istNow = Date.now() + IST_OFFSET_MS;
+  return Math.floor((Math.ceil(istNow / 86400000) * 86400000 - istNow) / 1000);
+}
+
 export function statsScreen(root) {
   const state = get();
   const lang  = state.settings.lang;
@@ -15,10 +24,7 @@ export function statsScreen(root) {
   const maxDist = Math.max(...stats.dist, 1);
 
   // Countdown to midnight IST
-  const now = Date.now();
-  const istNow = now + 19800000;
-  const nextMidnightIST = Math.ceil(istNow / 86400000) * 86400000;
-  const secsLeft = Math.floor((nextMidnightIST - istNow) / 1000);
+  const secsLeft = secsUntilMidnightIST();
   const hh = String(Math.floor(secsLeft / 3600)).padStart(2, '0');
   const mm = String(Math.floor((secsLeft % 3600) / 60)).padStart(2, '0');
   const ss = String(secsLeft % 60).padStart(2, '0');
@@ -99,7 +105,7 @@ export function statsScreen(root) {
   const timer = setInterval(() => {
     const el = document.getElementById('countdown');
     if (!el) { clearInterval(timer); return; }
-    const s2 = Math.floor((Math.ceil((Date.now() + 19800000) / 86400000) * 86400000 - (Date.now() + 19800000)) / 1000);
+    const s2 = secsUntilMidnightIST();
     const h2 = String(Math.floor(s2 / 3600)).padStart(2, '0');
     const m2 = String(Math.floor((s2 % 3600) / 60)).padStart(2, '0');
     const s3 = String(s2 % 60).padStart(2, '0');
