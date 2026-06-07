@@ -1156,7 +1156,6 @@ input:checked + .slider::before { transform: translateX(20px); }
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
 }
 
 .squad-invite-strip-left { flex: 1; min-width: 0; }
@@ -1186,18 +1185,17 @@ input:checked + .slider::before { transform: translateX(20px); }
 }
 .squad-icon-btn:active { background: rgba(124,58,237,.32); }
 
-.btn-leave-squad {
-  width: 100%;
-  padding: 15px;
-  border-radius: 12px;
-  background: rgba(220,38,38,.10);
-  border: 1px solid rgba(220,38,38,.28);
-  color: #F87171;
-  font-size: 15px; font-weight: 700;
-  font-family: inherit; cursor: pointer;
-  transition: background .12s;
+/* Leave icon — same size as copy/share but muted so it doesn't draw attention */
+.squad-icon-btn.squad-icon-leave {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.10);
+  color: rgba(255,255,255,.35);
 }
-.btn-leave-squad:active { background: rgba(220,38,38,.22); }
+.squad-icon-btn.squad-icon-leave:active {
+  background: rgba(220,38,38,.18);
+  border-color: rgba(220,38,38,.35);
+  color: #F87171;
+}
 
 .squad-board { display: flex; flex-direction: column; gap: 10px; }
 .squad-board-header {

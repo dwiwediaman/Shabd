@@ -147,9 +147,13 @@ describe('vc122 — Squads sticky footer', () => {
     expect(body, '.squad-footer must pin to bottom: 0').toMatch(/bottom\s*:\s*0/);
   });
 
-  it('.btn-leave-squad has width: 100%', () => {
-    const body = allBodies('.btn-leave-squad');
-    expect(body, 'Leave Squad button must span full width').toMatch(/width\s*:\s*100%/);
+  it('leave squad is now a .squad-icon-btn.squad-icon-leave icon (not a full-width button)', () => {
+    // vc122 had a full-width .btn-leave-squad; redesigned to a small icon so it
+    // doesn't draw attention. Verify the icon modifier class exists in the CSS.
+    const body = allBodies('.squad-icon-leave');
+    expect(body, '.squad-icon-leave modifier must exist').not.toBe('');
+    // Must be de-emphasised — lower opacity/muted colour, not the violet accent
+    expect(body).toMatch(/rgba\(255,255,255/); // muted background
   });
 
   it('.squad-icon-btn exists for the icon-only copy/share buttons', () => {
