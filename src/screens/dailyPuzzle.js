@@ -172,6 +172,14 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     showAnswerReveal();
   }
 
+  // Re-entry into a completed game: show the result sheet (definition,
+  // stats, countdown) automatically. Without this the user can see the
+  // solved grid but has no way to read the word meaning.
+  if (gameOver) {
+    const won = history[history.length - 1]?.isCorrect ?? false;
+    setTimeout(() => showResultSheet(won), 350);
+  }
+
   // Back / share
   // Honour the navigation stack so back from an archive puzzle returns to
   // the calendar (not menu), while back from a daily puzzle still lands on
