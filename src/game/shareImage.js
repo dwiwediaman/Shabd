@@ -40,7 +40,7 @@ export async function renderShareImage(puzzle, history) {
   const W      = PAD * 2 + gridW;
   const HDR    = 100;
   const GRID_H = rows * TILE + (rows - 1) * GAP;
-  const FTR    = 64; // taller footer: two lines (tagline + Play Store URL)
+  const FTR    = 52;
   const H      = HDR + PAD + GRID_H + PAD + FTR;
 
   const DPR    = 3;
@@ -127,18 +127,11 @@ export async function renderShareImage(puzzle, history) {
   ctx.strokeStyle = dg; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(PAD, footY); ctx.lineTo(W - PAD, footY); ctx.stroke();
 
+  ctx.font         = '600 13px "Space Grotesk", system-ui, sans-serif';
+  ctx.fillStyle    = C.muted;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
-
-  // Line 1 — tagline
-  ctx.font      = '600 12px "Space Grotesk", system-ui, sans-serif';
-  ctx.fillStyle = C.muted;
-  ctx.fillText("Can you beat this? 👉 Try Shabd!", W / 2, footY + 18);
-
-  // Line 2 — actual Play Store URL so it's clickable / searchable when shared
-  ctx.font      = '500 10px "Space Grotesk", system-ui, sans-serif';
-  ctx.fillStyle = '#8B5CF6';
-  ctx.fillText('play.google.com/store/apps/details?id=in.shabd.game', W / 2, footY + 46);
+  ctx.fillText("Can you beat this? 👉 Get 'Shabd' on Google Play", W / 2, footY + FTR / 2);
 
   return canvas;
 }
@@ -176,35 +169,23 @@ export async function shareImage(puzzle, history, fallbackText) {
     blob   = await canvasToBlob(canvas);
   }
 
-  // ── Native (Capacitor): write to filesystem + use Share plugin ───────────
+  // ── Native (Capacitor): share as text (emoji grid + clickable link) ────────
+  // Text-only works with ALL Android share targets — including Direct Share
+  // recent-chat chips which silently drop image attachments when EXTRA_TEXT
+  // is also present (a known Android limitation with mixed-MIME intents).
+  // The emoji colour grid is the universally understood Wordle-style format;
+  // the Play Store link at the bottom is fully clickable in every chat app.
+  // The rendered image is still available via "Save Image" (see custom sheet).
   if (Capacitor.isNativePlatform()) {
     try {
-      const base64 = await blobToBase64(blob);
-      const fileName = `shabd-result-${Date.now()}.png`;
-      const writeResult = await Filesystem.writeFile({
-        path:      fileName,
-        data:      base64,
-        directory: Directory.Cache,
-      });
-      // writeResult.uri is a file:// URI Android attaches to Intent.ACTION_SEND.
-      // IMPORTANT: do NOT pass `text` here alongside the image url.
-      // Android Direct Share targets (the recent-chat chips at the top of the
-      // share sheet) are registered for a single MIME type (image/png).  When
-      // the Intent carries both EXTRA_STREAM *and* EXTRA_TEXT, the Direct Share
-      // target receives it but silently drops the text, causing WhatsApp to
-      // treat the share as malformed and swallow it.  Passing only the image
-      // URL fixes Direct Share while the full-app-icon path still works fine.
       await Share.share({
-        title:       'Shabd',
-        url:         writeResult.uri,
+        text:        fallbackText,   // emoji grid + "https://play.google.com/..."
         dialogTitle: 'Share your Shabd result',
       });
       return 'shared';
     } catch (e) {
-      // If user cancels, Capacitor throws — treat as cancelled, not error
       if (String(e?.message || '').toLowerCase().includes('cancel')) return 'cancelled';
       console.warn('Native share failed, falling back:', e);
-      // Fall through to custom sheet
     }
   }
 
@@ -316,21 +297,8 @@ function showShareSheet(canvas, blob, text) {
   bg.addEventListener('click', e => { if (e.target === bg) close(); });
   sheet.querySelector('#ss-cancel').addEventListener('click', close);
 
-  // Helper: try Capacitor native share (with image), fall back to Web Share
-  async function tryNativeShareWithImage() {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const base64 = await blobToBase64(blob);
-        const writeResult = await Filesystem.writeFile({
-          path:      `shabd-result-${Date.now()}.png`,
-          data:      base64,
-          directory: Directory.Cache,
-        });
-        // text omitted — see note in shareImage() above about Direct Share MIME type conflict
-        await Share.share({ title: 'Shabd', url: writeResult.uri, dialogTitle: 'Share your Shabd result' });
-        return true;
-      } catch (e) { /* fall through */ }
-    }
+  // Helper: share via Web Share API (files), or fall back to wa.me for WhatsApp
+  async function tryWebShareWithImage() {
     const file = new File([blob], 'shabd-result.png', { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
       try { await navigator.share({ files: [file], text, title: 'Shabd' }); return true; }
@@ -339,16 +307,16 @@ function showShareSheet(canvas, blob, text) {
     return false;
   }
 
-  // WhatsApp — native share with image (works on Android + iOS Capacitor)
+  // WhatsApp button — share text with link (always works), then image as bonus
   sheet.querySelector('#ss-whatsapp').addEventListener('click', async () => {
-    const ok = await tryNativeShareWithImage();
-    if (!ok) window.open(`https://wa.me/?text=${waText}`, '_blank'); // last-resort web fallback
+    const ok = await tryWebShareWithImage();
+    if (!ok) window.open(`https://wa.me/?text=${waText}`, '_blank');
     close();
   });
 
   // Native share (any app)
   sheet.querySelector('#ss-native').addEventListener('click', async () => {
-    await tryNativeShareWithImage();
+    await tryWebShareWithImage();
     close();
   });
 
