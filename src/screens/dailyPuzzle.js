@@ -477,6 +477,15 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       // only 2.5 s and the result sheet can be dismissed, leaving the
       // user with no way to see the word.
       setTimeout(showAnswerReveal, tiles.length * 120 + 200);
+    } else {
+      // Intermediate guess — show an encouraging message after tiles flip.
+      // remaining = guesses still available after this one.
+      const remaining = puzzle.maxGuesses - history.length;
+      const correctCount = result.perTileState.filter(s => s === 'correct').length;
+      setTimeout(
+        () => showToast(tx.encourage(remaining, correctCount >= 2), 1600),
+        tiles.length * 120 + 120
+      );
     }
   }
 

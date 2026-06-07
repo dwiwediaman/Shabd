@@ -111,6 +111,22 @@ const translations = {
     streakFreezeAvail: '❄️ 1 freeze available this week',
     freezeUsed:        '❄️ Streak saved by freeze!',
 
+    // Mid-game encouragement — shown after each intermediate guess.
+    // remaining = guesses still available; hot = 2+ correct tiles in last guess.
+    encourage: (remaining, hot) => {
+      if (remaining === 1) return 'Last guess — make it count.';
+      if (hot) {
+        if (remaining >= 5) return 'Hot start — you are on to something!';
+        if (remaining === 4) return 'Getting warm — keep narrowing it down.';
+        if (remaining === 3) return 'So close — you can almost taste it.';
+        return 'Almost there — one smart guess and you have got it.';
+      }
+      if (remaining >= 5) return 'Nice first guess. Keep hunting.';
+      if (remaining === 4) return 'You have got this — stay focused.';
+      if (remaining === 3) return 'Halfway there — think it through.';
+      return 'Two shots left — dig deep.';
+    },
+
     // Feedback
     feedbackTitle:   'Rate & Feedback',
     feedbackSub:     'Enjoying Shabd? Leave a review',
@@ -310,6 +326,21 @@ const translations = {
     // Streak freeze
     streakFreezeAvail: '❄️ इस सप्ताह 1 फ्रीज़ उपलब्ध',
     freezeUsed:        '❄️ फ्रीज़ से स्ट्रीक बची!',
+
+    // Mid-game encouragement
+    encourage: (remaining, hot) => {
+      if (remaining === 1) return 'आखिरी मौका — दम लगाओ।';
+      if (hot) {
+        if (remaining >= 5) return 'वाह — कुछ सूझ रहा है!';
+        if (remaining === 4) return 'गर्म हो रहे हो — आगे बढ़ो।';
+        if (remaining === 3) return 'बहुत करीब — बस एक कदम!';
+        return 'लगभग हो गया — एक और सोचो।';
+      }
+      if (remaining >= 5) return 'अच्छी शुरुआत। सोचते रहो।';
+      if (remaining === 4) return 'जारी रखो — ध्यान लगाओ।';
+      if (remaining === 3) return 'आधा हो गया — सोचकर चलो।';
+      return 'दो मौके बचे — दिमाग लगाओ।';
+    },
 
     // Feedback
     feedbackTitle:   'रेटिंग और प्रतिक्रिया',
