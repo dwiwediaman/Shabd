@@ -1,4 +1,5 @@
 import { navigate } from '../components/router.js';
+import { spawnStars } from '../components/ui.js';
 import { get, getSession, refreshFreezes, save } from '../game/gameState.js';
 import { getISTDate } from '../game/seedEngine.js';
 import { MAX_GUESSES } from '../game/wordleMechanic.js';
@@ -151,7 +152,7 @@ export function mainMenuScreen(root) {
     </div>
   `;
 
-  spawnStars('menuStars');
+  spawnStars('menuStars', 60);
 
   // ─── Language toggle ─────────────────────────────────────────────────────
   root.querySelectorAll('.lang-opt').forEach(btn => {
@@ -224,14 +225,3 @@ function showFreezeToast(msg) {
   }, 3500);
 }
 
-function spawnStars(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  for (let i = 0; i < 60; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    const size = Math.random() * 2 + 0.5;
-    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
-    el.appendChild(s);
-  }
-}

@@ -1,4 +1,5 @@
 import { navigate } from '../components/router.js';
+import { spawnStars, escapeHtml } from '../components/ui.js';
 import { get, setSetting, getSession } from '../game/gameState.js';
 import { t } from '../i18n.js';
 import { getISTDate } from '../game/seedEngine.js';
@@ -162,17 +163,6 @@ export function settingsScreen(root) {
   // ── Cloud backup wiring ────────────────────────────────────────────────
   wireCloudSection(tx);
 
-  function spawnStars(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    for (let i = 0; i < 50; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      const sz = Math.random() * 2 + 0.5;
-      s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
-      el.appendChild(s);
-    }
-  }
 }
 
 // ── Cloud Backup section ──────────────────────────────────────────────────
@@ -301,12 +291,6 @@ function formatAgo(ts, tx) {
   if (hr < 24) return tx.cloudHoursAgo(hr);
   const day = Math.floor(hr / 24);
   return tx.cloudDaysAgo(day);
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, ch => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
-  ));
 }
 
 function showSettingsToast(msg) {

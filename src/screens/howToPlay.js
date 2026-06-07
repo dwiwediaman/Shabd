@@ -1,4 +1,5 @@
 import { navigate } from '../components/router.js';
+import { spawnStars } from '../components/ui.js';
 import { get, setFlag } from '../game/gameState.js';
 import { t } from '../i18n.js';
 
@@ -162,7 +163,7 @@ export function howToPlayScreen(root, params = {}) {
     </div>`;
 
   // ─── Stars ────────────────────────────────────────────────────────────────
-  spawnStars('htpStars');
+  spawnStars('htpStars', 40);
 
   // ─── Nav ─────────────────────────────────────────────────────────────────
   if (!firstTime) {
@@ -279,15 +280,4 @@ export function howToPlayScreen(root, params = {}) {
   startDemo();
 
   // ─── Stars helper ────────────────────────────────────────────────────────
-  function spawnStars(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    for (let i = 0; i < 40; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      const sz = Math.random() * 2 + 0.5;
-      s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*60}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
-      el.appendChild(s);
-    }
-  }
 }

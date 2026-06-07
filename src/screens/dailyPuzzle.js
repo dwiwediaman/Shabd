@@ -1,6 +1,7 @@
 import { navigate, goBack } from '../components/router.js';
 import { createTileGrid } from '../components/tileGrid.js';
 import { createKeyboard, DEVANAGARI_MODIFIERS } from '../components/keyboard.js';
+import { spawnStars, escapeHtml } from '../components/ui.js';
 import { get, recordCompletion, saveSession, getSession, getSessionMeta, setSessionMeta, refreshFreezes } from '../game/gameState.js';
 import { today, forDate } from '../game/seedEngine.js';
 import { generate, validateGuess, renderShareGrid, splitTiles, normalize, findClosestGuess } from '../game/wordleMechanic.js';
@@ -109,7 +110,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   // Warm fonts in background so share is instant when game ends
   preloadShareFonts();
 
-  spawnStars('pzStars');
+  spawnStars('pzStars', 40);
 
   // Grid + keyboard
   const grid = createTileGrid(puzzle.tileCount, puzzle.maxGuesses);
@@ -315,12 +316,6 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   }
 
   function escapeRegex(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, ch => (
-      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
-    ));
-  }
-
   // Physical keyboard
   const onKeydown = e => {
     if (e.key === 'Enter') handleKey('ENTER');
@@ -771,17 +766,6 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     sheet.querySelector('#sheetMenuBtn').addEventListener('click', () => navigate('menu'));
   }
 
-  function spawnStars(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    for (let i = 0; i < 40; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      const sz = Math.random() * 2 + 0.5;
-      s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*60}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
-      el.appendChild(s);
-    }
-  }
 
   return {
     onLeave() {

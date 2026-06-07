@@ -1,4 +1,5 @@
 import { navigate } from '../components/router.js';
+import { spawnStars } from '../components/ui.js';
 import { get, getSession } from '../game/gameState.js';
 import { getISTDate } from '../game/seedEngine.js';
 import { t } from '../i18n.js';
@@ -136,17 +137,6 @@ export function archiveScreen(root) {
 
   document.getElementById('backBtn').addEventListener('click', () => navigate('menu'));
 
-  spawnStars('ttStars');
+  spawnStars('ttStars', 40);
 
-  function spawnStars(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    for (let i = 0; i < 40; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      const sz = Math.random() * 2 + 0.5;
-      s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
-      el.appendChild(s);
-    }
-  }
 }
