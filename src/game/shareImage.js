@@ -40,7 +40,7 @@ export async function renderShareImage(puzzle, history) {
   const W      = PAD * 2 + gridW;
   const HDR    = 100;
   const GRID_H = rows * TILE + (rows - 1) * GAP;
-  const FTR    = 52;
+  const FTR    = 64; // taller footer: two lines (tagline + Play Store URL)
   const H      = HDR + PAD + GRID_H + PAD + FTR;
 
   const DPR    = 3;
@@ -127,11 +127,18 @@ export async function renderShareImage(puzzle, history) {
   ctx.strokeStyle = dg; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(PAD, footY); ctx.lineTo(W - PAD, footY); ctx.stroke();
 
-  ctx.font         = '600 13px "Space Grotesk", system-ui, sans-serif';
-  ctx.fillStyle    = C.muted;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText("Can you beat this? 👉 Get 'Shabd' on Google Play", W / 2, footY + FTR / 2);
+
+  // Line 1 — tagline
+  ctx.font      = '600 12px "Space Grotesk", system-ui, sans-serif';
+  ctx.fillStyle = C.muted;
+  ctx.fillText("Can you beat this? 👉 Try Shabd!", W / 2, footY + 18);
+
+  // Line 2 — actual Play Store URL so it's clickable / searchable when shared
+  ctx.font      = '500 10px "Space Grotesk", system-ui, sans-serif';
+  ctx.fillStyle = '#8B5CF6';
+  ctx.fillText('play.google.com/store/apps/details?id=in.shabd.game', W / 2, footY + 46);
 
   return canvas;
 }
