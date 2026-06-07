@@ -1446,40 +1446,38 @@ input:checked + .slider::before { transform: translateX(20px); }
 .tt-screen {
   position: relative; z-index: 1;
   display: flex; flex-direction: column;
-  height: 100%; overflow-y: auto; overflow-x: hidden;
-  overscroll-behavior-x: none;
-  padding:
-    0
-    16px
-    max(env(safe-area-inset-bottom, 0px), 32px);
+  height: 100%; overflow: hidden;
+  padding: 0 16px 0;
   box-sizing: border-box;
+}
+
+/* Vertical scroll area — takes all remaining height after header/legend */
+.tt-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 32px);
 }
 
 .tt-sub {
   font-size: 12px; color: var(--muted);
-  text-align: center; margin: 2px 0 18px;
+  text-align: center; margin: 2px 0 12px;
 }
 
-/* Nav row */
-.cal-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
+/* Per-month section inside the scroll area */
+.cal-month-section { margin-bottom: 28px; }
+.cal-month-heading {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  margin: 0 0 10px;
 }
-.cal-month { font-size: 16px; font-weight: 700; color: var(--text); }
-.cal-nav-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--card); border: 1px solid var(--border);
-  color: var(--text); font-size: 20px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: background .15s;
-}
-.cal-nav-btn:disabled { opacity: 0.25; cursor: default; }
-.cal-nav-btn:not(:disabled):active { background: var(--border); }
 
-/* Legend */
+/* Legend — sits above the scroll area, stays visible */
 .cal-legend {
   display: flex; gap: 12px; justify-content: center;
-  margin-bottom: 14px; flex-wrap: wrap;
+  padding-bottom: 12px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
 }
 .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
 .leg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }

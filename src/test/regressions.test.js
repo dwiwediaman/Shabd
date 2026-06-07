@@ -61,32 +61,29 @@ describe('vc117 — streak card centering', () => {
   });
 });
 
-// ── vc118: Time Travel month-swipe boundary guards ────────────────────────
-// Swipe gesture must respect the same boundary as the < > buttons:
-//   - cannot go before January 2026 (LAUNCH_DATE month)
-//   - cannot go past the current month
-describe('vc118 — Time Travel swipe gesture', () => {
-  it('archive.js registers touchstart and touchend listeners on .tt-screen', () => {
-    expect(archiveJs).toMatch(/addEventListener\s*\(\s*['"]touchstart['"]/);
-    expect(archiveJs).toMatch(/addEventListener\s*\(\s*['"]touchend['"]/);
+// ── vc118: Time Travel vertical scroll (replaced left/right swipe) ────────
+// All months from LAUNCH_DATE to today are rendered in one scrollable list.
+// The screen auto-scrolls to the latest unplayed/partial date on mount.
+describe('vc118 — Time Travel vertical scroll', () => {
+  it('archive.js does NOT use swipe (touchstart/touchend removed)', () => {
+    // Vertical scroll replaces the left/right swipe gesture entirely.
+    expect(archiveJs).not.toMatch(/addEventListener\s*\(\s*['"]touchstart['"]/);
+    expect(archiveJs).not.toMatch(/addEventListener\s*\(\s*['"]touchend['"]/);
   });
 
-  it('swipe uses a minimum threshold of at least 40px', () => {
-    // Prevents accidental micro-swipes from changing months.
-    const thresholdMatch = archiveJs.match(/Math\.abs\(dx\)\s*<\s*(\d+)/);
-    expect(thresholdMatch, 'dx threshold not found').not.toBeNull();
-    const threshold = parseInt(thresholdMatch[1], 10);
-    expect(threshold).toBeGreaterThanOrEqual(40);
+  it('archive.js renders all months inside a .tt-scroll container', () => {
+    expect(archiveJs).toMatch(/tt-scroll/);
+    expect(archiveJs).toMatch(/cal-month-section/);
   });
 
-  it('swipe respects horizontal-vs-vertical filter', () => {
-    // Prevents vertical scrolling being misread as a month change.
-    expect(archiveJs).toMatch(/Math\.abs\(dx\).*Math\.abs\(dy\)/);
+  it('archive.js auto-scrolls to the latest unplayed or partial date on mount', () => {
+    expect(archiveJs).toMatch(/scrollIntoView/);
+    // Must query for both incomplete states to find the right target.
+    expect(archiveJs).toMatch(/cal-partial.*cal-unplayed|cal-unplayed.*cal-partial/);
   });
 
-  it('swipe cannot go before the launch month (2026-01)', () => {
-    // The canPrev guard must reference the launch year/month constants derived
-    // from LAUNCH_DATE — not a hardcoded literal, which was the vc118 bug.
+  it('archive.js uses LAUNCH_DATE/LAUNCH_Y/LAUNCH_M_1 constants for month range', () => {
+    // The constants define the oldest month rendered — no hardcoded 2026 literals.
     expect(archiveJs).toMatch(/LAUNCH_DATE\s*=\s*['"]2026-01-01['"]/);
     expect(archiveJs).toMatch(/LAUNCH_Y\b/);
     expect(archiveJs).toMatch(/LAUNCH_M_1\b/);
