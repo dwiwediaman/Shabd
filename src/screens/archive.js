@@ -5,8 +5,6 @@ import { t } from '../i18n.js';
 
 const LAUNCH_DATE = '2026-01-01';
 const DAY_HDRS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-const MONTHS   = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
 
 export function archiveScreen(root) {
   const state   = get();
@@ -61,14 +59,14 @@ export function archiveScreen(root) {
     return `
       <div class="cal-nav">
         <button class="cal-nav-btn" id="calPrev" ${canPrev ? '' : 'disabled'}>‹</button>
-        <div class="cal-month">${MONTHS[viewMonth]} ${viewYear}</div>
+        <div class="cal-month">${tx.archiveMonth(viewMonth)} ${viewYear}</div>
         <button class="cal-nav-btn" id="calNext" ${canNext ? '' : 'disabled'}>›</button>
       </div>
       <div class="cal-legend">
-        <span class="leg-item"><span class="leg-dot ld-won"></span>Won</span>
-        <span class="leg-item"><span class="leg-dot ld-lost"></span>Lost</span>
-        <span class="leg-item"><span class="leg-dot ld-partial"></span>Incomplete</span>
-        <span class="leg-item"><span class="leg-dot ld-unplayed"></span>Missed</span>
+        <span class="leg-item"><span class="leg-dot ld-won"></span>${tx.archiveLegendWon}</span>
+        <span class="leg-item"><span class="leg-dot ld-lost"></span>${tx.archiveLegendLost}</span>
+        <span class="leg-item"><span class="leg-dot ld-partial"></span>${tx.archiveLegendIncomplete}</span>
+        <span class="leg-item"><span class="leg-dot ld-unplayed"></span>${tx.archiveLegendMissed}</span>
       </div>
       <div class="cal-grid">${hdrs}${blanks}${cells.join('')}</div>`;
   }

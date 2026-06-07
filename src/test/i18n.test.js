@@ -43,8 +43,9 @@ const REQUIRED_KEYS = [
   'feedbackTitle', 'feedbackSub',
   // Result sheet
   'nextWord', 'backToMenu', 'lossTitle', 'loadingDef',
-  // Time Travel
+  // Time Travel / Archive calendar
   'timeTravel', 'timeTravelSub', 'archiveDay',
+  'archiveLegendWon', 'archiveLegendLost', 'archiveLegendIncomplete', 'archiveLegendMissed',
   // Invite
   'inviteBtn', 'inviteText',
   // Cloud sync (Phase 4)
@@ -78,7 +79,7 @@ const REQUIRED_KEYS = [
 
 const FUNCTION_KEYS = [
   'dayLabel', 'answer', 'hintRevealed', 'hardModeCorrect',
-  'hardModePresent', 'lossTitle', 'archiveDay', 'footer',
+  'hardModePresent', 'lossTitle', 'archiveDay', 'archiveMonth', 'footer',
   // Cloud
   'cloudSyncedAgo', 'cloudSignedInAs',
   'cloudMinutesAgo', 'cloudHoursAgo', 'cloudDaysAgo',
@@ -204,6 +205,7 @@ const FUNCTION_ARGS = {
   hardModePresent:       ['a'],
   lossTitle:             ['brave'],
   archiveDay:            [10],
+  archiveMonth:          [5],
   cloudSyncedAgo:        ['2 min ago'],
   cloudSignedInAs:       ['Rahul'],
   cloudMinutesAgo:       [5],

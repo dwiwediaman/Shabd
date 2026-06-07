@@ -1,5 +1,8 @@
 import { navigate } from '../components/router.js';
-import { get } from '../game/gameState.js';
+import { get, getSession } from '../game/gameState.js';
+import { today as getTodayPuzzle, getISTDate } from '../game/seedEngine.js';
+import { shareImage } from '../game/shareImage.js';
+import { renderShareGrid } from '../game/wordleMechanic.js';
 import { t } from '../i18n.js';
 
 export function statsScreen(root) {
@@ -33,6 +36,7 @@ export function statsScreen(root) {
   }).join('');
 
   root.innerHTML = `
+    <div class="toast" id="toast"></div>
     <div class="stars" id="stStars"></div>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -65,7 +69,31 @@ export function statsScreen(root) {
 
   spawnStars('stStars');
   document.getElementById('backBtn').addEventListener('click', () => navigate('menu'));
-  document.getElementById('shareBtn').addEventListener('click', () => navigate('puzzle', { mode: 'daily' }));
+
+  let _sharing = false;
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    if (_sharing) return;
+    _sharing = true;
+    const btn = document.getElementById('shareBtn');
+    if (btn) btn.classList.add('is-sharing');
+    try {
+      const puzzle  = await getTodayPuzzle(lang);
+      const history = getSession(`${getISTDate()}|${lang}`);
+      if (!history?.length) {
+        // Nothing played today — take them to the puzzle instead
+        navigate('puzzle', { mode: 'daily' });
+        return;
+      }
+      const text   = renderShareGrid(puzzle, history);
+      const result = await shareImage(puzzle, history, text);
+      if (result === 'downloaded') showToast(tx.imageSaved);
+      else if (result === 'text')  showToast(tx.copied);
+    } finally {
+      _sharing = false;
+      const b = document.getElementById('shareBtn');
+      if (b) b.classList.remove('is-sharing');
+    }
+  });
 
   // Live countdown
   const timer = setInterval(() => {
@@ -77,6 +105,14 @@ export function statsScreen(root) {
     const s3 = String(s2 % 60).padStart(2, '0');
     el.textContent = `${h2}:${m2}:${s3}`;
   }, 1000);
+
+  function showToast(msg, duration = 1600) {
+    const el = document.getElementById('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), duration);
+  }
 
   function spawnStars(id) {
     const el = document.getElementById(id);

@@ -183,10 +183,16 @@ const translations = {
     lossTitle:       (w) => `The word was ${w}`,
     loadingDef:      'Looking up definition…',
 
-    // Time Travel
+    // Time Travel / Archive calendar
     timeTravel:      'Time Travel',
     timeTravelSub:   'Relive your past puzzles',
     archiveDay:      (n) => `Shabd #${n}`,
+    archiveMonth:    (n) => ['January','February','March','April','May','June',
+                             'July','August','September','October','November','December'][n],
+    archiveLegendWon:        'Won',
+    archiveLegendLost:       'Lost',
+    archiveLegendIncomplete: 'Incomplete',
+    archiveLegendMissed:     'Missed',
 
     // Invite
     inviteBtn:  'Invite a Friend',
@@ -448,6 +454,12 @@ const translations = {
     timeTravel:      'समय यात्रा',
     timeTravelSub:   'पुरानी पहेलियाँ फिर से खेलें',
     archiveDay:      (n) => `शब्द #${n}`,
+    archiveMonth:    (n) => ['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून',
+                             'जुलाई','अगस्त','सितंबर','अक्तूबर','नवंबर','दिसंबर'][n],
+    archiveLegendWon:        'जीते',
+    archiveLegendLost:       'हारे',
+    archiveLegendIncomplete: 'अधूरा',
+    archiveLegendMissed:     'छूटा',
 
     // Invite
     inviteBtn:  'दोस्त को बुलाएं',
