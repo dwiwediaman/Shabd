@@ -486,7 +486,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       const remaining = puzzle.maxGuesses - history.length;
       const correctCount = result.perTileState.filter(s => s === 'correct').length;
       setTimeout(
-        () => showToast(tx.encourage(remaining, correctCount >= 2), 1600),
+        () => showToast(tx.encourage(remaining, correctCount >= 2), 2800),
         tiles.length * 120 + 120
       );
     }
