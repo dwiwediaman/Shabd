@@ -174,13 +174,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     showAnswerReveal();
   }
 
-  // Re-entry into a completed game: show the result sheet (definition,
-  // stats, countdown) automatically. Without this the user can see the
-  // solved grid but has no way to read the word meaning.
-  if (gameOver) {
-    const won = history[history.length - 1]?.isCorrect ?? false;
-    setTimeout(() => showResultSheet(won), 350);
-  }
+  // Re-entry into a completed game: do NOT auto-open the result sheet.
+  // The user lands on the solved grid so they can see how they played.
+  // The share button (shown above) opens the result sheet on demand.
 
   // Back / share
   // Honour the navigation stack so back from an archive puzzle returns to
