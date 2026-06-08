@@ -99,6 +99,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       </div>
       <div class="puzzle-progress"><div class="puzzle-progress-fill" id="progressFill"></div></div>
       <div class="attempt-row" id="attemptDots"></div>
+      <div class="encourage-strip" id="encourageStrip" style="display:none"></div>
       <div class="word-hint-banner" id="wordHintBanner" style="display:none"></div>
       <div id="gridWrap"></div>
       <div class="answer-reveal" id="answerReveal" style="display:none"></div>
@@ -486,7 +487,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
       const remaining = puzzle.maxGuesses - history.length;
       const correctCount = result.perTileState.filter(s => s === 'correct').length;
       setTimeout(
-        () => showToast(tx.encourage(remaining, correctCount >= 2), 2800),
+        () => showEncouragement(tx.encourage(remaining, correctCount >= 2)),
         tiles.length * 120 + 120
       );
     }
@@ -566,6 +567,31 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  // Encouragement messages get their own in-flow strip between the attempt
+  // dots and the grid so they never overlay tiles or the keyboard.
+  // fitGrid() is called after show/hide so the grid rescales to fit.
+  let _encourageTimer    = null;
+  let _encourageHideTimer = null;
+  function showEncouragement(msg) {
+    const strip = document.getElementById('encourageStrip');
+    if (!strip) return;
+    clearTimeout(_encourageTimer);
+    clearTimeout(_encourageHideTimer);
+    strip.classList.remove('encourage-hiding');
+    strip.textContent  = msg;
+    strip.style.display = 'block';
+    requestAnimationFrame(fitGrid);
+
+    _encourageTimer = setTimeout(() => {
+      strip.classList.add('encourage-hiding');
+      _encourageHideTimer = setTimeout(() => {
+        strip.style.display = 'none';
+        strip.classList.remove('encourage-hiding');
+        requestAnimationFrame(fitGrid);
+      }, 280); // matches encourage-strip transition duration
+    }, 3500);
   }
 
   // Spell-suggest toast (vc99) — like showToast but with a tappable button

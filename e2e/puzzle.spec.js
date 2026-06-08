@@ -129,23 +129,28 @@ test.describe('Daily puzzle — English', () => {
     await expect(coloredKey.first()).toBeVisible();
   });
 
-  // ── Encouragement toast ────────────────────────────────────────────────
+  // ── Encouragement strip ────────────────────────────────────────────────
 
-  test('Encouragement toast appears after an intermediate (non-winning) guess', async ({ page }) => {
-    // Submit a valid word. If it happens to be today's answer the "Brilliant!"
-    // toast fires instead — that's fine, we just assert a toast shows up with text.
+  test('Encouragement message appears in-flow after an intermediate guess', async ({ page }) => {
+    // The encouragement strip is between the attempt dots and the grid.
+    // It appears after the tile-flip animation (~720 ms).
+    // If CRANE happens to be today's answer the brilliant toast fires instead —
+    // we check both so the test passes either way.
     await typeWord(page, 'CRANE');
     await pressEnter(page);
 
-    // Wait for the toast to get the .show class (set by showToast right after
-    // the tile-flip animation at ~720 ms). .show adds opacity:1 — the element
-    // lives in the DOM at opacity:0 the whole time, so toBeVisible() alone is
-    // not enough; we must check for the class.
-    const toast = page.locator('#toast.show');
-    await expect(toast).toBeVisible({ timeout: 3_000 });
+    // Either the encourage strip or the brilliant toast must show with text.
+    const strip = page.locator('#encourageStrip');
+    const brilliantToast = page.locator('#toast.show');
 
-    // Must have non-empty text (encourage message or "Brilliant!" on a win).
-    const text = await toast.textContent();
+    await expect(async () => {
+      const stripVisible = await strip.isVisible();
+      const toastVisible = await brilliantToast.isVisible();
+      expect(stripVisible || toastVisible).toBe(true);
+    }).toPass({ timeout: 3_000 });
+
+    // Whichever is showing must have non-empty text.
+    const text = await (await strip.isVisible() ? strip : brilliantToast).textContent();
     expect(text?.trim().length).toBeGreaterThan(0);
   });
 
