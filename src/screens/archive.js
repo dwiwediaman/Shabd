@@ -1,6 +1,6 @@
 import { navigate } from '../components/router.js';
 import { spawnStars } from '../components/ui.js';
-import { get, getSession } from '../game/gameState.js';
+import { get, getSession, getSessionMeta } from '../game/gameState.js';
 import { getISTDate } from '../game/seedEngine.js';
 import { MAX_GUESSES } from '../game/wordleMechanic.js';
 import { t } from '../i18n.js';
@@ -48,11 +48,15 @@ export function archiveScreen(root) {
         ? getSession(`${date}|${lang}`) : null;
       const sub = session
         ? `<div class="cal-sub">${session.length}/${MAX_GUESSES}</div>` : '';
+      const meta = (status !== 'disabled' && status !== 'unplayed')
+        ? getSessionMeta(`${date}|${lang}`) : null;
+      const dailyDot = meta && !meta.isArchive
+        ? '<div class="cal-daily-dot"></div>' : '';
 
       cells.push(`
         <div class="cal-cell cal-${status}${isToday ? ' cal-today' : ''}"
              data-date="${date}" data-disabled="${status === 'disabled'}">
-          <div class="cal-num">${d}</div>${sub}
+          <div class="cal-num">${d}</div>${sub}${dailyDot}
         </div>`);
     }
 

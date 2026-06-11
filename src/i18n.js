@@ -265,6 +265,9 @@ const translations = {
     squadsAllTime:              'All Time',
     squadsWeekStats:            (played, won) => `${played}/7 played${played ? `, ${won} won` : ''}`,
     squadsAllStats:             (played, won) => `${played} game${played === 1 ? '' : 's'}${played ? `, ${won} won` : ''}`,
+    squadsScoringTitle:         'How points are calculated',
+    squadsScoringBody:          `<b>Base points (if you win):</b><br>1 guess → 6 pts · 2 → 5 · 3 → 4 · 4 → 3 · 5 → 2 · 6 → 1<br><br><b>Bonuses &amp; deductions:</b><br>Hard mode: <b>+1</b><br>Each letter hint: <b>−1</b><br>Topic hint: <b>−2</b><br><br>Minimum 1 pt if you win. 0 pts if you lose.`,
+    squadsGotIt:                'Got it',
   },
 
   hi: {
@@ -532,6 +535,9 @@ const translations = {
     squadsAllTime:              'सर्वकालिक',
     squadsWeekStats:            (played, won) => `${played}/7 खेले${played ? `, ${won} जीते` : ''}`,
     squadsAllStats:             (played, won) => `${played} खेल${played ? `, ${won} जीते` : ''}`,
+    squadsScoringTitle:         'अंक कैसे मिलते हैं',
+    squadsScoringBody:          `<b>बेस अंक (जीतने पर):</b><br>1 अनुमान → 6 · 2 → 5 · 3 → 4 · 4 → 3 · 5 → 2 · 6 → 1<br><br><b>बोनस और कटौती:</b><br>कठिन मोड: <b>+1</b><br>हर अक्षर संकेत: <b>−1</b><br>विषय संकेत: <b>−2</b><br><br>जीतने पर न्यूनतम 1 अंक। हारने पर 0 अंक।`,
+    squadsGotIt:                'ठीक है',
   },
 };
 

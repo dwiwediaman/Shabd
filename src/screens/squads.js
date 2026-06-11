@@ -309,7 +309,10 @@ async function renderSquadDetail(root, tx, squadId) {
       <div class="squad-board">
         <div class="squad-board-header">
           <span>${tx.squadsMembersCap(board.memberCount, 50)}</span>
-          ${board.myRank > 0 ? `<span class="squad-my-rank">${tx.squadsMyRank(board.myRank, board.memberCount)}</span>` : ''}
+          <div class="squad-board-header-right">
+            ${board.myRank > 0 ? `<span class="squad-my-rank">${tx.squadsMyRank(board.myRank, board.memberCount)}</span>` : ''}
+            <button class="squad-scoring-info-btn" id="squadScoringInfoBtn" title="${tx.squadsScoringTitle}">ⓘ</button>
+          </div>
         </div>
         <div class="squad-board-list">
           ${board.members.map((m, i) => squadBoardRowHtml(m, i + 1, tx, currentWindow)).join('')}
@@ -376,6 +379,10 @@ async function renderSquadDetail(root, tx, squadId) {
         } catch { toast(tx.cloudNetworkError); }
       });
     });
+
+    document.getElementById('squadScoringInfoBtn').addEventListener('click', () => {
+      showScoringModal(tx);
+    });
   }
 
   refresh();
@@ -423,6 +430,17 @@ function squadBoardRowHtml(m, position, tx, window = 'day') {
 
 /** Generic two-button confirm modal. Calls onConfirm() if the user presses the
  *  action button. Uses openModal so it matches the rest of the squads UI. */
+function showScoringModal(tx) {
+  const m = openModal(`
+    <div class="modal-title">${tx.squadsScoringTitle}</div>
+    <div class="squad-scoring-body">${tx.squadsScoringBody}</div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="modalScoringClose">${tx.squadsGotIt}</button>
+    </div>
+  `);
+  m.card.querySelector('#modalScoringClose').addEventListener('click', m.close);
+}
+
 function showConfirmModal(message, confirmLabel, tx, onConfirm) {
   const m = openModal(`
     <div class="modal-title">${message}</div>

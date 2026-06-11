@@ -433,9 +433,12 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     history.push(result);
     if (mode === 'daily' || mode === 'archive') {
       saveSession(sessionKey, history);
-      // Submitted row consumes any pending hints — clear so the next row
-      // starts fresh and a re-entry doesn't try to re-apply stale hints.
-      setSessionMeta(sessionKey, { pendingHints: null });
+      // Tag archive sessions so backfill skips them (leaderboard integrity).
+      // isArchive defaults to undefined (falsy) for daily — only set true for archive.
+      setSessionMeta(sessionKey, {
+        pendingHints: null,
+        ...(mode === 'archive' ? { isArchive: true } : {}),
+      });
     }
 
     currentRow++;

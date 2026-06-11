@@ -217,6 +217,7 @@ function collectLocalSessions(state) {
     const won        = !!last?.isCorrect;
     const attempts   = guesses.length;
     const sessionMeta = meta[key] || {};
+    if (sessionMeta.isArchive) continue;   // archive/Time-Travel plays stay local only
     out.push({
       date, lang, guesses,
       won, attempts,
