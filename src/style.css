@@ -375,10 +375,12 @@ body::before {
   background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
 }
 .btn-badge {
-  position: absolute; right: 16px;
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
   background: rgba(255,255,255,.2); border-radius: 20px;
   padding: 2px 8px; font-size: 11px; font-weight: 600;
+  pointer-events: none;
 }
+.btn-primary:has(.btn-badge) { padding-right: 80px; }
 
 .btn-secondary {
   width: 100%; padding: 14px 20px;
