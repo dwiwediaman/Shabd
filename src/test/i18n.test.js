@@ -223,6 +223,7 @@ const FUNCTION_ARGS = {
   squadsWeekStats:       [3, 2],
   squadsAllStats:        [10, 8],
   encourage:             [3, false],
+  inviteText:            [{ streak: 5 }],
 };
 
 describe.each(['en', 'hi'])('i18n — every template function for %s', (lang) => {
@@ -243,6 +244,9 @@ describe.each(['en', 'hi'])('i18n — every template function for %s', (lang) =>
     expect(tx.squadsWeekStats(0, 0)).toMatch(/.+/);
     expect(tx.squadsAllStats(0, 0)).toMatch(/.+/);
     expect(tx.squadsAllStats(1, 1)).toMatch(/.+/); // singular "game" branch in EN
+    // inviteText branches on streak > 1
+    expect(tx.inviteText({ streak: 0 })).toMatch(/.+/);
+    expect(tx.inviteText({ streak: 1 })).toMatch(/.+/);
   });
 
   it('encourage covers all remaining-guess and hot/cold branches', () => {
