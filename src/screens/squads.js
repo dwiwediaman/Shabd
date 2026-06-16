@@ -311,6 +311,9 @@ async function renderSquadDetail(root, tx, squadId) {
           <span>${tx.squadsMembersCap(board.memberCount, 50)}</span>
           <div class="squad-board-header-right">
             ${board.myRank > 0 ? `<span class="squad-my-rank">${tx.squadsMyRank(board.myRank, board.memberCount)}</span>` : ''}
+            <button class="squad-refresh-btn" id="squadRefreshBtn" title="Refresh">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
             <button class="squad-scoring-info-btn" id="squadScoringInfoBtn" title="${tx.squadsScoringTitle}">ⓘ</button>
           </div>
         </div>
@@ -382,6 +385,12 @@ async function renderSquadDetail(root, tx, squadId) {
 
     document.getElementById('squadScoringInfoBtn').addEventListener('click', () => {
       showScoringModal(tx);
+    });
+
+    document.getElementById('squadRefreshBtn').addEventListener('click', () => {
+      const btn = document.getElementById('squadRefreshBtn');
+      btn?.classList.add('spinning');
+      refresh();
     });
   }
 

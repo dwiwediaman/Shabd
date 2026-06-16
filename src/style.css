@@ -1233,6 +1233,15 @@ input:checked + .slider::before { transform: translateX(20px); }
   transition: opacity .15s;
 }
 .squad-scoring-info-btn:hover { opacity: 1; }
+.squad-refresh-btn {
+  background: none; border: none; padding: 2px;
+  color: var(--muted); cursor: pointer; opacity: .7;
+  display: flex; align-items: center;
+  transition: opacity .15s, transform .3s;
+}
+.squad-refresh-btn:hover { opacity: 1; }
+.squad-refresh-btn.spinning svg { animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .squad-scoring-body {
   font-size: 13px; line-height: 1.7;
   color: var(--text);
