@@ -1,8 +1,9 @@
 // Squads — private leaderboards with invite codes.
 //
 // A squad has an owner, a name, an invite code (6-char A-Z0-9), and members.
-// Max 50 members per squad (enforced here). Leaderboards are computed
-// per-day per-lang by joining squad_members against sessions.
+// Max 50 members per squad (enforced here). Leaderboards are language-agnostic:
+// day view picks each member's best session (EN or HI) for that date; week/all
+// views sum across both languages so mixed-language squads work correctly.
 
 import { puzzleScore, compareForLeaderboard } from './score.js';
 import { checkRateLimit, clientIp } from './rateLimit.js';
@@ -223,10 +224,10 @@ export async function handleSquadBoard(c) {
   let members, windowStart, windowEnd;
 
   if (window === 'day') {
-    members = await dayBoard(c.env.DB, squadId, date, lang, userId);
+    members = await dayBoard(c.env.DB, squadId, date, userId);
   } else {
     ({ members, windowStart, windowEnd } = await aggregateBoard(
-      c.env.DB, squadId, date, lang, userId, window
+      c.env.DB, squadId, date, userId, window
     ));
   }
 
@@ -247,35 +248,55 @@ export async function handleSquadBoard(c) {
 }
 
 // ── Day view: one puzzle, per-row attempts/hardMode/won ────────────────────
-async function dayBoard(db, squadId, date, lang, viewerId) {
+// Language-agnostic: fetches both EN and HI sessions for each member and
+// picks the best one (won > higher-score > either). This way mixed-language
+// squads all appear on the same leaderboard regardless of which lang each
+// member played.
+async function dayBoard(db, squadId, date, viewerId) {
   const rows = await db.prepare(`
     SELECT u.user_id, u.nickname,
-           s.won, s.attempts, s.hard_mode, s.duration_ms, s.submitted_at, s.hints_used
+           en.won AS en_won, en.attempts AS en_attempts, en.hard_mode AS en_hard_mode,
+           en.hints_used AS en_hints_used,
+           hi.won AS hi_won, hi.attempts AS hi_attempts, hi.hard_mode AS hi_hard_mode,
+           hi.hints_used AS hi_hints_used
     FROM squad_members m
     JOIN users u ON u.user_id = m.user_id
-    LEFT JOIN sessions s ON s.user_id = m.user_id
-                        AND s.puzzle_date = ?
-                        AND s.lang = ?
+    LEFT JOIN sessions en ON en.user_id = m.user_id AND en.puzzle_date = ? AND en.lang = 'en'
+    LEFT JOIN sessions hi ON hi.user_id = m.user_id AND hi.puzzle_date = ? AND hi.lang = 'hi'
     WHERE m.squad_id = ?
-  `).bind(date, lang, squadId).all();
+  `).bind(date, date, squadId).all();
 
   const members = (rows.results || []).map(r => {
-    const score = puzzleScore({
-      won:       !!r.won,
-      attempts:  r.attempts,
-      hardMode:  !!r.hard_mode,
-      hintsUsed: r.hints_used ?? 0,
-    });
+    const enPlayed = r.en_attempts != null;
+    const hiPlayed = r.hi_attempts != null;
+
+    let best = null;
+    if (enPlayed || hiPlayed) {
+      const enScore = enPlayed ? puzzleScore({ won: !!r.en_won, attempts: r.en_attempts, hardMode: !!r.en_hard_mode, hintsUsed: r.en_hints_used ?? 0 }) : -1;
+      const hiScore = hiPlayed ? puzzleScore({ won: !!r.hi_won, attempts: r.hi_attempts, hardMode: !!r.hi_hard_mode, hintsUsed: r.hi_hints_used ?? 0 }) : -1;
+
+      if (enPlayed && hiPlayed) {
+        if (r.en_won && !r.hi_won)       best = { lang: 'en', won: true,      attempts: r.en_attempts, hardMode: !!r.en_hard_mode, hintsUsed: r.en_hints_used ?? 0, score: enScore };
+        else if (r.hi_won && !r.en_won)  best = { lang: 'hi', won: true,      attempts: r.hi_attempts, hardMode: !!r.hi_hard_mode, hintsUsed: r.hi_hints_used ?? 0, score: hiScore };
+        else if (enScore >= hiScore)     best = { lang: 'en', won: !!r.en_won, attempts: r.en_attempts, hardMode: !!r.en_hard_mode, hintsUsed: r.en_hints_used ?? 0, score: enScore };
+        else                             best = { lang: 'hi', won: !!r.hi_won, attempts: r.hi_attempts, hardMode: !!r.hi_hard_mode, hintsUsed: r.hi_hints_used ?? 0, score: hiScore };
+      } else if (enPlayed) {
+        best = { lang: 'en', won: !!r.en_won, attempts: r.en_attempts, hardMode: !!r.en_hard_mode, hintsUsed: r.en_hints_used ?? 0, score: enScore };
+      } else {
+        best = { lang: 'hi', won: !!r.hi_won, attempts: r.hi_attempts, hardMode: !!r.hi_hard_mode, hintsUsed: r.hi_hints_used ?? 0, score: hiScore };
+      }
+    }
+
     return {
-      userId:      r.user_id,
-      nickname:    r.nickname,
-      played:      r.attempts != null,
-      won:         !!r.won,
-      attempts:    r.attempts,
-      hardMode:    !!r.hard_mode,
-      score,
-      submittedAt: r.submitted_at,
-      isMe:        r.user_id === viewerId,
+      userId:   r.user_id,
+      nickname: r.nickname,
+      played:   best != null,
+      won:      best?.won ?? false,
+      attempts: best?.attempts ?? null,
+      hardMode: best?.hardMode ?? false,
+      lang:     best?.lang ?? null,
+      score:    best?.score ?? 0,
+      isMe:     r.user_id === viewerId,
     };
   });
   members.sort(compareForLeaderboard);
@@ -287,7 +308,7 @@ async function dayBoard(db, squadId, date, lang, viewerId) {
 // in JS using the same puzzleScore formula the day view uses. Per-row shape
 // is { score, gamesPlayed, gamesWon } — no per-puzzle hardMode/attempts
 // because they don't make sense over multiple games.
-async function aggregateBoard(db, squadId, endDate, lang, viewerId, window) {
+async function aggregateBoard(db, squadId, endDate, viewerId, window) {
   let startDate = null;
   if (window === 'week') {
     // 7-day window ending at endDate (inclusive). i.e. endDate-6 .. endDate
@@ -295,6 +316,8 @@ async function aggregateBoard(db, squadId, endDate, lang, viewerId, window) {
     startDate = new Date(end - 6 * 86400000).toISOString().slice(0, 10);
   }
 
+  // No lang filter — count sessions in both EN and HI so mixed-language
+  // squads accumulate scores fairly across all games played.
   const sql = window === 'week'
     ? `
         SELECT u.user_id, u.nickname,
@@ -302,7 +325,6 @@ async function aggregateBoard(db, squadId, endDate, lang, viewerId, window) {
         FROM squad_members m
         JOIN users u ON u.user_id = m.user_id
         LEFT JOIN sessions s ON s.user_id = m.user_id
-                            AND s.lang = ?
                             AND s.puzzle_date >= ?
                             AND s.puzzle_date <= ?
         WHERE m.squad_id = ?
@@ -313,12 +335,11 @@ async function aggregateBoard(db, squadId, endDate, lang, viewerId, window) {
         FROM squad_members m
         JOIN users u ON u.user_id = m.user_id
         LEFT JOIN sessions s ON s.user_id = m.user_id
-                            AND s.lang = ?
         WHERE m.squad_id = ?
       `;
   const bindings = window === 'week'
-    ? [lang, startDate, endDate, squadId]
-    : [lang, squadId];
+    ? [startDate, endDate, squadId]
+    : [squadId];
 
   const rows = await db.prepare(sql).bind(...bindings).all();
 

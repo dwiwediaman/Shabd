@@ -289,10 +289,10 @@ async function renderSquadDetail(root, tx, squadId) {
     }
 
     const subLine = currentWindow === 'day'
-      ? `${tx.squadsToday} · ${escapeHtml(date)} · ${board.lang.toUpperCase()}`
+      ? `${tx.squadsToday} · ${escapeHtml(date)}`
       : currentWindow === 'week'
-        ? `${tx.squadsThisWeek} · ${escapeHtml(board.windowStart)} → ${escapeHtml(board.windowEnd)} · ${board.lang.toUpperCase()}`
-        : `${tx.squadsAllTime} · ${board.lang.toUpperCase()}`;
+        ? `${tx.squadsThisWeek} · ${escapeHtml(board.windowStart)} → ${escapeHtml(board.windowEnd)}`
+        : `${tx.squadsAllTime}`;
 
     body.innerHTML = `
       <div class="squad-detail-header">
@@ -405,13 +405,14 @@ function squadBoardRowHtml(m, position, tx, window = 'day') {
   //   - all:  lifetime gamesPlayed + wins
   const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `#${position}`;
 
-  let scoreText, subLine, hardBadge = '';
+  let scoreText, subLine, hardBadge = '', langBadge = '';
   if (window === 'day') {
     scoreText = m.played ? `${m.score ?? 0} ${tx.squadsPts}` : '—';
     if (m.won)         subLine = `<span class="rank-status won">${tx.squadsRankWon(m.attempts)}</span>`;
     else if (m.played) subLine = `<span class="rank-status lost">${tx.squadsRankLost}</span>`;
     else               subLine = `<span class="rank-status notyet">${tx.squadsRankNotPlayed}</span>`;
     if (m.hardMode)    hardBadge = ` <span class="hard-badge">${tx.squadsHardModeBadge}</span>`;
+    if (m.lang)        langBadge = ` <span class="member-lang-badge">${m.lang.toUpperCase()}</span>`;
   } else {
     scoreText = `${m.score ?? 0} ${tx.squadsPts}`;
     const played = m.gamesPlayed ?? 0;
@@ -425,7 +426,7 @@ function squadBoardRowHtml(m, position, tx, window = 'day') {
     <div class="squad-row ${m.isMe ? 'is-me' : ''}">
       <div class="squad-row-rank">${medal}</div>
       <div class="squad-row-name">
-        ${escapeHtml(m.nickname)}${hardBadge}
+        ${escapeHtml(m.nickname)}${hardBadge}${langBadge}
       </div>
       <div class="squad-row-meta">
         <span class="squad-row-score">${scoreText}</span>
