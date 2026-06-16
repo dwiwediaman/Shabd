@@ -196,16 +196,21 @@ export function renderShareGrid(puzzle, history) {
   const won = attempts > 0 && history[attempts - 1].isCorrect;
   const solvedIn = won ? `${attempts}/${puzzle.maxGuesses}` : `X/${puzzle.maxGuesses}`;
   const langLabel = puzzle.lang.toUpperCase();
+  const mood = won ? '🔥' : '😅';
 
-  const lines = [`Shabd ${langLabel} #${puzzle.puzzleIndex} ${solvedIn}`];
+  const lines = [`Shabd ${langLabel} #${puzzle.puzzleIndex} ${solvedIn} ${mood}`, ''];
   for (const guess of history) {
     lines.push(guess.perTileState.map(s =>
       s === TILE_CORRECT ? '🟩' : s === TILE_PRESENT ? '🟨' : '⬜'
     ).join(''));
   }
   lines.push('');
-  lines.push('Play Shabd on Google Play:');
-  lines.push('https://play.google.com/store/apps/details?id=in.shabd.game');
+  if (puzzle.lang === 'hi') {
+    lines.push(won ? 'क्या आप मुझसे बेहतर कर सकते हैं? 🇮🇳' : 'आज मुझे हरा दिया 😅 आप कोशिश करो! 🇮🇳');
+  } else {
+    lines.push(won ? 'Can you beat me? 🇮🇳 Daily Hindi+English word game' : 'Got me today 😅 Can you do better? 🇮🇳');
+  }
+  lines.push('▶ https://play.google.com/store/apps/details?id=in.shabd.game');
   return lines.join('\n');
 }
 

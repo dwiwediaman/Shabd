@@ -204,7 +204,7 @@ export function mainMenuScreen(root) {
   document.getElementById('drawerRules').addEventListener('click', () => { closeDrawer(); navigate('howToPlay'); });
   document.getElementById('drawerInvite').addEventListener('click', async () => {
     closeDrawer();
-    const text = tx.inviteText;
+    const text = typeof tx.inviteText === 'function' ? tx.inviteText({ streak: streak.current }) : tx.inviteText;
 
     // Native Android/iOS: use Capacitor Share plugin — opens the full system
     // share sheet with every installed messaging app (WhatsApp, Telegram,

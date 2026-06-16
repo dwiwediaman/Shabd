@@ -80,6 +80,7 @@ const REQUIRED_KEYS = [
 const FUNCTION_KEYS = [
   'dayLabel', 'answer', 'hintRevealed', 'hardModeCorrect',
   'hardModePresent', 'lossTitle', 'archiveDay', 'archiveMonth', 'footer',
+  'inviteText',
   // Cloud
   'cloudSyncedAgo', 'cloudSignedInAs',
   'cloudMinutesAgo', 'cloudHoursAgo', 'cloudDaysAgo',

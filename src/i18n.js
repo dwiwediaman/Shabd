@@ -196,7 +196,9 @@ const translations = {
 
     // Invite
     inviteBtn:  'Invite a Friend',
-    inviteText: `🔤 I'm playing Shabd — a daily word puzzle (English + हिन्दी)!\nToday's challenge is live. Think you can solve it? 👉 https://play.google.com/store/apps/details?id=in.shabd.game`,
+    inviteText: ({ streak } = {}) => streak > 1
+      ? `🔥 I'm on a ${streak}-day streak on Shabd! Can you beat me?\n\nIndia's daily Hindi+English word game. Free 🇮🇳\n▶ https://play.google.com/store/apps/details?id=in.shabd.game`
+      : `🟩 Shabd — Can you beat me?\n\nIndia's daily Hindi+English word game. Free on Play Store 🇮🇳\n▶ https://play.google.com/store/apps/details?id=in.shabd.game`,
 
     // Cloud sync / Back up progress
     cloudBackupTitle:   'Back up progress',
@@ -466,7 +468,9 @@ const translations = {
 
     // Invite
     inviteBtn:  'दोस्त को बुलाएं',
-    inviteText: `🔤 मैं Shabd खेल रहा हूँ — रोज़ एक नया शब्द (English + हिन्दी)!\nआज की पहेली तैयार है। क्या आप सुलझा सकते हैं? 👉 https://play.google.com/store/apps/details?id=in.shabd.game`,
+    inviteText: ({ streak } = {}) => streak > 1
+      ? `🔥 मेरी Shabd पर ${streak} दिन की streak चल रही है! क्या आप मुझसे बेहतर कर सकते हैं?\n\nभारत का रोज़ का हिंदी+English शब्द खेल। बिल्कुल Free 🇮🇳\n▶ https://play.google.com/store/apps/details?id=in.shabd.game`
+      : `🟩 Shabd — क्या आप मुझसे बेहतर कर सकते हैं?\n\nभारत का रोज़ का हिंदी+English शब्द खेल। Google Play पर Free 🇮🇳\n▶ https://play.google.com/store/apps/details?id=in.shabd.game`,
 
     // Cloud sync
     cloudBackupTitle:   'प्रगति का बैकअप',
