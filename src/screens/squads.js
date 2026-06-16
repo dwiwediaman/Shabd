@@ -264,11 +264,11 @@ function squadCardHtml(s, tx) {
 
 // ── Squad detail (leaderboard) ─────────────────────────────────────────────
 async function renderSquadDetail(root, tx, squadId) {
-  const lang = get().settings.lang;
   const date = getISTDate();
-  // Persist the user's last-selected timeframe across re-renders within
-  // this screen session. Reset to 'day' on each fresh navigation.
+  // Persist selected timeframe and language across re-renders within this
+  // screen session. Both reset on each fresh navigation.
   let currentWindow = 'day';
+  let currentLang   = get().settings.lang;  // default to user's playing language
 
   root.innerHTML = baseChrome(tx, /*showBack*/true, `
     <div id="squadDetailBody">
@@ -282,17 +282,17 @@ async function renderSquadDetail(root, tx, squadId) {
     body.innerHTML = `<div class="squads-loading">${tx.cloudSyncing}</div>`;
 
     let board;
-    try { board = await getSquadBoard(squadId, date, lang, currentWindow); }
+    try { board = await getSquadBoard(squadId, date, currentLang, currentWindow); }
     catch (e) {
       body.innerHTML = `<div class="squads-error">${tx.cloudNetworkError}</div>`;
       return;
     }
 
     const subLine = currentWindow === 'day'
-      ? `${tx.squadsToday} · ${escapeHtml(date)}`
+      ? `${tx.squadsToday} · ${escapeHtml(date)} · ${currentLang.toUpperCase()}`
       : currentWindow === 'week'
-        ? `${tx.squadsThisWeek} · ${escapeHtml(board.windowStart)} → ${escapeHtml(board.windowEnd)}`
-        : `${tx.squadsAllTime}`;
+        ? `${tx.squadsThisWeek} · ${escapeHtml(board.windowStart)} → ${escapeHtml(board.windowEnd)} · ${currentLang.toUpperCase()}`
+        : `${tx.squadsAllTime} · ${currentLang.toUpperCase()}`;
 
     body.innerHTML = `
       <div class="squad-detail-header">
@@ -304,6 +304,11 @@ async function renderSquadDetail(root, tx, squadId) {
         <button class="squad-tab ${currentWindow === 'day'  ? 'is-active' : ''}" data-window="day">${tx.squadsToday}</button>
         <button class="squad-tab ${currentWindow === 'week' ? 'is-active' : ''}" data-window="week">${tx.squadsThisWeek}</button>
         <button class="squad-tab ${currentWindow === 'all'  ? 'is-active' : ''}" data-window="all">${tx.squadsAllTime}</button>
+      </div>
+
+      <div class="squad-lang-toggle" role="tablist" aria-label="Language">
+        <button class="squad-lang-opt ${currentLang === 'en' ? 'is-active' : ''}" data-lang="en">EN</button>
+        <button class="squad-lang-opt ${currentLang === 'hi' ? 'is-active' : ''}" data-lang="hi">हि</button>
       </div>
 
       <div class="squad-board">
@@ -343,12 +348,22 @@ async function renderSquadDetail(root, tx, squadId) {
       </div>
     `;
 
-    // Wire tab clicks
+    // Wire window tab clicks
     body.querySelectorAll('.squad-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         const w = btn.dataset.window;
         if (w === currentWindow) return;
         currentWindow = w;
+        refresh();
+      });
+    });
+
+    // Wire language toggle clicks
+    body.querySelectorAll('.squad-lang-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const l = btn.dataset.lang;
+        if (l === currentLang) return;
+        currentLang = l;
         refresh();
       });
     });
@@ -405,14 +420,13 @@ function squadBoardRowHtml(m, position, tx, window = 'day') {
   //   - all:  lifetime gamesPlayed + wins
   const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `#${position}`;
 
-  let scoreText, subLine, hardBadge = '', langBadge = '';
+  let scoreText, subLine, hardBadge = '';
   if (window === 'day') {
     scoreText = m.played ? `${m.score ?? 0} ${tx.squadsPts}` : '—';
     if (m.won)         subLine = `<span class="rank-status won">${tx.squadsRankWon(m.attempts)}</span>`;
     else if (m.played) subLine = `<span class="rank-status lost">${tx.squadsRankLost}</span>`;
     else               subLine = `<span class="rank-status notyet">${tx.squadsRankNotPlayed}</span>`;
     if (m.hardMode)    hardBadge = ` <span class="hard-badge">${tx.squadsHardModeBadge}</span>`;
-    if (m.lang)        langBadge = ` <span class="member-lang-badge">${m.lang.toUpperCase()}</span>`;
   } else {
     scoreText = `${m.score ?? 0} ${tx.squadsPts}`;
     const played = m.gamesPlayed ?? 0;
@@ -426,7 +440,7 @@ function squadBoardRowHtml(m, position, tx, window = 'day') {
     <div class="squad-row ${m.isMe ? 'is-me' : ''}">
       <div class="squad-row-rank">${medal}</div>
       <div class="squad-row-name">
-        ${escapeHtml(m.nickname)}${hardBadge}${langBadge}
+        ${escapeHtml(m.nickname)}${hardBadge}
       </div>
       <div class="squad-row-meta">
         <span class="squad-row-score">${scoreText}</span>
