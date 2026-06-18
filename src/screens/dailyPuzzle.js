@@ -138,8 +138,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     const refund  = persistedPending.length - valid.length;
     valid.forEach(({ pos, letter }) => {
       hintedPositions.add(pos);
-      currentInput[pos] = letter;
-      grid.setHintLetter(currentRow, pos, letter);
+      const displayLetter = lang === 'en' ? letter.toUpperCase() : letter;
+      currentInput[pos] = displayLetter;
+      grid.setHintLetter(currentRow, pos, displayLetter);
     });
     if (refund > 0) {
       hintsUsedSoFar = Math.max(0, hintsUsedSoFar - refund);
@@ -213,8 +214,9 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     // new letter at currentInput[pos]. Earlier we persisted before this
     // assignment, so the just-hinted position got serialised as letter:''
     // — on re-entry that painted the yellow outline with a blank inside.
-    grid.setHintLetter(currentRow, pos, letter);
-    currentInput[pos] = letter;
+    const displayLetter = lang === 'en' ? letter.toUpperCase() : letter;
+    grid.setHintLetter(currentRow, pos, displayLetter);
+    currentInput[pos] = displayLetter;
 
     // Persist after the in-memory write so a mid-game close/reopen
     // preserves the cost AND the visible pre-fill.
@@ -391,7 +393,7 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
   }
 
   function submitGuess() {
-    const word = currentInput.join('');
+    const word = lang === 'en' ? currentInput.join('').toUpperCase() : currentInput.join('');
     const result = validateGuess(word, puzzle);
 
     if (!result.isValid) {
