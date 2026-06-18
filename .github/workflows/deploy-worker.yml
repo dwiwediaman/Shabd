@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'workers/**'
+      - 'public/data/words_en.json'
+      - 'public/data/words_hi.json'
       - '.github/workflows/deploy-worker.yml'
   workflow_dispatch:
 
@@ -29,6 +31,17 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Verify pools are in sync with word lists
+        run: |
+          node scripts/regen-pools.js
+          if ! git diff --quiet ../workers/src/data/pool_en.js ../workers/src/data/pool_hi.js; then
+            echo "ERROR: pool_en.js or pool_hi.js is out of sync with public/data/words_*.json"
+            echo "Run 'npm run regen-pools' in workers/ and commit the result."
+            git diff --stat ../workers/src/data/pool_en.js ../workers/src/data/pool_hi.js
+            exit 1
+          fi
+          echo "✓ Pools are in sync"
 
       - name: Run D1 migrations (remote)
         uses: cloudflare/wrangler-action@v4
