@@ -207,7 +207,8 @@ export function shouldAcceptRemote(localGuesses, remoteSession) {
   return false;
 }
 
-function collectLocalSessions(state) {
+// Exported so the daily-mode-clears-stale-isArchive regression is directly testable.
+export function collectLocalSessions(state) {
   const out = [];
   const meta = state.sessionMeta || {};
   for (const [key, guesses] of Object.entries(state.sessions || {})) {

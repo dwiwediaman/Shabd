@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { shouldAcceptRemote } from '../cloud/sync.js';
+import { shouldAcceptRemote, collectLocalSessions } from '../cloud/sync.js';
+
+// Mock localStorage before importing gameState (same pattern as gameState.test.js)
+const lsStore = {};
+global.localStorage = {
+  getItem:    (k) => lsStore[k] ?? null,
+  setItem:    (k, v) => { lsStore[k] = v; },
+  removeItem: (k) => { delete lsStore[k]; },
+  clear:      () => { Object.keys(lsStore).forEach(k => delete lsStore[k]); },
+};
+const gameState = await import('../game/gameState.js');
 
 // Helpers — build minimal guess arrays / remote sessions
 const guesses = (n, winLast = false) => {
@@ -54,5 +64,57 @@ describe('shouldAcceptRemote — cross-device merge rules', () => {
   it('regression: pulls historical session that local was missing for that date', () => {
     // Local empty for this date|lang → take remote
     expect(shouldAcceptRemote(undefined, remote(4, true))).toBe(true);
+  });
+});
+
+describe('collectLocalSessions — excludes sessions tagged isArchive', () => {
+  it('excludes a session with isArchive:true', () => {
+    const state = {
+      settings: { hardMode: false },
+      sessions: { '2026-05-01|en': guesses(2, true) },
+      sessionMeta: { '2026-05-01|en': { isArchive: true, hintsUsed: 0, durationMs: null } },
+    };
+    expect(collectLocalSessions(state)).toHaveLength(0);
+  });
+
+  it('includes a session with isArchive:false', () => {
+    const state = {
+      settings: { hardMode: true },
+      sessions: { '2026-06-22|en': guesses(3, true) },
+      sessionMeta: { '2026-06-22|en': { isArchive: false, hintsUsed: 0, durationMs: null } },
+    };
+    const out = collectLocalSessions(state);
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({ date: '2026-06-22', lang: 'en', won: true });
+  });
+});
+
+// Repro for the real bug: a user opens today's date via Time Travel before
+// playing it for real — the Time Travel screen auto-scrolls to today's
+// unplayed cell, so this is an easy accidental tap. One guess there tags
+// sessionMeta.isArchive = true for that date|lang key. She then backs out
+// and finishes the SAME session via the normal Play (daily) flow. The old
+// dailyPuzzle.js code only conditionally *added* isArchive:true for archive
+// mode and never cleared it for daily mode, so { ...existing, ...patch }
+// in setSessionMeta() let the stale true survive forever — silently
+// excluding a legitimate win from every future /sync/push with no error.
+describe('setSessionMeta — daily-mode completion must clear a stale isArchive flag', () => {
+  it('a later daily-mode patch with isArchive:false overrides an earlier archive-mode true', () => {
+    gameState.load();
+    const key = '2026-06-22|en';
+    // Simulates the archive-mode guess (old dailyPuzzle.js: mode === 'archive' branch).
+    gameState.setSessionMeta(key, { pendingHints: null, isArchive: true });
+    expect(gameState.getSessionMeta(key).isArchive).toBe(true);
+
+    // Simulates the later daily-mode guess with the fix applied: the patch
+    // now explicitly sends isArchive: mode === 'archive' (false for daily),
+    // instead of omitting the key and relying on the old conditional spread.
+    gameState.setSessionMeta(key, { pendingHints: null, isArchive: false });
+    expect(gameState.getSessionMeta(key).isArchive).toBe(false);
+
+    gameState.saveSession(key, guesses(3, true));
+    const state = gameState.get();
+    const out = collectLocalSessions(state);
+    expect(out.find(s => s.date === '2026-06-22' && s.lang === 'en')).toBeTruthy();
   });
 });

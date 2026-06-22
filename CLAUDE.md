@@ -11,35 +11,36 @@ Daily Hindi+English word puzzle (Wordle-style). Vite + vanilla JS + Capacitor �
 Repo: `dwiwediaman/Shabd`, branch `main`. Package `in.shabd.game`.
 
 ## Build = GitHub Actions only
-No local Java/Android Studio. To ship a build:
+No local Java/Android Studio. Two workflows:
 
+### 1. build.yml — build + artifact only (runs on every push to main)
 ```bash
-npm run test:ci                                                    # always run locally first
-git commit -am "..."                                               # commit
-git remote set-url origin https://$(gh auth token)@github.com/dwiwediaman/Shabd.git
-git push
-git remote set-url origin https://github.com/dwiwediaman/Shabd.git
-gh workflow run build.yml --ref main
+npm run test:ci          # always run locally first
+git commit -am "..."
+git push                 # CI auto-triggers build.yml
 gh run watch <run-id> --exit-status
 gh run download <run-id> --dir /tmp/aab
-```
-
-The artifact folder is named `shabd-vNN-{sha}` — that `NN` is the **actual versionCode**. Save the AAB:
-
-```bash
 cp /tmp/aab/*/app-release.aab releases/vcNN-vY.Z.aab
 ```
-
+The artifact folder is named `shabd-vNN-{sha}` — `NN` is the **actual versionCode**.
 **AABs always go in `releases/`** — never on Desktop.
+
+### 2. publish.yml — build + upload direct to Play Console (manual trigger)
+This is the **full release pipeline**. Use this to push to closed testing (alpha):
+```bash
+gh workflow run publish.yml --ref main \
+  -f track="alpha" \
+  -f status="completed" \
+  -f release_notes="vcNNN — description of changes"
+gh run watch <run-id> --exit-status
+```
+Tracks: `alpha` (closed testing, default), `internal`, `beta`, `production`.
+Status: `completed` (auto-release), `draft` (stage only).
+**This is the correct workflow to use when the user says "push it" or "release it".**
+No manual upload needed — publish.yml handles build + sign + upload atomically.
 
 ## versionCode is automatic
 CI uses `git rev-list --count HEAD` with `fetch-depth: 0`. Each commit = new versionCode. **Don't bump manually.** Don't write back to repo.
-
-## Play Console upload split
-Chrome extension blocks JS-driven AAB upload. Workflow:
-1. User uploads AAB manually
-2. User says "uploaded"
-3. Claude handles release notes (must use `<en-US>...</en-US>` language tags) + Next/Save/Send
 
 ## Test before push, always
 ```bash
@@ -82,8 +83,10 @@ src/updateCheck.js            ← @capawesome/capacitor-app-update check on boot
 src/i18n.js                   ← EN + HI strings
 src/style.css                 ← single sectioned stylesheet
 src/test/                     ← only game logic + i18n tested. screens/components 0% covered.
+src/test/regressions.test.js  ← structural regression guards for vc115–vc122 bug fixes
 android/app/build.gradle      ← versionCode/versionName (CI overwrites versionCode)
-.github/workflows/build.yml   ← Android AAB build CI
+.github/workflows/build.yml   ← Android AAB build CI (runs on every push)
+.github/workflows/publish.yml ← Build + upload to Play Console (manual trigger via gh workflow run)
 .github/workflows/deploy-worker.yml ← Cloudflare Worker auto-deploy on push
 releases/                     ← all AABs go here, named vcXX-vY.Z.aab
 workers/                      ← Cloudflare Worker backend (see below)
@@ -130,7 +133,11 @@ Don't use sparse arrays for `currentInput`. Always `new Array(tileCount).fill(''
 Archive plays should NOT affect streak/stats (competitive integrity). When adding scoring logic, check `mode === 'daily'` before mutating those.
 
 ## Don't ask, just do
-14+ builds shipped, CI/CD configured, keystore in CI secrets, Play Console app exists, store assets in `store-assets/`. The user gets frustrated when asked about things already set up. Just execute.
+123+ builds shipped, CI/CD fully configured (including autonomous Play Console publish via publish.yml), keystore in CI secrets, Play Console app exists, store assets in `store-assets/`. The user gets frustrated when asked about things already set up. Just execute.
+
+**Play Console app ID**: `4976411758443453798` (use this for direct URL navigation)
+**Package**: `in.shabd.game`
+**Developer ID**: `6345206799188187332`
 
 ## When asked for an audit / feedback
 - Read screens, grep coverage, check edge cases — don't speculate
@@ -138,21 +145,32 @@ Archive plays should NOT affect streak/stats (competitive integrity). When addin
 - Cite file paths and line numbers
 - End with an actionable offer ("Want me to fix X now?"), not vague commentary
 
-## Status (2026-05-11, audited live in Play Console)
-- Latest AAB: `releases/vc47-v1.4.aab` — UPLOADED + IN REVIEW
-- Closed testing: **6/12 testers**; need 6 more + 14-day clock for production unlock
+## Status (2026-06-05, audited live in Play Console)
+- Latest released: **vc123-v1.6** — published to Closed testing (alpha) via publish.yml ✅
+- Previous on Play Console: v1.5 (vc47), last updated Jun 4, 2026 — now superseded by vc123
+- Production: **Inactive** — awaiting 14-day closed test clock for production unlock
+- Closed testing: **Active · alpha track · 12 testers opted in** ✅ (all 3 production criteria met)
+
+**vc123 includes (all regression-tested in src/test/regressions.test.js):**
+- vc115: structuredClone → JSON round-trip (WebView <98 compat, Android 12)
+- vc116: Notch/header gradient unified via viewport-fixed background
+- vc117: Stats card centered (justify-content: center on .streak-card)
+- vc118: Time Travel swipe left/right to change months
+- vc119: Keyboard no longer cropped when word-hint banner appears
+- vc120: Update download banner pushes keyboard up (paddingBottom on #kbWrap)
+- vc121/122: Squads sticky footer — icon copy/share buttons, full-width Leave Squad
 
 **✅ Already done in Play Console — don't ask:**
 - Privacy policy, Data Safety, Content rating, all 10 policy declarations
 - Default store listing LIVE — app name, short + full description (1196 chars, EN+HI)
 - Feature graphic (1024×500), app icon (512×512), 3 phone screenshots
+- Service account linked → publish.yml can upload autonomously (PLAY_SERVICE_ACCOUNT_JSON secret set)
 
-**❌ Actually missing:**
+**❌ Still missing:**
 - Tablet screenshots (non-blocking for closed testing)
 - 1+ more phone screenshot for "promotion eligible" (have 3, need 4)
-- 6 more testers for production unlock
+- Production access still gated on 14-day clock
 
 **Tech debt:**
-- **URGENT — Node.js 20 actions deprecated June 2, 2026** (6 days away). CI uses `checkout@v4`, `setup-node@v4` etc. — these will break. Upgrade to `@v5` equivalents before that date.
 - Integration tests for screens (0% coverage on src/screens, src/components)
 - Crash reporting — no Sentry/Crashlytics

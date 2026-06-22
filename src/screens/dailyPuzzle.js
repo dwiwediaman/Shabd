@@ -436,10 +436,14 @@ export async function dailyPuzzleScreen(root, { mode = 'daily', date: archiveDat
     if (mode === 'daily' || mode === 'archive') {
       saveSession(sessionKey, history);
       // Tag archive sessions so backfill skips them (leaderboard integrity).
-      // isArchive defaults to undefined (falsy) for daily — only set true for archive.
+      // Explicitly set isArchive both ways — a daily-mode guess must clear
+      // any stale isArchive:true left over from an earlier Time Travel visit
+      // to the same date|lang key (today's cell is reachable via Time Travel
+      // too), otherwise that flag persists forever and silently hides a
+      // legitimate daily win from collectLocalSessions() in sync.js.
       setSessionMeta(sessionKey, {
         pendingHints: null,
-        ...(mode === 'archive' ? { isArchive: true } : {}),
+        isArchive: mode === 'archive',
       });
     }
 
