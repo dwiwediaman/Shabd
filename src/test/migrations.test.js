@@ -27,10 +27,12 @@ vi.mock('../game/wordDb.js', () => {
 
 const { load, get, save, saveSession, setSessionMeta } =
   await import('../game/gameState.js');
-const { migrateLegacyArchiveSessions } =
+const { migrateLegacyArchiveSessions, clearStaleArchiveFlagsFromDailyCompletions } =
   await import('../migrations.js');
+const { LS_KEYS } = await import('../cloud/config.js');
 
 const MIGRATION_KEY = 'shabd_migration_perm_algo_v1';
+const STALE_ARCHIVE_FLAG_KEY = 'shabd_migration_stale_archive_flag_v1';
 
 beforeEach(() => {
   localStorage.clear();
@@ -91,5 +93,53 @@ describe('migrateLegacyArchiveSessions — vc88', () => {
     saveSession('2026-01-05|en', [{ input: 'x', isCorrect: false, perTileState: [] }]);
     await migrateLegacyArchiveSessions();
     expect(localStorage.getItem(MIGRATION_KEY)).toBe('1');
+  });
+});
+
+describe('clearStaleArchiveFlagsFromDailyCompletions — vc157', () => {
+  it('clears isArchive when the date matches a recorded daily completion (streak.lastDate)', () => {
+    const s = get();
+    s.streak.en.lastDate = '2026-06-22';
+    saveSession('2026-06-22|en', [{ input: 'could', isCorrect: true, perTileState: [] }]);
+    setSessionMeta('2026-06-22|en', { isArchive: true });
+
+    const r = clearStaleArchiveFlagsFromDailyCompletions();
+
+    expect(r.cleared).toBe(1);
+    expect(get().sessionMeta['2026-06-22|en'].isArchive).toBe(false);
+    expect(localStorage.getItem(LS_KEYS.pendingPush)).toBe('1');
+    expect(localStorage.getItem(STALE_ARCHIVE_FLAG_KEY)).toBe('1');
+  });
+
+  it('leaves isArchive alone when the date does NOT match streak.lastDate (genuine archive-only play)', () => {
+    const s = get();
+    s.streak.en.lastDate = '2026-06-22'; // most recent daily completion was a different date
+    saveSession('2026-05-01|en', [{ input: 'foo', isCorrect: true, perTileState: [] }]);
+    setSessionMeta('2026-05-01|en', { isArchive: true });
+
+    const r = clearStaleArchiveFlagsFromDailyCompletions();
+
+    expect(r.cleared).toBe(0);
+    expect(get().sessionMeta['2026-05-01|en'].isArchive).toBe(true);
+    expect(localStorage.getItem(LS_KEYS.pendingPush)).toBeNull();
+  });
+
+  it('is a no-op when there is nothing flagged and sets the idempotency key', () => {
+    const r = clearStaleArchiveFlagsFromDailyCompletions();
+    expect(r.cleared).toBe(0);
+    expect(localStorage.getItem(STALE_ARCHIVE_FLAG_KEY)).toBe('1');
+  });
+
+  it('skips entirely if already run (idempotency key set)', () => {
+    localStorage.setItem(STALE_ARCHIVE_FLAG_KEY, '1');
+    const s = get();
+    s.streak.en.lastDate = '2026-06-22';
+    saveSession('2026-06-22|en', [{ input: 'could', isCorrect: true, perTileState: [] }]);
+    setSessionMeta('2026-06-22|en', { isArchive: true });
+
+    const r = clearStaleArchiveFlagsFromDailyCompletions();
+
+    expect(r.skipped).toBe('done');
+    expect(get().sessionMeta['2026-06-22|en'].isArchive).toBe(true); // untouched
   });
 });

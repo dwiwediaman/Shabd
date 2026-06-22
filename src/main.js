@@ -14,7 +14,7 @@ import { checkForUpdate } from './updateCheck.js';
 import { isSignedIn } from './cloud/auth.js';
 import { ensureBackfilled } from './cloud/sync.js';
 import { consumePendingDeepLink, createDeepLinkHandler } from './deepLink.js';
-import { migrateLegacyArchiveSessions } from './migrations.js';
+import { migrateLegacyArchiveSessions, clearStaleArchiveFlagsFromDailyCompletions } from './migrations.js';
 import { App as CapApp } from '@capacitor/app';
 
 // Register all screens
@@ -58,6 +58,7 @@ async function boot() {
   // before the UI shows so stale-target cells can't be tapped during the
   // brief migration window.
   await migrateLegacyArchiveSessions();
+  clearStaleArchiveFlagsFromDailyCompletions();
 
   const loader = document.getElementById('loader');
   loader.classList.add('hiding');
