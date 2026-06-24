@@ -145,11 +145,11 @@ Archive plays should NOT affect streak/stats (competitive integrity). When addin
 - Cite file paths and line numbers
 - End with an actionable offer ("Want me to fix X now?"), not vague commentary
 
-## Status (2026-06-05, audited live in Play Console)
-- Latest released: **vc123-v1.6** — published to Closed testing (alpha) via publish.yml ✅
-- Previous on Play Console: v1.5 (vc47), last updated Jun 4, 2026 — now superseded by vc123
-- Production: **Inactive** — awaiting 14-day closed test clock for production unlock
-- Closed testing: **Active · alpha track · 12 testers opted in** ✅ (all 3 production criteria met)
+## Status (2026-06-24, audited live in Play Console)
+- **Production: LIVE** — released Jun 14, 2026, 100% rollout. Promoted manually in the Play Console UI — `publish.yml` has only ever published to the **alpha** track in every run to date, never production directly. If you want production releases automated, that's a gap to close.
+- Install base: ~18 devices, installed audience ~12-17 unique users/day (last 28 days), MAU 13 (declining -7%). All activity is compressed into the last ~3 weeks; flat at zero before that.
+- Crash rate: 0.00%, zero reviews, zero ratings. A bug that fails silently (no thrown exception) will NOT show up anywhere in Play Console — don't treat a clean crash dashboard as proof of correctness.
+- `users` table stores **no email or name**, only Google's opaque `sub` + an in-app nickname (deliberate privacy choice). There is no way to message users directly through any in-app or backend channel — only via personal contact or whatever channel was used to share the install link.
 
 **vc123 includes (all regression-tested in src/test/regressions.test.js):**
 - vc115: structuredClone → JSON round-trip (WebView <98 compat, Android 12)

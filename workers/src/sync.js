@@ -100,7 +100,18 @@ export async function handlePush(c) {
     let replayed;
     try {
       replayed = await replayGuesses(s.date, s.lang, s.guesses.map(g => g.input));
-    } catch {
+    } catch (e) {
+      // TEMP DIAGNOSTIC (remove after root-causing the dropped-session bug):
+      // log shape info only, never guess content, to find why legitimate
+      // pushes are silently skipped.
+      console.warn('[sync.push] dropped session', {
+        userId, date: s.date, lang: s.lang,
+        guessCount: Array.isArray(s.guesses) ? s.guesses.length : typeof s.guesses,
+        firstGuessShape: Array.isArray(s.guesses) && s.guesses[0]
+          ? { type: typeof s.guesses[0], keys: typeof s.guesses[0] === 'object' ? Object.keys(s.guesses[0]) : null }
+          : null,
+        err: e?.message,
+      });
       continue;  // bad guesses / unknown date / pre-launch — skip silently
     }
 
